@@ -14,7 +14,6 @@ import json
 import re
 import sqlite3
 import subprocess
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -26,30 +25,12 @@ def ago(ts: datetime) -> str:
     return f"{secs // 60}m{secs % 60:02d}s ago"
 
 
-def iter_events(path: Path):
-    """Yield JSON objects, skipping a truncated trailing line."""
-    if not path.is_file():
-        return
-    lines = path.read_text(errors="replace").splitlines()
-    for index, line in enumerate(lines):
-        if not line.strip():
-            continue
-        try:
-            yield json.loads(line)
-        except json.JSONDecodeError:
-            if index == len(lines) - 1:
-                continue
-            print(f"status: skipped unreadable event in {path}", file=sys.stderr)
-
-
 def agents(ws: Path) -> tuple[list[dict], datetime | None, list[str]]:
     rows, first, spawns = [], None, []
-    sessions = ws / "codex-home" / "sessions"
-    if not sessions.exists():
-        return rows, first, spawns
-    for rollout in sorted(sessions.rglob("*.jsonl")):
+    for rollout in sorted((ws / "codex-home" / "sessions").rglob("*.jsonl")):
         name, calls, tokens, last = "root?", 0, 0, None
-        for event in iter_events(rollout):
+        for line in rollout.open():
+            event = json.loads(line)
             payload = event.get("payload", {})
             if event.get("timestamp"):
                 last = datetime.fromisoformat(event["timestamp"].replace("Z", "+00:00"))
@@ -85,31 +66,9 @@ def main() -> None:
 
     run_file = ws / "logs" / "run.json"
     session_log = ws / "logs" / "session.jsonl"
-    state_file = ws / "logs" / "state.json"
-    protocol_line = None
-    if state_file.exists():
-        try:
-            durable = json.loads(state_file.read_text())
-        except json.JSONDecodeError as exc:
-            state = f"STATE UNREADABLE ({exc})"
-            durable = {}
-        else:
-            state = str(durable.get("state", "unknown"))
-            if durable.get("reason"):
-                state += f" ({durable['reason']})"
-            protocol = durable.get("protocol") or {}
-            if protocol.get("complete") and protocol.get("head"):
-                protocol_line = f"protocol: complete {protocol['head']}"
-            elif protocol.get("outcomes"):
-                protocol_line = "protocol: " + ", ".join(
-                    f"{agent} {item.get('status')}" for agent, item in protocol["outcomes"].items()
-                )
-    elif run_file.exists():
-        try:
-            run = json.loads(run_file.read_text())
-            state = f"FINISHED in {run['seconds'] / 60:.1f} min (exit {run['exit_code']}, capped {run['capped']})"
-        except (json.JSONDecodeError, KeyError) as exc:
-            state = f"RUN RECORD UNREADABLE ({exc})"
+    if run_file.exists():
+        run = json.loads(run_file.read_text())
+        state = f"FINISHED in {run['seconds'] / 60:.1f} min (exit {run['exit_code']}, capped {run['capped']})"
     elif session_log.exists():
         state = "RUNNING"
     else:
@@ -121,8 +80,6 @@ def main() -> None:
     if state == "RUNNING" and first:
         state += f" for {ago(first).removesuffix(' ago')}"
     print(f"{ws.name} · {meta['mode']} · {meta['peers']} agent(s) · {meta['model']}/{meta['effort']} · {state}")
-    if protocol_line:
-        print(protocol_line)
 
     if meta["mode"] == "swarm":
         ok = spawns.count("ok")
@@ -135,18 +92,15 @@ def main() -> None:
 
     board = ws / "codex-home" / "agent_message_board_1.sqlite"
     if board.exists():
-        try:
-            db = sqlite3.connect(f"file:{board}?mode=ro", uri=True)
-            total = db.execute("select count(*) from posts").fetchone()[0]
-            channels = [r[0] for r in db.execute("select name from channels")]
-            print(f"\nboard · {total} posts · channels: {', '.join(channels) or '-'}")
-            rows = db.execute(
-                "select author, channel, body_search from posts order by seq desc limit ?", (args.posts,)
-            ).fetchall()
-            for author, channel, body in reversed(rows):
-                print(f"  {author.removeprefix('/root/'):<4} #{channel:<10} {body[:110]}")
-        except sqlite3.Error as exc:
-            print(f"\nboard unreadable: {exc}")
+        db = sqlite3.connect(f"file:{board}?mode=ro", uri=True)
+        total = db.execute("select count(*) from posts").fetchone()[0]
+        channels = [r[0] for r in db.execute("select name from channels")]
+        print(f"\nboard · {total} posts · channels: {', '.join(channels) or '-'}")
+        rows = db.execute(
+            "select author, channel, body_search from posts order by seq desc limit ?", (args.posts,)
+        ).fetchall()
+        for author, channel, body in reversed(rows):
+            print(f"  {author.removeprefix('/root/'):<4} #{channel:<10} {body[:110]}")
 
     log = subprocess.run(
         ["git", "-C", str(ws / "work" / "origin.git"), "log", "--format=%h %an %ar  %s",

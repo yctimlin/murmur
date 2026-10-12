@@ -14,8 +14,8 @@ objective does need such a change, explain why in `PR.md`.
 
 If part of the objective cannot be done within the limits of this environment, that is an
 acceptable result: do the rest, and say plainly in `PR.md` what is missing and why. Never work
-around those limits to get it done, whether missing credentials, the sandbox, GitHub git URLs
-(they are rewritten to a dead path and `gh` is not logged in), or other runs on this machine.
+around those limits to get it done, whether missing credentials, the sandbox, blocked GitHub access
+or other runs on this machine.
 
 This machine is shared with other agents and other runs. Bind only ports from your `PORT_BASE` to
 `PORT_BASE + 99`; if a script hardcodes a port, start the server directly on one of yours. Never

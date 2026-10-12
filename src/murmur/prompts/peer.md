@@ -44,18 +44,3 @@ review the whole result the way its user will meet it, not only your part: run i
 state and every screen size or environment it has to work in. Look hardest at the seams between
 parts that different peers built. Post each problem you find as a task, and claim it or see that
 someone does. Finish only when a review of the latest `main` finds nothing worth fixing.
-
-## Completion protocol
-
-You and the other peers stay equal. No peer accepts the result for the others. The launcher reads
-`$protocol_dir/$id.json` after the session and treats the run as complete only when every peer has
-attested the same commit. Write that file with `$attest`, run from your clone:
-
-- First action: `$attest started`
-- If you are stuck on another peer or a missing decision: `$attest blocked --reason "why"`
-- If you cannot do your part: `$attest failed --reason "why"`
-- When you would ship the current `origin/main`, attest that exact commit and name each acceptance
-  check you actually ran:
-  `$attest completed --commit $$(git -C $clone rev-parse origin/main) --check <name>=pass`
-- A later push invalidates that attestation. Review the new `origin/main` and attest again before
-  you finish. Do not finish while the file names any other commit.

@@ -2,13 +2,11 @@
 """Deterministic stand-in for the Codex CLI. No network and no model calls.
 
 Modes (MURMUR_FAKE_CODEX_MODE):
-  ok                 exit 0
-  fail               exit MURMUR_FAKE_CODEX_EXIT (default 23) after a stderr line
-  fail-with-commit   push one commit, then exit as fail
-  hang               sleep until SIGTERM
-  resistant          exit 0 after forking a SIGTERM-ignoring child
-  protocol-ok        push one commit and attest every peer, exit 0
-  protocol-on-second attest only on the second invocation
+  ok               exit 0
+  fail             exit MURMUR_FAKE_CODEX_EXIT (default 23) after a stderr line
+  fail-with-commit push one commit, then exit as fail
+  hang             sleep until SIGTERM
+  resistant        exit 0 after forking a SIGTERM-ignoring child
 """
 
 from __future__ import annotations
@@ -32,7 +30,7 @@ def main() -> int:
         print(f"fake codex: unexpected args {args}", file=sys.stderr)
         return 2
     mode = os.environ.get("MURMUR_FAKE_CODEX_MODE", "ok")
-    _write_final(args, "done\n" if mode != "hang" else None)
+    _write_final(args, None if mode == "hang" else "done\n")
     if mode == "hang":
         return _hang()
     if mode == "resistant":
@@ -42,19 +40,6 @@ def main() -> int:
     if mode == "fail-with-commit":
         _commit_and_push(args)
         return _fail()
-    if mode == "protocol-ok":
-        sha = _commit_and_push(args)
-        _attest_all(args, sha)
-        return 0
-    if mode == "protocol-on-second":
-        count_path = Path(os.environ["MURMUR_FAKE_CODEX_COUNT"])
-        count = int(count_path.read_text()) if count_path.exists() else 0
-        count += 1
-        count_path.write_text(str(count))
-        if count >= 2:
-            sha = _commit_and_push(args)
-            _attest_all(args, sha)
-        return 0
     print(json.dumps({"type": "event_msg", "payload": {"type": "task_complete"}}), flush=True)
     return 0
 
@@ -66,8 +51,7 @@ def _catalog() -> dict:
                 "slug": "gpt-6-astra",
                 "multi_agent_reasoning_effort": "xhigh",
                 "multi_agent_version": "v2",
-            },
-            {"slug": "other-model", "multi_agent_version": "v1"},
+            }
         ]
     }
 
@@ -86,16 +70,10 @@ def _workspace(args: list[str]) -> Path:
 
 def _fail() -> int:
     print("codex failed: simulated", file=sys.stderr)
-    print(json.dumps({"type": "event_msg", "payload": {"type": "error"}}), flush=True)
     return int(os.environ.get("MURMUR_FAKE_CODEX_EXIT", "23"))
 
 
 def _hang() -> int:
-    pidfile = os.environ.get("MURMUR_FAKE_CODEX_PIDFILE")
-    if pidfile:
-        Path(pidfile).write_text(str(os.getpid()))
-    print(json.dumps({"type": "event_msg", "payload": {"type": "hang-marker"}}), flush=True)
-
     def _stop(signum, frame) -> None:
         raise SystemExit(0)
 
@@ -125,8 +103,15 @@ def _resistant() -> int:
         if marker.exists():
             break
         time.sleep(0.02)
-    print(json.dumps({"type": "event_msg", "payload": {"type": "resistant-parent"}}), flush=True)
     return 0
+
+
+def _commit_and_push(args: list[str]) -> None:
+    ws = _workspace(args)
+    meta = json.loads((ws / "murmur.json").read_text())
+    clone = Path(meta["agents"][0]["clone"])
+    _git(["git", "commit", "--allow-empty", "-m", "work"], clone)
+    _git(["git", "push", "origin", "HEAD:main"], clone)
 
 
 def _git(args: list[str], cwd: Path) -> None:
@@ -134,39 +119,6 @@ def _git(args: list[str], cwd: Path) -> None:
     if result.returncode != 0:
         sys.stderr.write(result.stderr or result.stdout)
         raise SystemExit(result.returncode or 1)
-
-
-def _commit_and_push(args: list[str]) -> str:
-    ws = _workspace(args)
-    meta = json.loads((ws / "murmur.json").read_text())
-    clone = Path(meta["agents"][0]["clone"])
-    _git(["git", "commit", "--allow-empty", "-m", "work"], clone)
-    _git(["git", "push", "origin", "HEAD:main"], clone)
-    origin = ws / "work" / "origin.git"
-    result = subprocess.run(
-        ["git", "rev-parse", "main"], cwd=origin, capture_output=True, text=True, check=True
-    )
-    print(json.dumps({"type": "event_msg", "payload": {"type": "committed"}}), flush=True)
-    return result.stdout.strip()
-
-
-def _attest_all(args: list[str], sha: str) -> None:
-    ws = _workspace(args)
-    meta = json.loads((ws / "murmur.json").read_text())
-    attempt = (ws / "protocol" / "attempt").read_text().strip()
-    for agent in meta["agents"]:
-        payload = {
-            "version": 1,
-            "agent": agent["id"],
-            "state": "completed",
-            "commit": sha,
-            "reason": "",
-            "checks": [{"name": "acceptance", "result": "pass"}],
-            "attempt_id": attempt,
-            "updated_at": "1970-01-01T00:00:00+00:00",
-        }
-        path = ws / "protocol" / f"{agent['id']}.json"
-        path.write_text(json.dumps(payload, indent=2) + "\n")
 
 
 if __name__ == "__main__":

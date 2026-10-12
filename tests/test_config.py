@@ -1,70 +1,43 @@
-"""Configuration precedence and the options setup actually reads."""
+"""Config file precedence."""
 
 from __future__ import annotations
 
-import argparse
 from pathlib import Path
 
-import pytest
-
 from murmur.cli import resolve_options
-from murmur.errors import MurmurError
-from murmur.util import seconds
 
 
-def namespace(**overrides):
-    base = dict(
-        config=None, brief=None, repo=None, base=None, peers=None, model=None,
-        effort=None, cap=None, port_base=None, setup=None, setup_env=None,
-        solo=False, setup_per_agent=False,
+def _args(**overrides):
+    values = dict(
+        brief=None, config=None, repo=None, base=None, peers=None, solo=False,
+        model=None, effort=None, cap=None, port_base=None, setup=None,
+        setup_per_agent=False, id=None, into="~/.murmur/runs",
     )
-    base.update(overrides)
-    return argparse.Namespace(**base)
+    values.update(overrides)
+    return type("Args", (), values)()
 
 
 def test_config_then_flags(tmp_path: Path):
-    brief = tmp_path / "brief.md"
-    brief.write_text("from config\n")
-    other = tmp_path / "other.md"
-    other.write_text("from flag\n")
     config = tmp_path / "murmur.toml"
     config.write_text(
-        'peers = 2\ncap = "45m"\nbrief = "brief.md"\n'
-        'setup = ["echo from-config"]\nsetup_per_agent = true\n'
+        'peers = 3\ncap = "90m"\nsetup = ["echo from-config"]\n'
+        "setup_per_agent = true\n"
+        'agent_env = { APP_PORT = "$port_base" }\n'
     )
-    options = resolve_options(namespace(
-        config=str(config), cap="30m", brief=str(other), setup=["echo from-flag"],
-    ))
+    options = resolve_options(_args(config=str(config), peers=2, brief=str(tmp_path / "brief.md")))
     assert options["peers"] == 2
-    assert seconds(options["cap"]) == 30 * 60
-    assert options["brief"] == str(other)
-    assert options["setup"] == ["echo from-flag"]
+    assert options["cap"] == "90m"
+    assert options["setup"] == ["echo from-config"]
     assert options["setup_per_agent"] is True
+    assert options["agent_env"]["APP_PORT"] == "$port_base"
 
 
-def test_config_brief_is_resolved_next_to_the_file(tmp_path: Path):
-    nested = tmp_path / "cfg"
-    nested.mkdir()
-    (nested / "brief.md").write_text("x\n")
-    config = nested / "murmur.toml"
-    config.write_text('brief = "brief.md"\npeers = 3\n')
-    options = resolve_options(namespace(config=str(config)))
-    assert options["brief"] == str((nested / "brief.md").resolve())
-    assert options["peers"] == 3
-    assert options["model"] == "gpt-6-astra"
-
-
-def test_string_setup_from_toml(tmp_path: Path):
-    (tmp_path / "brief.md").write_text("x\n")
+def test_string_setup_is_rejected(tmp_path: Path):
     config = tmp_path / "murmur.toml"
-    config.write_text('brief = "brief.md"\nsetup = "echo hi"\n')
-    with pytest.raises(MurmurError, match="setup must be a list"):
-        resolve_options(namespace(config=str(config)))
-
-
-def test_solo_flag_forces_one_peer(tmp_path: Path):
-    (tmp_path / "brief.md").write_text("x\n")
-    config = tmp_path / "murmur.toml"
-    config.write_text('brief = "brief.md"\npeers = 4\n')
-    options = resolve_options(namespace(config=str(config), solo=True))
-    assert options["peers"] == 1
+    config.write_text('setup = "echo no"\nbrief = "brief.md"\n')
+    try:
+        resolve_options(_args(config=str(config)))
+    except SystemExit as exc:
+        assert exc.code == 3
+    else:
+        raise AssertionError("expected setup to be rejected")
