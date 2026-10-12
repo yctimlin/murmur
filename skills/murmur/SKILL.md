@@ -6,9 +6,10 @@ description: Run a leaderless swarm of Codex agents (murmur) on one objective in
 # murmur: a leaderless Codex swarm
 
 `murmur` starts N Codex agents as equal peers on one objective. They share a private git `origin`
-and Codex's built-in message board, claim work, and finish when everyone has stopped. There is no
-manager: a root session only spawns the peers and waits. Nothing leaves the workspace until you
-fetch the result into the user's repo as a branch.
+and Codex's built-in message board, claim work, and attest one final commit. There is no
+manager: a root session only spawns the peers and waits. The launcher, not a peer, checks that
+every peer attested that same commit. Nothing leaves the workspace until you fetch the result
+into the user's repo as a branch.
 
 ## When to use it
 
@@ -36,8 +37,9 @@ The brief is the only thing the agents read about the task. Agents cannot ask qu
   is out of scope, what "done" looks like.
 - Leave design decisions to the agents, unless the user has made them.
 - Name the open questions you want answered, and ask for the decisions to be justified in `PR.md`.
-- Say how the result can be verified locally. Agents have network access but no credentials, so
-  real third-party APIs are out of reach.
+- Say how the result can be verified locally. Agents have network access. GitHub git URLs are
+  rewritten to a dead path and `gh` is not logged in; that is not a network firewall, and there
+  are no credentials for third-party APIs.
 
 Save it as a markdown file outside the repo, or in a scratch location. Show it to the user before
 the run when the task is large.
@@ -51,9 +53,16 @@ murmur setup brief.md --repo <repo> --peers 4 \
 
 - The agents start from `HEAD` (or `--base <ref>`). Uncommitted changes are not included; murmur
   warns when there are some.
-- `--setup` runs in every clone before the clock starts. Use it for dependencies and placeholder
-  env files. Never pass secrets.
+- `--setup` runs once in the first clone; the other clones are copy-on-write copies of that
+  tree (`cp -c -R` on macOS, `cp --reflink=always -R` on Linux). If the copy fails, murmur
+  keeps the first clone and runs setup in the remaining clones in parallel. It does not fall
+  back to a plain copy. If the install embeds absolute paths (virtualenvs, node shebangs), pass
+  `--setup-per-agent` so the command runs in every clone instead.
+- Setup sees an allowlisted environment, not the host's secrets. Pass a variable through only
+  with `--setup-env VAR` when the install truly needs it. Never pass secrets.
 - `--peers 2` is often as good as 4. `--cap` defaults to `3h`.
+- Each agent's `PORT_BASE` is exported for shells that start in its clone. You do not paste it
+  into the setup command.
 - The last line of the output is the workspace path, under `~/.murmur/runs/<id>`.
 
 ## 3. Run and watch
@@ -73,8 +82,16 @@ Check progress every few minutes, and give the user a one-line update after each
 It shows elapsed time, `spawned N/N peers`, each agent's last activity and tokens, the latest
 board posts and new commits on `origin/main`.
 
-- If `spawned` is below N, stop the run: the peers would be working short-handed.
-- To stop a run, stop the background task. murmur shuts Codex down and records `interrupted`.
+- `murmur run` exits 0 only when a solo Codex run exits 0, or when every peer attested the same
+  `origin/main` commit. Exit 1 is a Codex failure, 2 is the time cap, 3 is a launcher error,
+  4 means the protocol is incomplete, and 130 means the run was interrupted. A non-zero exit
+  still prints the fetch command and the log path.
+- If `spawned` is below N, stop the run: the peers would be working short-handed. The durable
+  result is `logs/state.json` (`protocol`), not the spawn line alone.
+- To stop a run, stop the background task. murmur signals the Codex process group and records
+  `interrupted`.
+- A second `murmur run` on the same workspace exits 3 while the first holds the lock. If the
+  launcher died, `murmur run --recover <workspace>` closes the stale attempt and starts another.
 
 ## 4. Bring the result back
 
@@ -115,12 +132,17 @@ that touch paths outside the workspace, credential files, `~/.codex` or GitHub.
 ## Safety model
 
 - Each agent works in its own clone; the only remote is the workspace's `origin.git`.
-- GitHub is unreachable from agent shells: a git config rewrites GitHub URLs, `gh` has no login,
-  and shells start from a minimal environment with an empty `ZDOTDIR`, so no keys from dotfiles.
+- GitHub git URLs (`https`, `http`, `git://`, `ssh://`, `git@github.com:`) are rewritten to a
+  dead path, and `gh` has an empty config directory so it is not logged in. This is not a
+  network block: Codex still has network access, and `curl https://github.com` can succeed.
+- Agent shells inherit Codex's core environment, not the full host environment. Their `HOME` is
+  the workspace home, `ZDOTDIR` is the workspace shell directory, and `BASH_ENV` / `ENV` point at
+  workspace scripts, so bash and zsh do not read the user's dotfiles. Names containing `KEY`,
+  `SECRET`, or `TOKEN` are dropped. Setup commands see an allowlist plus any `--setup-env` names.
 - Each run has its own `CODEX_HOME` with only the model provider and auth: no plugins, memories or
   past sessions.
 - This guards against accidents, not a determined agent: the Codex sandbox can still read the
-  disk.
+  disk. The Codex process itself still receives the launcher environment.
 
 ## Where things are
 
@@ -128,8 +150,10 @@ that touch paths outside the workspace, credential files, `~/.codex` or GitHub.
 |---|---|
 | `murmur.json` | Run settings, base commit, agents, ports |
 | `prompts/` | The exact prompt each agent received |
-| `logs/run.json` | Start, end, duration, exit code, capped or interrupted |
-| `logs/session.jsonl` | The root (or solo) session's event stream |
+| `logs/state.json` | Versioned state: `ready`, `running`, `succeeded`, `failed`, `capped`, `interrupted`, plus the protocol |
+| `logs/attempts/<id>/` | That attempt's `session.jsonl`, `session.err`, and `record.json`. Later attempts do not truncate these |
+| `logs/run.json` | Summary of the latest attempt only |
+| `protocol/<id>.json` | That peer's attestation for this attempt |
 | `codex-home/sessions/` | One rollout per agent: commands, edits, tokens |
 | `codex-home/agent_message_board_1.sqlite` | Board posts (`posts` table, plain text) |
 | `work/origin.git` | The result; its reflog has a timestamp for every push to `main` |
