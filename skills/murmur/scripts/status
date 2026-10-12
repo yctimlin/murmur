@@ -1,0 +1,126 @@
+#!/usr/bin/env python3
+"""status: a one-screen view of a murmur run, in progress or finished.
+
+  status <workspace> [--posts N]
+
+It shows elapsed time, each agent's last activity, tool calls and tokens, the latest
+message-board posts, and the commits on origin/main.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sqlite3
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+PROMPT_RE = re.compile(r"prompts/(\w+)\.md")
+
+
+def ago(ts: datetime) -> str:
+    secs = int((datetime.now(timezone.utc) - ts).total_seconds())
+    return f"{secs // 60}m{secs % 60:02d}s ago"
+
+
+def agents(ws: Path) -> tuple[list[dict], datetime | None, list[str]]:
+    rows, first, spawns = [], None, []
+    for rollout in sorted((ws / "codex-home" / "sessions").rglob("*.jsonl")):
+        name, calls, tokens, last = "root?", 0, 0, None
+        for line in rollout.open():
+            event = json.loads(line)
+            payload = event.get("payload", {})
+            if event.get("timestamp"):
+                last = datetime.fromisoformat(event["timestamp"].replace("Z", "+00:00"))
+                first = min(first or last, last)
+            if name == "root" and event.get("type") == "response_item" and payload.get("type") == "function_call_output":
+                output = str(payload.get("output", ""))
+                if "task_name" in output or "spawn failed" in output:
+                    spawns.append("failed" if "spawn failed" in output else "ok")
+            if event.get("type") == "response_item" and payload.get("type") in (
+                "function_call", "custom_tool_call",
+            ):
+                calls += 1
+                args = str(payload.get("arguments") or payload.get("input") or "")
+                if name == "root?" and payload.get("name") == "spawn_agent":
+                    name = "root"
+                match = PROMPT_RE.search(args)
+                if name == "root?" and match:
+                    name = match[1]
+            if event.get("type") == "event_msg" and payload.get("type") == "token_count":
+                usage = (payload.get("info") or {}).get("total_token_usage") or {}
+                tokens = usage.get("total_tokens", tokens)
+        rows.append({"agent": name, "calls": calls, "tokens": tokens, "last": last})
+    return rows, first, spawns
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("workspace")
+    parser.add_argument("--posts", type=int, default=8)
+    args = parser.parse_args()
+    ws = Path(args.workspace).expanduser().resolve()
+    meta = json.loads((ws / "murmur.json").read_text())
+
+    run_file = ws / "logs" / "run.json"
+    session_log = ws / "logs" / "session.jsonl"
+    if run_file.exists():
+        run = json.loads(run_file.read_text())
+        state = f"FINISHED in {run['seconds'] / 60:.1f} min (exit {run['exit_code']}, capped {run['capped']})"
+    elif session_log.exists():
+        state = "RUNNING"
+    else:
+        state = "NOT STARTED"
+    rows, first, spawns = agents(ws)
+    if meta["mode"] == "solo":
+        for row in rows:
+            row["agent"] = "solo"
+    if state == "RUNNING" and first:
+        state += f" for {ago(first).removesuffix(' ago')}"
+    print(f"{ws.name} · {meta['mode']} · {meta['peers']} agent(s) · {meta['model']}/{meta['effort']} · {state}")
+
+    if meta["mode"] == "swarm":
+        ok = spawns.count("ok")
+        warn = "" if ok == meta["peers"] else f"  ← {spawns.count('failed')} spawn(s) FAILED"
+        print(f"spawned {ok}/{meta['peers']} peers{warn}")
+    print("\nagents")
+    for row in rows:
+        last = ago(row["last"]) if row["last"] else "-"
+        print(f"  {row['agent']:<6} last event {last:<12} tool calls {row['calls']:<5} tokens {row['tokens']:,}")
+
+    board = ws / "codex-home" / "agent_message_board_1.sqlite"
+    if board.exists():
+        db = sqlite3.connect(f"file:{board}?mode=ro", uri=True)
+        total = db.execute("select count(*) from posts").fetchone()[0]
+        channels = [r[0] for r in db.execute("select name from channels")]
+        print(f"\nboard · {total} posts · channels: {', '.join(channels) or '-'}")
+        rows = db.execute(
+            "select author, channel, body_search from posts order by seq desc limit ?", (args.posts,)
+        ).fetchall()
+        for author, channel, body in reversed(rows):
+            print(f"  {author.removeprefix('/root/'):<4} #{channel:<10} {body[:110]}")
+
+    log = subprocess.run(
+        ["git", "-C", str(ws / "work" / "origin.git"), "log", "--format=%h %an %ar  %s",
+         f"{meta['base']}..main"],
+        capture_output=True, text=True,
+    ).stdout.splitlines()
+    print(f"\norigin/main · {len(log)} new commit(s)")
+    for line in log[:10]:
+        print(f"  {line[:120]}")
+
+    drafts = subprocess.run(
+        ["git", "-C", str(ws / "work" / "origin.git"), "for-each-ref", "refs/heads/draft",
+         "--format=%(refname:short) %(authorname) %(committerdate:relative)  %(subject)"],
+        capture_output=True, text=True,
+    ).stdout.splitlines()
+    if drafts:
+        print(f"\ndrafts · {len(drafts)}")
+        for line in drafts:
+            print(f"  {line[:120]}")
+
+
+if __name__ == "__main__":
+    main()
