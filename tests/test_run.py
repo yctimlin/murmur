@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import signal
 import subprocess
@@ -43,10 +44,13 @@ def test_timeout_exits_capped(tmp_path: Path):
         extra_env={"MURMUR_FAKE_CODEX_MODE": "hang"},
         timeout=20,
     )
-    assert result.returncode == EXIT_CAPPED, result.stderr
+    assert EXIT_CAPPED == 124
+    assert result.returncode == 124, result.stderr
     assert "capped" in result.stderr
     assert "session.err" in result.stderr
     assert "fetch" in result.stdout
+    record = json.loads((workspace / "logs" / "run.json").read_text())
+    assert record["started_at"] < record["ended_at"]
 
 
 def test_interruption_exits_130_and_stops_codex(tmp_path: Path):

@@ -94,11 +94,12 @@ the root of the result is the agents' summary.
 |------|---------|
 | 0 | Codex exited 0 |
 | 1 | Codex exited non-zero |
-| 2 | The time cap was reached |
 | 3 | Launcher error (bad arguments, setup failed, workspace already run or missing) |
+| 124 | The time cap was reached |
 | 130 | Interrupted (`SIGINT` / `SIGTERM` / `SIGHUP`) |
 
-Argparse usage errors still exit 2. The fetch command is printed whenever `origin.git` exists.
+Argparse usage errors still exit 2, so the time cap does not use that code. The fetch command is
+printed whenever `origin.git` exists.
 
 ### Copy-on-write setup
 
@@ -118,7 +119,9 @@ prefixes).
 
 Shared setup does not receive per-agent `PORT_BASE` or `agent_env`, so those values are not baked
 into a tree that is then copied. `ZDOTDIR` points at `<workspace>/zdot`, whose `.zshenv` loads
-`<clone>/.murmur/env.sh` for shells started in that clone. `HOME` is unchanged.
+`<clone>/.murmur/env.sh` when the shell's physical path (`pwd -P`) is inside that clone. Commands
+that start outside the clone, such as in `work/`, do not get those values. The prompt tells each
+agent to export them there. `HOME` is unchanged.
 
 Setup inherits the environment you launched murmur with, including your pnpm store, so a later
 run can reuse packages already downloaded. The run does not point pnpm at a store outside `work/`.

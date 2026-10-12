@@ -229,15 +229,29 @@ def test_runtime_shell_exports_each_agents_port_without_moving_home(tmp_path, mo
     assert "ZDOTDIR" in command
     home = os.environ["HOME"]
     startup = shlex.quote(str(workspace / "zdot" / ".zshenv"))
+    outside = subprocess.run(
+        ["sh", "-c", f'. {startup}; printf %s "$PORT_BASE"'],
+        cwd=workspace / "work",
+        env={"PATH": os.environ["PATH"], "HOME": home, "ZDOTDIR": injected["ZDOTDIR"]},
+        capture_output=True, text=True, check=True,
+    )
+    assert outside.stdout == ""
     for agent in meta["agents"]:
         clone = Path(agent["clone"])
-        result = subprocess.run(
-            ["sh", "-c", f'. {startup}; printf %s "$PORT_BASE"; printf " "; printf %s "$HOME"'],
-            cwd=clone,
-            env={"PATH": os.environ["PATH"], "HOME": home, "ZDOTDIR": injected["ZDOTDIR"]},
-            capture_output=True, text=True, check=True,
-        )
-        port, seen_home = result.stdout.split(" ")
-        assert port == agent["env"]["PORT_BASE"]
-        assert seen_home == home
-        assert seen_home != str(workspace / "home")
+        prompt = (workspace / "prompts" / f"{agent['id']}.md").read_text()
+        assert f"PORT_BASE={agent['env']['PORT_BASE']}" in prompt
+        assert "export them in those commands" in prompt
+        assert "do not need to export" not in prompt
+        link = tmp_path / f"link-{agent['id']}"
+        link.symlink_to(clone, target_is_directory=True)
+        for cwd in (clone, link):
+            result = subprocess.run(
+                ["sh", "-c", f'. {startup}; printf %s "$PORT_BASE"; printf " "; printf %s "$HOME"'],
+                cwd=cwd,
+                env={"PATH": os.environ["PATH"], "HOME": home, "ZDOTDIR": injected["ZDOTDIR"]},
+                capture_output=True, text=True, check=True,
+            )
+            port, seen_home = result.stdout.split(" ")
+            assert port == agent["env"]["PORT_BASE"]
+            assert seen_home == home
+            assert seen_home != str(workspace / "home")

@@ -59,8 +59,9 @@ murmur setup brief.md --repo <repo> --peers 4 \
   absolute paths (virtualenvs, node shebangs).
 - Setup uses the environment you launched murmur with, including your pnpm store. Never pass secrets.
 - `--peers 2` is often as good as 4. `--cap` defaults to `3h`.
-- Each agent's `PORT_BASE` is exported for zsh started in its clone. You do not paste it into the
-  setup command. `HOME` is not changed.
+- Each agent's `PORT_BASE` is exported for zsh started in its clone. Commands that start outside
+  the clone, such as in `work/`, do not export it; the prompt tells the agent to export it there.
+  You do not paste it into the setup command. `HOME` is not changed.
 - The last line of the output is the workspace path, under `~/.murmur/runs/<id>`.
 
 ## 3. Run and watch
@@ -80,9 +81,9 @@ Check progress every few minutes, and give the user a one-line update after each
 It shows elapsed time, `spawned N/N peers`, each agent's last activity and tokens, the latest
 board posts and new commits on `origin/main`.
 
-- `murmur run` exits 0 when Codex exits 0. Exit 1 is a Codex failure, 2 is the time cap, 3 is a
-  launcher error, and 130 means the run was interrupted. A non-zero exit still prints the fetch
-  command and the log path.
+- `murmur run` exits 0 when Codex exits 0. Exit 1 is a Codex failure, 124 is the time cap, 3 is a
+  launcher error, and 130 means the run was interrupted. Exit 2 is argparse's usage error. A
+  non-zero exit still prints the fetch command and the log path.
 - If `spawned` is below N, stop the run: the peers would be working short-handed.
 - To stop a run, stop the background task. murmur signals the Codex process group and records
   `interrupted`.
