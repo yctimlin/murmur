@@ -140,6 +140,12 @@ def write_model_catalog(path: Path, model: str, effort: str, solo: bool) -> None
     The bundled catalog forces Multi-Agent V2 on for some models regardless of
     `--disable` flags (openai/codex#50880), and spawns sub-agents at its own reasoning
     effort. So a solo run gets no agent tools, and swarm peers think at the run's effort.
+
+    A swarm also enables the agent message board. Codex reads `tool_mode` from this
+    catalog and, when it is null, falls back to Direct mode, which sends the board
+    tools as `collaboration.*` functions. Backends reject those names. `code_mode_only`
+    leaves the model with `exec`, and the board tools are called from inside it. An
+    explicit catalog value is left alone. Solo runs do not use the board.
     """
     out = subprocess.run(["codex", "debug", "models"], check=True, capture_output=True, text=True)
     catalog = json.loads(out.stdout)
@@ -148,6 +154,8 @@ def write_model_catalog(path: Path, model: str, effort: str, solo: bool) -> None
             entry["multi_agent_version"] = None
         elif entry.get("slug") == model:
             entry["multi_agent_reasoning_effort"] = effort
+            if entry.get("tool_mode") is None:
+                entry["tool_mode"] = "code_mode_only"
     path.write_text(json.dumps(catalog, indent=2) + "\n")
 
 

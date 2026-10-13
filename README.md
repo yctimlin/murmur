@@ -149,6 +149,12 @@ strict isolation, run murmur as a separate OS user.
   `--solo`, murmur writes a per-run model catalog with `multi_agent_version` cleared.
 - **Sub-agents run at the catalog's `multi_agent_reasoning_effort`** (`xhigh` for `gpt-6-astra`),
   not at the session's. The per-run catalog pins it to `--effort`.
+- **A null catalog `tool_mode` makes the message board fail.** Codex then sends
+  `collaboration.create_channel` and the other board tools as namespaced functions, and the
+  backend rejects them (`Function 'collaboration.create_channel' is not allowed in reserved
+  namespace 'collaboration'`). For a swarm, murmur sets that model's `tool_mode` to
+  `code_mode_only` when the catalog left it unset, so the model calls the board through `exec`.
+  An explicit value is kept. Solo runs do not use the board, so their catalog is left alone.
 - **Multi-Agent V2 allows 4 threads per session, counting the root**, so a fourth peer fails to
   spawn. murmur raises the limit to peers + 1.
 - Sessions start in the workspace's `work/` directory, which is not a repository. That needs
