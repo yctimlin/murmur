@@ -25,8 +25,16 @@ fetch the result into the user's repo as a branch.
 ```bash
 murmur --help                  # installed? if not: uv tool install --editable <murmur repo>
 codex --version                # needs 0.162 or later (built-in message board)
-codex login status
+codex login status             # see the note below for custom providers
 ```
+
+`codex login status` only knows about OpenAI auth. With a custom `model_provider` that sets
+`requires_openai_auth = false` it prints "Not logged in" even when everything works. In that case
+check the provider with one real request instead:
+`codex exec --ephemeral --skip-git-repo-check 'Reply with OK'`.
+
+Agent commits are authored as `<id> <<id>@murmur.local>` (for example `a4@murmur.local`). That is
+expected: rewrite the author when you bring the result into the real repository if it matters.
 
 ## 1. Write the brief
 
