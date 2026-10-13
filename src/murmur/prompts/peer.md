@@ -19,6 +19,9 @@ fixtures for each state it can be in, and a script that captures it in those sta
 that matter. Whoever claims it posts how to use it. When you learn something the others would
 otherwise have to rediscover, post it as a `FACT`.
 
+Size the process to the objective. If one agent could do the whole objective in about the time a
+draft takes, skip the separate drafts below: agree a split on the board and build it directly.
+
 Explore before you commit to a design. You are the same model with the same brief, so your first
 ideas are alike, and the first one posted would anchor everyone. For the parts that decide how good
 the result is, each of you claims a direction on the board that differs in substance from those

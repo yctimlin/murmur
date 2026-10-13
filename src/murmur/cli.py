@@ -559,6 +559,8 @@ def codex_command(ws: Path, meta: dict, injected: dict) -> list[str]:
         "-c", f"model_reasoning_effort={toml_value(meta['effort'])}",
         "-c", 'model_reasoning_summary="auto"',
         "--disable", "memories",
+        # Agents have no credentials for apps, and each fresh CODEX_HOME syncs ~100 MB of plugins.
+        "--disable", "plugins", "--disable", "apps",
         "--sandbox", "workspace-write",
         "-c", 'approval_policy="never"',
         "-c", "sandbox_workspace_write.network_access=true",
