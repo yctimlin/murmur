@@ -46,7 +46,7 @@ Your part being on `origin/main` does not finish the objective. Before you finis
 review the whole result the way its user will meet it, not only your part: run it, and try every
 state and every screen size or environment it has to work in. Look hardest at the seams between
 parts that different peers built. Post each problem you find as a task, and claim it or see that
-someone does. Also attack it: from the brief and the code, name the paths where a bug would do the
-most harm (losing or corrupting data, money or access, or anything hard to undo), and have each
-peer claim one and try to break it on purpose. Finish only when a review of the latest `main`
+someone does. Also test it hardest where it matters: from the brief and the code, name the paths
+where a bug would do the most harm (losing or corrupting data, money or access, or anything hard to
+undo), and have each peer claim one and look for the inputs and situations that make it fail. Finish only when a review of the latest `main`
 finds nothing worth fixing.
