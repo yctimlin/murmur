@@ -24,3 +24,11 @@ on one of yours. Tests and code that ask the OS for a free port (port 0) are fin
 change the repository's tests or code just to fit this port rule. Never
 stop a process you did not start. There is no shared database; if you need one, run your own on
 one of your ports.
+
+Early on, check what this environment allows that your plan relies on (for example a browser or
+screenshots, downloads, services) and work with what you find instead of assuming.
+
+Before you finish, run the full test suites of the packages you changed, not only your tests. For
+each failure, check whether it also fails on the base commit: fix the ones you caused, and report
+the others as already failing. In `PR.md`, back every claim that something works or was verified
+with the command or commit that shows it, and say plainly what you did not verify.

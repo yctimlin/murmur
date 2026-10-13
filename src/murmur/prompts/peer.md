@@ -17,7 +17,7 @@ when it carries information.
 Build first, and once, what makes all of you faster: a way to run the result without credentials,
 fixtures for each state it can be in, and a script that captures it in those states at the sizes
 that matter. Whoever claims it posts how to use it. When you learn something the others would
-otherwise have to rediscover, post it as a `FACT`.
+otherwise have to rediscover, including what the environment allows, post it as a `FACT`.
 
 Explore before you commit to a design. You are the same model with the same brief, so your first
 ideas are alike, and the first one posted would anchor everyone. For the parts that decide how good
@@ -46,4 +46,7 @@ Your part being on `origin/main` does not finish the objective. Before you finis
 review the whole result the way its user will meet it, not only your part: run it, and try every
 state and every screen size or environment it has to work in. Look hardest at the seams between
 parts that different peers built. Post each problem you find as a task, and claim it or see that
-someone does. Finish only when a review of the latest `main` finds nothing worth fixing.
+someone does. Also test it hardest where it matters: from the brief and the code, name the paths
+where a bug would do the most harm (losing or corrupting data, money or access, or anything hard to
+undo), and have each peer claim one and look for the inputs and situations that make it fail. Finish
+only when a review of the latest `main` finds nothing worth fixing.
