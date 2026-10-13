@@ -84,6 +84,9 @@ def seconds(duration: str) -> int:
         fail(f"bad duration {duration!r} (use e.g. 45m or 3h)")
     return int(match[1]) * {"s": 1, "m": 60, "h": 3600}[match[2]]
 
+# Codex caps `features.multi_agent_v2.max_wait_timeout_ms` at one hour.
+ROOT_WAIT_MS = 3_600_000
+
 
 def git(*args: str, cwd: Path | None = None, env: dict | None = None) -> str:
     result = subprocess.run(
@@ -484,6 +487,11 @@ def setup(args: argparse.Namespace) -> None:
         git("config", "receive.denyDeletes", "true", cwd=origin, env=isolated)
         git("config", "core.logAllRefUpdates", "always", cwd=origin, env=isolated)
         git("fetch", "-q", "--no-tags", str(repo), f"{base}:refs/heads/main", cwd=origin, env=isolated)
+        # Tags reachable from base, so `git describe` and version tooling work in clones.
+        tags = git("tag", "--merged", base, cwd=repo, env=isolated).split()
+        if tags:
+            git("fetch", "-q", "--no-tags", str(repo), *(f"refs/tags/{t}:refs/tags/{t}" for t in tags),
+                cwd=origin, env=isolated)
         if not brief_file.is_file():
             fail(f"brief not found: {brief_file}")
         brief = brief_file.read_text().strip()
@@ -512,7 +520,7 @@ def setup(args: argparse.Namespace) -> None:
                 for agent in agents
             )
             (ws / "prompts" / "root.md").write_text(
-                render("root.md", n=str(len(ids)), spawns=spawns) + "\n"
+                render("root.md", n=str(len(ids)), spawns=spawns, wait_ms=str(ROOT_WAIT_MS)) + "\n"
             )
         meta = {
             "run_id": run_id,
@@ -564,7 +572,13 @@ def codex_command(ws: Path, meta: dict, injected: dict) -> list[str]:
     else:
         # V2 allows 4 threads per session by default, counting the root, so a fourth peer
         # would fail with "agent thread limit reached". Make room for the root plus every peer.
-        threads = {"enabled": True, "max_concurrent_threads_per_session": meta["peers"] + 1}
+        # The root only waits; let one wait last up to ROOT_WAIT_MS (Codex's hard ceiling)
+        # instead of the shorter default ceiling, so it makes few calls.
+        threads = {
+            "enabled": True,
+            "max_concurrent_threads_per_session": meta["peers"] + 1,
+            "max_wait_timeout_ms": ROOT_WAIT_MS,
+        }
         cmd += ["-c", f"features.multi_agent_v2={toml_value(threads)}"]
         cmd += ["--enable", "agent_message_board"]
     return [*cmd, "-"]
