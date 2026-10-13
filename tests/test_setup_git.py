@@ -36,3 +36,19 @@ def test_prompts_render_with_fixes(tmp_path: Path):
     assert "$MURMUR_AGENT" in peer
     root = render("root.md", n="2", spawns="-", wait_ms=str(ROOT_WAIT_MS))
     assert str(ROOT_WAIT_MS) in root
+
+
+def test_plain_folder_is_snapshotted_and_left_untouched(tmp_path: Path):
+    folder = tmp_path / "docs"
+    folder.mkdir()
+    (folder / "notes.md").write_text("hello\n")
+    brief = tmp_path / "brief.md"
+    brief.write_text("Do the thing.\n")
+    result = run_cli(
+        "setup", str(brief), "--repo", str(folder), "--into", str(tmp_path / "runs"),
+        "--id", "run1", "--cap", "30s", "--solo",
+    )
+    assert result.returncode == 0, result.stderr
+    workspace = Path(result.stdout.strip().splitlines()[-1])
+    assert (workspace / "work" / "repo" / "notes.md").read_text() == "hello\n"
+    assert not (folder / ".git").exists() and not (workspace / "input").exists()

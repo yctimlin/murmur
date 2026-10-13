@@ -447,6 +447,27 @@ def _prepare_clones(ws: Path, origin: Path, options: dict, run_id: str, ids: lis
     return agents, "cow"
 
 
+def in_git_repo(path: Path) -> bool:
+    found = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"], cwd=path if path.is_dir() else path.parent,
+        capture_output=True, text=True, check=False,
+    )
+    return found.returncode == 0
+
+
+def snapshot_folder(folder: Path, dest: Path, env: dict) -> tuple[Path, str]:
+    """Wrap a plain folder in a one-commit git repo, so agents get the usual workflow.
+
+    The folder itself is never written to; results are copied out from origin.git.
+    """
+    shutil.copytree(folder, dest, symlinks=True)
+    git("init", "-q", str(dest), env=env)
+    git("add", "-A", cwd=dest, env=env)
+    git("-c", "user.name=murmur", "-c", "user.email=murmur@murmur.local",
+        "commit", "-q", "--allow-empty", "-m", f"Snapshot of {folder}", cwd=dest, env=env)
+    return dest, git("rev-parse", "HEAD", cwd=dest, env=env)
+
+
 def setup(args: argparse.Namespace) -> None:
     if not shutil.which("codex"):
         fail("the `codex` CLI is not on PATH")
@@ -454,10 +475,13 @@ def setup(args: argparse.Namespace) -> None:
     solo = options["peers"] == 1
     brief_file = Path(options["brief"]).expanduser().resolve()
     start = Path(options.get("repo") or ".").expanduser().resolve()
-    repo = Path(git("rev-parse", "--show-toplevel", cwd=start))
+    folder = None if in_git_repo(start) else start
+    if folder is not None and (not folder.is_dir() or options.get("base")):
+        fail(f"{start} is not a git repository" + (" (--base needs one)" if folder.is_dir() else ""))
+    repo = start if folder else Path(git("rev-parse", "--show-toplevel", cwd=start))
     base_ref = options.get("base") or "HEAD"
-    base = git("rev-parse", "--verify", f"{base_ref}^{{commit}}", cwd=repo)
-    if base_ref == "HEAD" and git("status", "--porcelain", cwd=repo):
+    base = "" if folder else git("rev-parse", "--verify", f"{base_ref}^{{commit}}", cwd=repo)
+    if not folder and base_ref == "HEAD" and git("status", "--porcelain", cwd=repo):
         print(
             f"murmur: {repo} has uncommitted changes; agents start from {base[:10]} without them",
             file=sys.stderr,
@@ -481,6 +505,8 @@ def setup(args: argparse.Namespace) -> None:
         write_model_catalog(home / "models.json", options["model"], options["effort"], solo)
         write_codex_home(home, work, home / "models.json")
         isolated = git_env(ws)
+        if folder:
+            repo, base = snapshot_folder(folder, ws / "input", isolated)
         origin = work / "origin.git"
         git("init", "-q", "--bare", str(origin), env=isolated)
         git("config", "receive.denyNonFastForwards", "true", cwd=origin, env=isolated)
@@ -492,6 +518,8 @@ def setup(args: argparse.Namespace) -> None:
         if tags:
             git("fetch", "-q", "--no-tags", str(repo), *(f"refs/tags/{t}:refs/tags/{t}" for t in tags),
                 cwd=origin, env=isolated)
+        if folder:
+            shutil.rmtree(repo)  # origin.git holds the snapshot now; do not keep a second copy
         if not brief_file.is_file():
             fail(f"brief not found: {brief_file}")
         brief = brief_file.read_text().strip()
@@ -528,6 +556,7 @@ def setup(args: argparse.Namespace) -> None:
             "peers": len(ids),
             "brief": str(brief_file),
             "repo": str(repo),
+            "folder": str(folder) if folder else None,
             "base": base,
             "model": options["model"],
             "effort": options["effort"],
@@ -659,7 +688,10 @@ def run(args: argparse.Namespace) -> None:
         if exit_code != EXIT_OK:
             print(f"murmur: {diagnostic}", file=sys.stderr)
             print(f"murmur: log: {log_err}", file=sys.stderr)
-        if origin.exists():
+        if origin.exists() and meta.get("folder"):
+            out = f"{meta['folder']}.murmur-{ws.name}"
+            print(f"copy it out: mkdir {out} && git -C {origin} archive main | tar -x -C {out}")
+        elif origin.exists():
             print(f"review it: git -C {meta['repo']} fetch {origin} main:murmur/{ws.name}")
         raise SystemExit(exit_code)
     except KeyboardInterrupt:
