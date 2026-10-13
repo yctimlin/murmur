@@ -48,5 +48,5 @@ state and every screen size or environment it has to work in. Look hardest at th
 parts that different peers built. Post each problem you find as a task, and claim it or see that
 someone does. Also test it hardest where it matters: from the brief and the code, name the paths
 where a bug would do the most harm (losing or corrupting data, money or access, or anything hard to
-undo), and have each peer claim one and look for the inputs and situations that make it fail. Finish only when a review of the latest `main`
-finds nothing worth fixing.
+undo), and have each peer claim one and look for the inputs and situations that make it fail. Finish
+only when a review of the latest `main` finds nothing worth fixing.
