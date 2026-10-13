@@ -496,6 +496,10 @@ def snapshot_folder(folder: Path, dest: Path, env: dict, max_mb: float) -> tuple
     return dest, git("rev-parse", "HEAD", cwd=dest, env=env)
 
 
+# Agents keep scratch notes here (closing.md); they are not part of the result.
+SCRATCH = ".work/"
+
+
 def export(args: argparse.Namespace) -> None:
     """Copy a folder run's result out: into a new folder (default), or back into the source."""
     ws = Path(args.workspace).expanduser().resolve()
@@ -524,11 +528,12 @@ def export(args: argparse.Namespace) -> None:
             fail(f"{out} already exists")
         out.mkdir(parents=True)
         files = git("ls-tree", "-r", "-z", "--name-only", "main", cwd=origin, env=env).split("\0")
-        for path in filter(None, files):
+        files = [path for path in files if path and not path.startswith(SCRATCH)]
+        for path in files:
             dest = out / path
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_bytes(real(path, "main") or b"")
-        print(f"murmur: wrote {len(list(filter(None, files)))} file(s) to {out}")
+        print(f"murmur: wrote {len(files)} file(s) to {out}")
         return
     if folder is None:
         fail("--apply needs a run started from a plain folder; for a repo, fetch main instead")
@@ -536,6 +541,8 @@ def export(args: argparse.Namespace) -> None:
                   cwd=origin, env=env).split("\0")
     applied, conflicts = [], []
     for status, path in zip(changes[0::2], changes[1::2]):
+        if path.startswith(SCRATCH):
+            continue
         target = folder / path
         current = target.read_bytes() if target.is_file() else None
         if current != real(path, meta["base"]):

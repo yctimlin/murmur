@@ -72,6 +72,8 @@ def _folder_run(tmp_path: Path, max_mb: str = "50") -> tuple[Path, Path, Path]:
     (clone / "a.md").write_text("a by agent\n")
     (clone / "b.md").write_text("b by agent\n")
     (clone / "new.md").write_text("new\n")
+    (clone / ".work").mkdir()
+    (clone / ".work" / "notes.md").write_text("scratch\n")
     git(clone, "add", "-A")
     git(clone, "commit", "-q", "-m", "work")
     git(clone, "push", "-q", "origin", "HEAD:main")
@@ -86,6 +88,7 @@ def test_large_files_are_linked_not_committed(tmp_path: Path):
     assert run_cli("export", str(ws), "--to", str(out)).returncode == 0
     assert (out / "big.bin").read_bytes() == b"x" * 2_000_000 and not (out / "big.bin").is_symlink()
     assert (out / "new.md").read_text() == "new\n"
+    assert not (out / ".work").exists()
 
 
 def test_apply_keeps_user_edits_made_during_the_run(tmp_path: Path):
@@ -98,3 +101,4 @@ def test_apply_keeps_user_edits_made_during_the_run(tmp_path: Path):
     assert (folder / "b.md").read_text() == "b by user\n"
     assert (folder / "b.md.murmur-run1").read_text() == "b by agent\n"
     assert "b.md" in result.stderr
+    assert not (folder / ".work").exists()
