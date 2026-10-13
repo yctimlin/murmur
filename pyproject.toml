@@ -1,10 +1,13 @@
 [project]
 name = "murmur-swarm"
-version = "0.1.0"
+version = "0.1.1"
 description = "Run a leaderless swarm of Codex agents on one objective"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
 
 [project.scripts]
 murmur = "murmur.cli:main"
@@ -15,3 +18,10 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/murmur"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src/murmur" = "murmur"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

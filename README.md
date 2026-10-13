@@ -31,8 +31,9 @@ flowchart TB
 ```
 
 `murmur setup` copies one commit of your repo into a bare `origin.git` and makes a clone per agent.
-It runs your setup commands in each clone, then renders a prompt per agent: your brief, shared
-rules, and that agent's identity and port range.
+It runs your setup commands once in the first clone, then copy-on-write copies that tree for the
+other agents. It renders a prompt per agent: your brief, shared rules, and that agent's identity
+and port range.
 
 `murmur run` starts one `codex exec` session. Its root only spawns the peers through Codex's
 Multi-Agent V2 tools and waits for them. The peers work in four moves:
@@ -49,7 +50,9 @@ Multi-Agent V2 tools and waits for them. The peers work in four moves:
    channel) and push to `main`. Each peer ends its turn only after reviewing the integrated
    `main` and finding nothing worth fixing.
 
-The run ends when no peer is running, or at the time cap.
+The run ends when no peer is running, or at the time cap. On the way out, including success,
+failure, the cap, and interruption, murmur signals the Codex process group: `SIGTERM`, then
+`SIGKILL` if any member is still alive.
 
 `murmur setup --solo` builds the same isolated workspace for a single agent, as a baseline.
 
@@ -65,6 +68,7 @@ uv tool install --editable .   # or: pipx install .
 
 ```text
 murmur setup BRIEF [--repo DIR] [--base REF] [--peers N | --solo] [--setup CMD]...
+                   [--setup-per-agent]
                    [--model M] [--effort E] [--cap 3h] [--port-base N]
                    [--into DIR] [--id ID] [--config FILE]
 murmur run WORKSPACE
@@ -76,22 +80,62 @@ murmur run WORKSPACE
 | `--repo` | current repo | Agents start from one commit; uncommitted changes are not included |
 | `--base` | `HEAD` | Commit or ref to start from |
 | `--peers` / `--solo` | 4 peers | Two peers are often as good as four |
-| `--setup` | none | Shell command run in every clone before the clock starts (repeatable) |
+| `--setup` | none | Shell command run once, in the first clone, before the clock starts (repeatable) |
+| `--setup-per-agent` | off | Run `--setup` in every clone. Use this when the install embeds absolute paths |
 | `--cap` | `3h` | Hard time limit, e.g. `90m` |
-| `--port-base` | `40000` | Each agent gets 100 ports, in its prompt and as `PORT_BASE` |
-| `--config` | none | TOML with any of the above (`repo`, `brief`, `base`, `peers`, `setup`, `cap`, …), plus `agent_env` templates. Flags override it. |
+| `--port-base` | `40000` | Each agent gets 100 ports. Shells started in its clone export `PORT_BASE` |
+| `--config` | none | TOML with any of the above, plus `setup_per_agent` and `agent_env` templates (`$agent`, `$index`, `$port_base`, `$run`). Flags override it. |
 
-`murmur run` prints how long the run took, how many commits it made, and the `git fetch` command
-for the result. `PR.md` at the root of the result is the agents' summary.
+`murmur run` prints how long the run took, how many commits it made, and the `git fetch` command.
+A non-zero exit also prints a short diagnostic and the log path (`logs/session.err`). `PR.md` at
+the root of the result is the agents' summary.
+
+| Code | Meaning |
+|------|---------|
+| 0 | Codex exited 0 |
+| 1 | Codex exited non-zero |
+| 3 | Launcher error (bad arguments, setup failed, workspace already run or missing) |
+| 124 | The time cap was reached |
+| 130 | Interrupted (`SIGINT` / `SIGTERM` / `SIGHUP`) |
+
+Argparse usage errors still exit 2, so the time cap does not use that code. The fetch command is
+printed whenever `origin.git` exists.
+
+### Copy-on-write setup
+
+Setup runs in the first clone, then copies that tree:
+
+- macOS: `cp -c -R` (APFS clonefile)
+- Linux: `cp --reflink=always -R` (btrfs or xfs)
+
+The copy is never retried as a plain `cp`. If reflink fails, murmur deletes the partial tree,
+keeps the first clone, and runs setup in the remaining clones in parallel. Each copy's git
+identity, origin URL, and config values that still point at the first clone are rewritten.
+
+That rewrite does not cover the installed tree. Copied clones can keep absolute paths to the
+first clone, for example pnpm shims that hard-code `NODE_PATH` to `a1`'s `node_modules`. Use
+`--setup-per-agent` when the install embeds absolute paths (virtualenvs, node shebangs, compiled
+prefixes).
+
+Shared setup does not receive per-agent `PORT_BASE` or `agent_env`, so those values are not baked
+into a tree that is then copied. `ZDOTDIR` points at `<workspace>/zdot`, whose `.zshenv` loads
+`<clone>/.murmur/env.sh` when the shell's physical path (`pwd -P`) is inside that clone. Commands
+that start outside the clone, such as in `work/`, do not get those values. The prompt tells each
+agent to export them there. `HOME` is unchanged.
+
+Setup inherits the environment you launched murmur with, including your pnpm store, so a later
+run can reuse packages already downloaded. The run does not point pnpm at a store outside `work/`.
+Inside the sandbox, pnpm falls back to a store inside the project.
 
 ## Isolation
 
 - Each agent works in its own clone; the only remote is the workspace's `origin.git`.
   Force-pushes and branch deletions are refused.
-- Agents have network access but cannot reach GitHub: an isolated git config with no credential
-  helper rewrites GitHub URLs to a dead path, and `gh` has no login.
-- Agent shells start from a minimal environment and an empty `ZDOTDIR`, so API keys exported by
-  your shell dotfiles are not visible.
+- Agents have network access. GitHub git URLs (`https://github.com/`, `git@github.com:`,
+  `ssh://git@github.com/`) are rewritten to a dead path, and `gh` has an empty config directory.
+  That is not a network block: `curl https://github.com` can succeed.
+- Agent shells use Codex's core environment. `ZDOTDIR` is `<workspace>/zdot`, so zsh does not read
+  your dotfiles. `HOME` stays your home directory.
 - Each run gets its own `CODEX_HOME` with only your model provider and auth: no plugins, memories,
   personal instructions or past sessions.
 
@@ -105,6 +149,12 @@ strict isolation, run murmur as a separate OS user.
   `--solo`, murmur writes a per-run model catalog with `multi_agent_version` cleared.
 - **Sub-agents run at the catalog's `multi_agent_reasoning_effort`** (`xhigh` for `gpt-6-astra`),
   not at the session's. The per-run catalog pins it to `--effort`.
+- **A null catalog `tool_mode` makes the message board fail.** Codex then sends
+  `collaboration.create_channel` and the other board tools as namespaced functions, and the
+  backend rejects them (`Function 'collaboration.create_channel' is not allowed in reserved
+  namespace 'collaboration'`). For a swarm, murmur sets that model's `tool_mode` to
+  `code_mode_only` when the catalog left it unset, so the model calls the board through `exec`.
+  An explicit value is kept. Solo runs do not use the board, so their catalog is left alone.
 - **Multi-Agent V2 allows 4 threads per session, counting the root**, so a fourth peer fails to
   spawn. murmur raises the limit to peers + 1.
 - Sessions start in the workspace's `work/` directory, which is not a repository. That needs
@@ -124,6 +174,18 @@ agent, the same model and brief.
 
 The swarm was 2.6× faster; the single agent's result was narrowly better. One run each is a
 first read, not a conclusion.
+
+## Tests
+
+Tests use a fake `codex` executable and temporary git repositories. They do not call a model.
+
+```bash
+python -m pip install -e ".[test]"
+pytest
+```
+
+Continuous integration builds the wheel on Linux and macOS, installs it in a clean virtualenv,
+checks the `murmur` entry point and the packaged prompts, then runs the same suite.
 
 ## Status
 

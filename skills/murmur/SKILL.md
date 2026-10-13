@@ -51,9 +51,17 @@ murmur setup brief.md --repo <repo> --peers 4 \
 
 - The agents start from `HEAD` (or `--base <ref>`). Uncommitted changes are not included; murmur
   warns when there are some.
-- `--setup` runs in every clone before the clock starts. Use it for dependencies and placeholder
-  env files. Never pass secrets.
+- `--setup` runs once in the first clone. The other clones are copy-on-write copies of that tree
+  (`cp -c -R` on macOS, `cp --reflink=always -R` on Linux). If the copy fails, murmur keeps the
+  first clone and runs setup in the remaining clones in parallel. It does not fall back to a plain
+  copy. Copied clones can keep absolute paths into the first clone, such as pnpm shims that
+  hard-code `NODE_PATH` to `a1`'s `node_modules`. Pass `--setup-per-agent` when the install embeds
+  absolute paths (virtualenvs, node shebangs).
+- Setup uses the environment you launched murmur with, including your pnpm store. Never pass secrets.
 - `--peers 2` is often as good as 4. `--cap` defaults to `3h`.
+- Each agent's `PORT_BASE` is exported for zsh started in its clone. Commands that start outside
+  the clone, such as in `work/`, do not export it; the prompt tells the agent to export it there.
+  You do not paste it into the setup command. `HOME` is not changed.
 - The last line of the output is the workspace path, under `~/.murmur/runs/<id>`.
 
 ## 3. Run and watch
@@ -73,8 +81,12 @@ Check progress every few minutes, and give the user a one-line update after each
 It shows elapsed time, `spawned N/N peers`, each agent's last activity and tokens, the latest
 board posts and new commits on `origin/main`.
 
+- `murmur run` exits 0 when Codex exits 0. Exit 1 is a Codex failure, 124 is the time cap, 3 is a
+  launcher error, and 130 means the run was interrupted. Exit 2 is argparse's usage error. A
+  non-zero exit still prints the fetch command and the log path.
 - If `spawned` is below N, stop the run: the peers would be working short-handed.
-- To stop a run, stop the background task. murmur shuts Codex down and records `interrupted`.
+- To stop a run, stop the background task. murmur signals the Codex process group and records
+  `interrupted`.
 
 ## 4. Bring the result back
 
@@ -115,8 +127,9 @@ that touch paths outside the workspace, credential files, `~/.codex` or GitHub.
 ## Safety model
 
 - Each agent works in its own clone; the only remote is the workspace's `origin.git`.
-- GitHub is unreachable from agent shells: a git config rewrites GitHub URLs, `gh` has no login,
-  and shells start from a minimal environment with an empty `ZDOTDIR`, so no keys from dotfiles.
+- GitHub git URLs are rewritten to a dead path and `gh` is not logged in. That is not a network
+  block. `ZDOTDIR` is `<workspace>/zdot` (only murmur's `.zshenv`), so zsh does not read your
+  dotfiles. `HOME` is the user's home. During a run, pnpm is not pointed at a store outside `work/`.
 - Each run has its own `CODEX_HOME` with only the model provider and auth: no plugins, memories or
   past sessions.
 - This guards against accidents, not a determined agent: the Codex sandbox can still read the
