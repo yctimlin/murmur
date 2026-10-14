@@ -255,3 +255,31 @@ def test_runtime_shell_exports_each_agents_port_without_moving_home(tmp_path, mo
             assert port == agent["env"]["PORT_BASE"]
             assert seen_home == home
             assert seen_home != str(workspace / "home")
+
+
+def test_sync_script_rebases_and_pushes(tmp_path):
+    import subprocess
+    from murmur.cli import write_env_sh
+    origin = tmp_path / "o.git"
+    subprocess.run(["git", "init", "-q", "--bare", "-b", "main", str(origin)], check=True)
+    seed = tmp_path / "seed"
+    subprocess.run(["git", "init", "-q", "-b", "main", str(seed)], check=True)
+    subprocess.run(["git", "-C", str(seed), "-c", "user.name=s", "-c", "user.email=s@e", "commit",
+                    "-q", "--allow-empty", "-m", "init"], check=True)
+    subprocess.run(["git", "-C", str(seed), "push", "-q", str(origin), "main"], check=True)
+    clones = []
+    for name in ("x", "y"):
+        c = tmp_path / name
+        subprocess.run(["git", "clone", "-q", str(origin), str(c)], check=True, capture_output=True)
+        for k, v in (("user.name", name), ("user.email", f"{name}@e")):
+            subprocess.run(["git", "-C", str(c), "config", k, v], check=True)
+        write_env_sh(c, {})
+        clones.append(c)
+    for c in clones:
+        (c / f"{c.name}.txt").write_text(c.name)
+        subprocess.run(["git", "-C", str(c), "add", f"{c.name}.txt"], check=True)
+        subprocess.run(["git", "-C", str(c), "commit", "-qm", c.name], check=True)
+        subprocess.run([str(c / ".murmur" / "sync")], cwd=c, check=True, capture_output=True)
+    log = subprocess.run(["git", "-C", str(origin), "log", "--format=%s", "main"],
+                         check=True, capture_output=True, text=True).stdout.split()
+    assert log == ["y", "x", "init"]
