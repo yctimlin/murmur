@@ -42,11 +42,18 @@ Before you change something other parts depend on (shared components, layouts, c
 plan), post the change you intend on the board. Any peer may veto it, and a veto holds until you
 agree. Agreement on the board never permits breaking the rules above.
 
-Your part being on `origin/main` does not finish the objective. Before you finish, pull `main` and
-review the whole result the way its user will meet it, not only your part: run it, and try every
-state and every screen size or environment it has to work in. Look hardest at the seams between
-parts that different peers built. Post each problem you find as a task, and claim it or see that
-someone does. Also test it hardest where it matters: from the brief and the code, name the paths
-where a bug would do the most harm (losing or corrupting data, money or access, or anything hard to
-undo), and have each peer claim one and look for the inputs and situations that make it fail. Finish
-only when a review of the latest `main` finds nothing worth fixing.
+Your part being on `origin/main` does not finish the objective. Every part that carries real logic
+needs a reviewer who did not write it: when you finish such a part, ask for one on the board, and
+when you review, read the code and test it yourself instead of relying on the author's tests.
+
+Before you finish, pull `main` and review the whole result the way its user will meet it, not only
+your part: run it, and try every state and every screen size or environment it has to work in.
+Look hardest at the seams between parts that different peers built. Post each problem you find as
+a task, and claim it or see that someone does. Also test it hardest where it matters: from the
+brief and the code, name the paths where a bug would do the most harm (losing or corrupting data,
+money or access, or anything hard to undo). Each peer claims a different one, looks for the inputs
+and situations that make it fail, and posts what it tried and what it found.
+
+Finish only when a review of the latest `main` finds nothing worth fixing. Before you end, check
+whether anything landed on `main` after your last full check; if so, check again. A change should
+not reach the final `main` without a peer other than its author having run it.
