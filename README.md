@@ -70,14 +70,16 @@ uv tool install --editable .   # or: pipx install .
 murmur setup BRIEF [--repo DIR] [--base REF] [--peers N | --solo] [--setup CMD]...
                    [--setup-per-agent]
                    [--model M] [--effort E] [--cap 3h] [--port-base N]
-                   [--into DIR] [--id ID] [--config FILE]
+                   [--into DIR] [--id ID] [--config FILE] [--max-file-mb N]
 murmur run WORKSPACE
+murmur export WORKSPACE [--to DIR | --apply]
 ```
 
 | Option | Default | Notes |
 |--------|---------|-------|
 | `BRIEF` | — | Markdown with the objective. The agents cannot ask questions; they record their decisions in `PR.md`. |
-| `--repo` | current repo | Agents start from one commit; uncommitted changes are not included |
+| `--repo` | current repo | Agents start from one commit; uncommitted changes are not included. A plain folder also works (see below) |
+| `--max-file-mb` | see `--help` | Plain-folder input only: larger files are shared read-only links instead of git content |
 | `--base` | `HEAD` | Commit or ref to start from |
 | `--peers` / `--solo` | 4 peers | Two peers are often as good as four |
 | `--setup` | none | Shell command run once, in the first clone, before the clock starts (repeatable) |
@@ -100,6 +102,17 @@ the root of the result is the agents' summary.
 
 Argparse usage errors still exit 2, so the time cap does not use that code. The fetch command is
 printed whenever `origin.git` exists.
+
+### Plain-folder input
+
+`--repo` may be a folder that is not a git repository. murmur snapshots it into the run's
+private repository and never writes to the folder. Files over `--max-file-mb` are not committed:
+each clone gets a read-only link to the original, so large data costs no copy time or disk.
+
+`murmur export WORKSPACE` writes the result to a new folder (`--to DIR`, default
+`<folder>.murmur-<id>`). `--apply` writes the changes into the source folder instead; a file you
+edited during the run is kept, and the agents' version is written beside it. The agents' `.work/`
+scratch is left out.
 
 ### Copy-on-write setup
 
