@@ -53,6 +53,7 @@ DEFAULTS = {
     "setup": [],
     "setup_per_agent": False,
     "agent_env": {},
+    "max_file_mb": 50,
 }
 
 # Agents get network access but no way to reach GitHub through git: no credential
@@ -288,6 +289,7 @@ def resolve_options(args: argparse.Namespace) -> dict:
         "effort": args.effort,
         "cap": args.cap,
         "port_base": args.port_base,
+        "max_file_mb": getattr(args, "max_file_mb", None),
         "setup": args.setup or None,
     }
     options |= {key: value for key, value in flags.items() if value is not None}
@@ -447,6 +449,123 @@ def _prepare_clones(ws: Path, origin: Path, options: dict, run_id: str, ids: lis
     return agents, "cow"
 
 
+def in_git_repo(path: Path) -> bool:
+    found = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"], cwd=path if path.is_dir() else path.parent,
+        capture_output=True, text=True, check=False,
+    )
+    return found.returncode == 0
+
+
+def snapshot_folder(folder: Path, dest: Path, env: dict, max_mb: float) -> tuple[Path, str]:
+    """Wrap a plain folder in a one-commit git repo, so agents get the usual workflow.
+
+    The folder itself is never written to; `murmur export` copies results out. Files over
+    `max_mb` stay out of git: one read-only copy goes to `shared/` next to `work/` and the
+    snapshot commits a symlink to it, so every clone sees the file without another copy.
+    """
+    shared = dest.parent / "shared"
+    limit = max_mb * 1024 * 1024
+    big: list[str] = []
+
+    def ignore(directory: str, names: list[str]) -> set[str]:
+        skipped = set()
+        for name in names:
+            path = Path(directory) / name
+            if path.is_file() and not path.is_symlink() and path.stat().st_size > limit:
+                rel = path.relative_to(folder)
+                target = shared / rel
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(path, target)
+                target.chmod(0o444)
+                big.append(str(rel))
+                skipped.add(name)
+        return skipped
+
+    shutil.copytree(folder, dest, symlinks=True, ignore=ignore)
+    for rel in big:
+        (dest / rel).symlink_to(shared / rel)
+    git("init", "-q", str(dest), env=env)
+    git("add", "-A", cwd=dest, env=env)
+    note = f" ({len(big)} large file(s) linked read-only from shared/)" if big else ""
+    git("-c", "user.name=murmur", "-c", "user.email=murmur@murmur.local",
+        "commit", "-q", "--allow-empty", "-m", f"Snapshot of {folder}{note}", cwd=dest, env=env)
+    if big:
+        print(f"murmur: kept {len(big)} file(s) over {max_mb:g} MB out of git: {', '.join(big)}",
+              file=sys.stderr)
+    return dest, git("rev-parse", "HEAD", cwd=dest, env=env)
+
+
+# Agents keep scratch notes here (closing.md); they are not part of the result.
+SCRATCH = ".work/"
+
+
+def export(args: argparse.Namespace) -> None:
+    """Copy a folder run's result out: into a new folder (default), or back into the source."""
+    ws = Path(args.workspace).expanduser().resolve()
+    meta = json.loads((ws / "murmur.json").read_text())
+    folder = Path(meta["folder"]) if meta.get("folder") else None
+    origin, shared = ws / "work" / "origin.git", ws / "work" / "shared"
+    env = git_env(ws)
+
+    def blob(rev: str, path: str) -> bytes | None:
+        got = subprocess.run(["git", "cat-file", "blob", f"{rev}:{path}"], cwd=origin, env=env,
+                             capture_output=True, check=False)
+        return got.stdout if got.returncode == 0 else None
+
+    def real(path: str, rev: str) -> bytes | None:
+        """File content at rev; a link into shared/ stands for the shared file."""
+        data = blob(rev, path)
+        if data is not None and data.startswith(str(shared).encode()):
+            target = Path(data.decode())
+            if target.is_file():
+                return target.read_bytes()
+        return data
+
+    if not args.apply:
+        out = Path(args.to or f"{folder or ws / 'result'}.murmur-{ws.name}").expanduser().resolve()
+        if out.exists():
+            fail(f"{out} already exists")
+        out.mkdir(parents=True)
+        files = git("ls-tree", "-r", "-z", "--name-only", "main", cwd=origin, env=env).split("\0")
+        files = [path for path in files if path and not path.startswith(SCRATCH)]
+        for path in files:
+            dest = out / path
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_bytes(real(path, "main") or b"")
+        print(f"murmur: wrote {len(files)} file(s) to {out}")
+        return
+    if folder is None:
+        fail("--apply needs a run started from a plain folder; for a repo, fetch main instead")
+    changes = git("diff", "--name-status", "--no-renames", "-z", meta["base"], "main",
+                  cwd=origin, env=env).split("\0")
+    applied, conflicts = [], []
+    for status, path in zip(changes[0::2], changes[1::2]):
+        if path.startswith(SCRATCH):
+            continue
+        target = folder / path
+        current = target.read_bytes() if target.is_file() else None
+        if current != real(path, meta["base"]):
+            # The user changed this file during the run: keep theirs, put ours beside it.
+            new = real(path, "main")
+            if new is not None:
+                Path(f"{target}.murmur-{ws.name}").write_bytes(new)
+            conflicts.append(path)
+            continue
+        if status == "D":
+            target.unlink(missing_ok=True)
+        else:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(real(path, "main") or b"")
+        applied.append(f"{status} {path}")
+    print(f"murmur: applied {len(applied)} change(s) to {folder}")
+    for line in applied:
+        print(f"  {line}")
+    if conflicts:
+        print(f"murmur: {len(conflicts)} file(s) changed in {folder} during the run; kept yours, "
+              f"wrote ours as <file>.murmur-{ws.name}: {', '.join(conflicts)}", file=sys.stderr)
+
+
 def setup(args: argparse.Namespace) -> None:
     if not shutil.which("codex"):
         fail("the `codex` CLI is not on PATH")
@@ -454,10 +573,13 @@ def setup(args: argparse.Namespace) -> None:
     solo = options["peers"] == 1
     brief_file = Path(options["brief"]).expanduser().resolve()
     start = Path(options.get("repo") or ".").expanduser().resolve()
-    repo = Path(git("rev-parse", "--show-toplevel", cwd=start))
+    folder = None if in_git_repo(start) else start
+    if folder is not None and (not folder.is_dir() or options.get("base")):
+        fail(f"{start} is not a git repository" + (" (--base needs one)" if folder.is_dir() else ""))
+    repo = start if folder else Path(git("rev-parse", "--show-toplevel", cwd=start))
     base_ref = options.get("base") or "HEAD"
-    base = git("rev-parse", "--verify", f"{base_ref}^{{commit}}", cwd=repo)
-    if base_ref == "HEAD" and git("status", "--porcelain", cwd=repo):
+    base = "" if folder else git("rev-parse", "--verify", f"{base_ref}^{{commit}}", cwd=repo)
+    if not folder and base_ref == "HEAD" and git("status", "--porcelain", cwd=repo):
         print(
             f"murmur: {repo} has uncommitted changes; agents start from {base[:10]} without them",
             file=sys.stderr,
@@ -481,6 +603,8 @@ def setup(args: argparse.Namespace) -> None:
         write_model_catalog(home / "models.json", options["model"], options["effort"], solo)
         write_codex_home(home, work, home / "models.json")
         isolated = git_env(ws)
+        if folder:
+            repo, base = snapshot_folder(folder, work / "input", isolated, options["max_file_mb"])
         origin = work / "origin.git"
         git("init", "-q", "--bare", str(origin), env=isolated)
         git("config", "receive.denyNonFastForwards", "true", cwd=origin, env=isolated)
@@ -492,6 +616,8 @@ def setup(args: argparse.Namespace) -> None:
         if tags:
             git("fetch", "-q", "--no-tags", str(repo), *(f"refs/tags/{t}:refs/tags/{t}" for t in tags),
                 cwd=origin, env=isolated)
+        if folder:
+            shutil.rmtree(repo)  # origin.git holds the snapshot now; do not keep a second copy
         if not brief_file.is_file():
             fail(f"brief not found: {brief_file}")
         brief = brief_file.read_text().strip()
@@ -528,6 +654,7 @@ def setup(args: argparse.Namespace) -> None:
             "peers": len(ids),
             "brief": str(brief_file),
             "repo": str(repo),
+            "folder": str(folder) if folder else None,
             "base": base,
             "model": options["model"],
             "effort": options["effort"],
@@ -659,7 +786,9 @@ def run(args: argparse.Namespace) -> None:
         if exit_code != EXIT_OK:
             print(f"murmur: {diagnostic}", file=sys.stderr)
             print(f"murmur: log: {log_err}", file=sys.stderr)
-        if origin.exists():
+        if origin.exists() and meta.get("folder"):
+            print(f"copy it out: murmur export {ws}   (or --apply to write the changes into {meta['folder']})")
+        elif origin.exists():
             print(f"review it: git -C {meta['repo']} fetch {origin} main:murmur/{ws.name}")
         raise SystemExit(exit_code)
     except KeyboardInterrupt:
@@ -697,11 +826,23 @@ def main() -> None:
     p_setup.add_argument("--port-base", type=int, help="first agent's port range (default: 40000)")
     p_setup.add_argument("--into", default="~/.murmur/runs", help="parent dir for workspaces")
     p_setup.add_argument("--id", help="workspace id (default: random)")
+    p_setup.add_argument("--max-file-mb", type=float,
+                         help="plain-folder input: files larger than this stay out of git and are "
+                              "linked read-only (default: 50)")
     p_setup.set_defaults(func=setup)
 
     p_run = commands.add_parser("run", help="run the Codex session for a workspace")
     p_run.add_argument("workspace")
     p_run.set_defaults(func=run)
+
+    p_export = commands.add_parser("export", help="copy a plain-folder run's result out")
+    p_export.add_argument("workspace")
+    where = p_export.add_mutually_exclusive_group()
+    where.add_argument("--to", help="new folder for the result (default: <folder>.murmur-<id>)")
+    where.add_argument("--apply", action="store_true",
+                       help="write the changes into the source folder; files you edited during "
+                            "the run are kept and ours are written beside them")
+    p_export.set_defaults(func=export)
 
     args = parser.parse_args()
     args.func(args)
