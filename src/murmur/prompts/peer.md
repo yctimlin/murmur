@@ -48,4 +48,6 @@ Your part being on `origin/main` does not finish the objective. Before you finis
 review the whole result the way its user will meet it, not only your part: run it, and try every
 state and every screen size or environment it has to work in. Look hardest at the seams between
 parts that different peers built. Post each problem you find as a task, and claim it or see that
-someone does. Finish only when a review of the latest `main` finds nothing worth fixing.
+someone does. Split this review by area on the board instead of each of you repeating all of
+it, and review what changed since your last review rather than starting over. Finish when the
+latest `main` has been reviewed this way and nothing worth fixing is left.
