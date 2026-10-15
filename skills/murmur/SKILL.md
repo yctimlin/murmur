@@ -36,6 +36,10 @@ check the provider with one real request instead:
 Agent commits are authored as `<id> <<id>@murmur.local>` (for example `a4@murmur.local`). That is
 expected: rewrite the author when you bring the result into the real repository if it matters.
 
+A plain folder (not a git repository) also works as `--repo`: murmur snapshots it into the
+run's private repository (honouring .gitignore), never writes to the folder, and at the end
+writes the result to a new sibling folder `<folder>.murmur-<id>`.
+
 ## 1. Write the brief
 
 The brief is the only thing the agents read about the task. Agents cannot ask questions, so:

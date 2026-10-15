@@ -70,14 +70,15 @@ uv tool install --editable .   # or: pipx install .
 murmur setup BRIEF [--repo DIR] [--base REF] [--peers N | --solo] [--setup CMD]...
                    [--setup-per-agent]
                    [--model M] [--effort E] [--cap 3h] [--port-base N]
-                   [--into DIR] [--id ID] [--config FILE]
+                   [--into DIR] [--id ID] [--config FILE] [--max-file-mb N]
 murmur run WORKSPACE
 ```
 
 | Option | Default | Notes |
 |--------|---------|-------|
 | `BRIEF` | — | Markdown with the objective. The agents cannot ask questions; they record their decisions in `PR.md`. |
-| `--repo` | current repo | Agents start from one commit; uncommitted changes are not included |
+| `--repo` | current repo | Agents start from one commit; uncommitted changes are not included. A plain folder also works (see below) |
+| `--max-file-mb` | see `--help` | Plain-folder input only: larger files are shared read-only links instead of git content |
 | `--base` | `HEAD` | Commit or ref to start from |
 | `--peers` / `--solo` | 4 peers | Two peers are often as good as four |
 | `--setup` | none | Shell command run once, in the first clone, before the clock starts (repeatable) |
@@ -100,6 +101,25 @@ the root of the result is the agents' summary.
 
 Argparse usage errors still exit 2, so the time cap does not use that code. The fetch command is
 printed whenever `origin.git` exists.
+
+### Plain-folder input
+
+`--repo` may be a folder that is not a git repository. murmur snapshots it into the run's
+private repository and never writes to the folder:
+
+- files ignored by its `.gitignore` or your global git ignore file (for example `node_modules/`,
+  build output, `.DS_Store`) are left out;
+- executable bits and symlinks are kept;
+- a nested git repository (`sub/.git`) comes in as its tracked and untracked files, without its
+  `.git` history;
+- files over `--max-file-mb` are not committed: each clone gets a read-only link to one shared
+  copy, so large data costs no copy time or disk.
+
+When the run ends, `murmur run` writes the result to a new sibling folder,
+`<folder>.murmur-<id>`, and prints its path. It is written under a temporary name and renamed
+when complete, so a failure leaves no partial folder (the result stays in the run's `origin.git`). Large files are filled in there as real files, and
+the agents' `.work/` scratch is left out. The source folder is never changed; compare the two and
+copy over what you want.
 
 ### Copy-on-write setup
 
