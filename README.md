@@ -72,7 +72,6 @@ murmur setup BRIEF [--repo DIR] [--base REF] [--peers N | --solo] [--setup CMD].
                    [--model M] [--effort E] [--cap 3h] [--port-base N]
                    [--into DIR] [--id ID] [--config FILE] [--max-file-mb N]
 murmur run WORKSPACE
-murmur export WORKSPACE [--to DIR | --apply]
 ```
 
 | Option | Default | Notes |
@@ -106,13 +105,19 @@ printed whenever `origin.git` exists.
 ### Plain-folder input
 
 `--repo` may be a folder that is not a git repository. murmur snapshots it into the run's
-private repository and never writes to the folder. Files over `--max-file-mb` are not committed:
-each clone gets a read-only link to the original, so large data costs no copy time or disk.
+private repository and never writes to the folder:
 
-`murmur export WORKSPACE` writes the result to a new folder (`--to DIR`, default
-`<folder>.murmur-<id>`). `--apply` writes the changes into the source folder instead; a file you
-edited during the run is kept, and the agents' version is written beside it. The agents' `.work/`
-scratch is left out.
+- files ignored by its `.gitignore` (for example `node_modules/` or build output) are left out;
+- executable bits and symlinks are kept;
+- a nested git repository (`sub/.git`) comes in as its tracked and untracked files, without its
+  `.git` history;
+- files over `--max-file-mb` are not committed: each clone gets a read-only link to one shared
+  copy, so large data costs no copy time or disk.
+
+When the run ends, `murmur run` writes the result to a new sibling folder,
+`<folder>.murmur-<id>`, and prints its path. Large files are filled in there as real files, and
+the agents' `.work/` scratch is left out. The source folder is never changed; compare the two and
+copy over what you want.
 
 ### Copy-on-write setup
 
