@@ -457,36 +457,63 @@ def in_git_repo(path: Path) -> bool:
     return found.returncode == 0
 
 
-def snapshot_folder(folder: Path, dest: Path, env: dict, max_mb: float) -> tuple[Path, str]:
-    """Wrap a plain folder in a one-commit git repo, so agents get the usual workflow.
+def _folder_files(folder: Path, env: dict, prefix: str = "") -> list[str]:
+    """Paths under `folder` that git would add, honouring .gitignore and the standard excludes.
 
-    The folder itself is never written to; `murmur export` copies results out. Files over
-    `max_mb` stay out of git: one read-only copy goes to `shared/` next to `work/` and the
-    snapshot commits a symlink to it, so every clone sees the file without another copy.
+    `env` points GIT_DIR at a scratch repo whose work tree is `folder`, or has no GIT_DIR when
+    `folder` is itself a nested repository. A nested repository (listed by git as `sub/`) is
+    expanded into its own tracked and untracked files, without its .git, so it comes in as
+    normal files rather than an empty submodule pointer.
     """
+    listed = subprocess.run(["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+                            cwd=folder, env=env, capture_output=True, check=True)
+    nested = {k: v for k, v in env.items() if k not in ("GIT_DIR", "GIT_WORK_TREE")}
+    files: list[str] = []
+    for rel in filter(None, listed.stdout.decode().split("\0")):
+        if rel.endswith("/"):
+            files += _folder_files(folder / rel, nested, f"{prefix}{rel}")
+        elif not (folder / rel).is_dir() or (folder / rel).is_symlink():
+            files.append(f"{prefix}{rel}")
+    return files
+
+
+def snapshot_folder(folder: Path, dest: Path, env: dict, max_mb: float) -> tuple[Path, str]:
+    """Commit a plain folder into a new one-commit repo at `dest`, without writing to it.
+
+    Files git would ignore (.gitignore, info/exclude) are left out. Executable bits and
+    symlinks are kept. Nested git repositories come in as plain files. Files over `max_mb`
+    stay out of git: one read-only copy goes to `shared/` next to `work/` and the snapshot
+    commits a symlink to it, so every clone sees the file without another copy.
+    """
+    if (folder / ".git").exists():
+        fail(f"{folder} has a .git but is not a usable git repository")
     shared = dest.parent / "shared"
     limit = max_mb * 1024 * 1024
-    big: list[str] = []
-
-    def ignore(directory: str, names: list[str]) -> set[str]:
-        skipped = set()
-        for name in names:
-            path = Path(directory) / name
-            if path.is_file() and not path.is_symlink() and path.stat().st_size > limit:
-                rel = path.relative_to(folder)
-                target = shared / rel
-                target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(path, target)
-                target.chmod(0o444)
-                big.append(str(rel))
-                skipped.add(name)
-        return skipped
-
-    shutil.copytree(folder, dest, symlinks=True, ignore=ignore)
-    for rel in big:
-        (dest / rel).symlink_to(shared / rel)
     git("init", "-q", str(dest), env=env)
-    git("add", "-A", cwd=dest, env=env)
+    probe = {k: v for k, v in env.items() if k not in ("GIT_DIR", "GIT_WORK_TREE")}
+    # List from inside a throwaway git dir whose work tree is the folder, so ignore rules apply.
+    probe |= {"GIT_DIR": str(dest / ".git"), "GIT_WORK_TREE": str(folder)}
+    files = sorted(_folder_files(folder, probe))
+    big, entries = [], []
+    for rel in files:
+        path = folder / rel
+        if path.is_symlink():
+            data, mode = os.readlink(path).encode(), "120000"
+        elif path.stat().st_size > limit:
+            target = shared / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(path, target)
+            target.chmod(0o444)
+            big.append(rel)
+            data, mode = str(target).encode(), "120000"
+        else:
+            data = path.read_bytes()
+            mode = "100755" if os.access(path, os.X_OK) else "100644"
+        sha = subprocess.run(["git", "hash-object", "-w", "--stdin"], input=data, cwd=dest,
+                             env=env, capture_output=True, check=True).stdout.decode().strip()
+        entries.append(f"{mode} {sha}\t{rel}")
+    subprocess.run(["git", "update-index", "--add", "-z", "--index-info"], cwd=dest, env=env,
+                   input="".join(e + "\0" for e in entries).encode(), check=True)
     note = f" ({len(big)} large file(s) linked read-only from shared/)" if big else ""
     git("-c", "user.name=murmur", "-c", "user.email=murmur@murmur.local",
         "commit", "-q", "--allow-empty", "-m", f"Snapshot of {folder}{note}", cwd=dest, env=env)
@@ -500,70 +527,42 @@ def snapshot_folder(folder: Path, dest: Path, env: dict, max_mb: float) -> tuple
 SCRATCH = ".work/"
 
 
-def export(args: argparse.Namespace) -> None:
-    """Copy a folder run's result out: into a new folder (default), or back into the source."""
-    ws = Path(args.workspace).expanduser().resolve()
+def write_result(ws: Path) -> Path | None:
+    """Write a plain-folder run's result to a new sibling folder; the source is never touched."""
     meta = json.loads((ws / "murmur.json").read_text())
-    folder = Path(meta["folder"]) if meta.get("folder") else None
+    if not meta.get("folder"):
+        return None
     origin, shared = ws / "work" / "origin.git", ws / "work" / "shared"
     env = git_env(ws)
-
-    def blob(rev: str, path: str) -> bytes | None:
-        got = subprocess.run(["git", "cat-file", "blob", f"{rev}:{path}"], cwd=origin, env=env,
-                             capture_output=True, check=False)
-        return got.stdout if got.returncode == 0 else None
-
-    def real(path: str, rev: str) -> bytes | None:
-        """File content at rev; a link into shared/ stands for the shared file."""
-        data = blob(rev, path)
-        if data is not None and data.startswith(str(shared).encode()):
-            target = Path(data.decode())
-            if target.is_file():
-                return target.read_bytes()
-        return data
-
-    if not args.apply:
-        out = Path(args.to or f"{folder or ws / 'result'}.murmur-{ws.name}").expanduser().resolve()
-        if out.exists():
-            fail(f"{out} already exists")
-        out.mkdir(parents=True)
-        files = git("ls-tree", "-r", "-z", "--name-only", "main", cwd=origin, env=env).split("\0")
-        files = [path for path in files if path and not path.startswith(SCRATCH)]
-        for path in files:
-            dest = out / path
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            dest.write_bytes(real(path, "main") or b"")
-        print(f"murmur: wrote {len(files)} file(s) to {out}")
-        return
-    if folder is None:
-        fail("--apply needs a run started from a plain folder; for a repo, fetch main instead")
-    changes = git("diff", "--name-status", "--no-renames", "-z", meta["base"], "main",
-                  cwd=origin, env=env).split("\0")
-    applied, conflicts = [], []
-    for status, path in zip(changes[0::2], changes[1::2]):
-        if path.startswith(SCRATCH):
-            continue
-        target = folder / path
-        current = target.read_bytes() if target.is_file() else None
-        if current != real(path, meta["base"]):
-            # The user changed this file during the run: keep theirs, put ours beside it.
-            new = real(path, "main")
-            if new is not None:
-                Path(f"{target}.murmur-{ws.name}").write_bytes(new)
-            conflicts.append(path)
-            continue
-        if status == "D":
-            target.unlink(missing_ok=True)
+    out = Path(f"{meta['folder']}.murmur-{ws.name}")
+    if out.exists():
+        print(f"murmur: {out} already exists; not overwriting it", file=sys.stderr)
+        return out
+    listing = git("ls-tree", "-r", "-z", "main", cwd=origin, env=env)
+    out.mkdir(parents=True)
+    count = 0
+    for entry in filter(None, listing.split("\0")):
+        info, path = entry.split("\t", 1)
+        mode, kind, sha = info.split()
+        if kind != "blob" or path.startswith(SCRATCH):
+            continue  # submodule pointers agents may add have no content to write
+        data = subprocess.run(["git", "cat-file", "blob", sha], cwd=origin, env=env,
+                              capture_output=True, check=True).stdout
+        dest = out / path
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        if mode == "120000":
+            target = data.decode()
+            if Path(target).is_relative_to(shared) and Path(target).is_file():
+                shutil.copyfile(target, dest)  # fill large-file links in with the real file
+                dest.chmod(0o644)
+            else:
+                dest.symlink_to(target)
         else:
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(real(path, "main") or b"")
-        applied.append(f"{status} {path}")
-    print(f"murmur: applied {len(applied)} change(s) to {folder}")
-    for line in applied:
-        print(f"  {line}")
-    if conflicts:
-        print(f"murmur: {len(conflicts)} file(s) changed in {folder} during the run; kept yours, "
-              f"wrote ours as <file>.murmur-{ws.name}: {', '.join(conflicts)}", file=sys.stderr)
+            dest.write_bytes(data)
+            dest.chmod(0o755 if mode == "100755" else 0o644)
+        count += 1
+    print(f"murmur: wrote {count} file(s) to {out}")
+    return out
 
 
 def setup(args: argparse.Namespace) -> None:
@@ -787,7 +786,7 @@ def run(args: argparse.Namespace) -> None:
             print(f"murmur: {diagnostic}", file=sys.stderr)
             print(f"murmur: log: {log_err}", file=sys.stderr)
         if origin.exists() and meta.get("folder"):
-            print(f"copy it out: murmur export {ws}   (or --apply to write the changes into {meta['folder']})")
+            write_result(ws)
         elif origin.exists():
             print(f"review it: git -C {meta['repo']} fetch {origin} main:murmur/{ws.name}")
         raise SystemExit(exit_code)
@@ -834,15 +833,6 @@ def main() -> None:
     p_run = commands.add_parser("run", help="run the Codex session for a workspace")
     p_run.add_argument("workspace")
     p_run.set_defaults(func=run)
-
-    p_export = commands.add_parser("export", help="copy a plain-folder run's result out")
-    p_export.add_argument("workspace")
-    where = p_export.add_mutually_exclusive_group()
-    where.add_argument("--to", help="new folder for the result (default: <folder>.murmur-<id>)")
-    where.add_argument("--apply", action="store_true",
-                       help="write the changes into the source folder; files you edited during "
-                            "the run are kept and ours are written beside them")
-    p_export.set_defaults(func=export)
 
     args = parser.parse_args()
     args.func(args)
