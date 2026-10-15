@@ -107,7 +107,8 @@ printed whenever `origin.git` exists.
 `--repo` may be a folder that is not a git repository. murmur snapshots it into the run's
 private repository and never writes to the folder:
 
-- files ignored by its `.gitignore` (for example `node_modules/` or build output) are left out;
+- files ignored by its `.gitignore` or your global git ignore file (for example `node_modules/`,
+  build output, `.DS_Store`) are left out;
 - executable bits and symlinks are kept;
 - a nested git repository (`sub/.git`) comes in as its tracked and untracked files, without its
   `.git` history;
@@ -115,7 +116,8 @@ private repository and never writes to the folder:
   copy, so large data costs no copy time or disk.
 
 When the run ends, `murmur run` writes the result to a new sibling folder,
-`<folder>.murmur-<id>`, and prints its path. Large files are filled in there as real files, and
+`<folder>.murmur-<id>`, and prints its path. It is written under a temporary name and renamed
+when complete, so a failure leaves no partial folder (the result stays in the run's `origin.git`). Large files are filled in there as real files, and
 the agents' `.work/` scratch is left out. The source folder is never changed; compare the two and
 copy over what you want.
 
