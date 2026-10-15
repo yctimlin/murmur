@@ -477,6 +477,20 @@ def _folder_files(folder: Path, env: dict, prefix: str = "") -> list[str]:
     return files
 
 
+def _hash_bytes(data: bytes, repo: Path, env: dict) -> str:
+    return subprocess.run(["git", "hash-object", "-w", "--stdin"], input=data, cwd=repo, env=env,
+                          capture_output=True, check=True).stdout.decode().strip()
+
+
+def _user_excludes() -> str | None:
+    """The user's global ignore file (core.excludesFile, else git's XDG default), if any."""
+    found = subprocess.run(["git", "config", "--global", "--path", "core.excludesFile"],
+                           capture_output=True, text=True, check=False).stdout.strip()
+    xdg = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "git" / "ignore"
+    path = Path(found).expanduser() if found else xdg
+    return str(path) if path.is_file() else None
+
+
 def snapshot_folder(folder: Path, dest: Path, env: dict, max_mb: float) -> tuple[Path, str]:
     """Commit a plain folder into a new one-commit repo at `dest`, without writing to it.
 
@@ -493,25 +507,33 @@ def snapshot_folder(folder: Path, dest: Path, env: dict, max_mb: float) -> tuple
     probe = {k: v for k, v in env.items() if k not in ("GIT_DIR", "GIT_WORK_TREE")}
     # List from inside a throwaway git dir whose work tree is the folder, so ignore rules apply.
     probe |= {"GIT_DIR": str(dest / ".git"), "GIT_WORK_TREE": str(folder)}
+    if excludes := _user_excludes():  # murmur's isolated config hides the user's global one
+        probe |= {"GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "core.excludesFile",
+                  "GIT_CONFIG_VALUE_0": excludes}
     files = sorted(_folder_files(folder, probe))
-    big, entries = [], []
+    big, entries, plain = [], [], []
     for rel in files:
         path = folder / rel
         if path.is_symlink():
-            data, mode = os.readlink(path).encode(), "120000"
+            entries.append(("120000", _hash_bytes(os.readlink(path).encode(), dest, env), rel))
         elif path.stat().st_size > limit:
             target = shared / rel
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(path, target)
             target.chmod(0o444)
             big.append(rel)
-            data, mode = str(target).encode(), "120000"
+            entries.append(("120000", _hash_bytes(str(target).encode(), dest, env), rel))
         else:
-            data = path.read_bytes()
-            mode = "100755" if os.access(path, os.X_OK) else "100644"
-        sha = subprocess.run(["git", "hash-object", "-w", "--stdin"], input=data, cwd=dest,
-                             env=env, capture_output=True, check=True).stdout.decode().strip()
-        entries.append(f"{mode} {sha}\t{rel}")
+            plain.append(rel)
+    # One process hashes every regular file; one per file is ~50x slower on large trees.
+    hashed = subprocess.run(
+        ["git", "hash-object", "-w", "--no-filters", "--stdin-paths"], cwd=dest, env=env,
+        input="".join(f"{folder / rel}\n" for rel in plain).encode(), capture_output=True,
+        check=True).stdout.decode().split()
+    for rel, sha in zip(plain, hashed, strict=True):
+        mode = "100755" if os.access(folder / rel, os.X_OK) else "100644"
+        entries.append((mode, sha, rel))
+    entries = [f"{mode} {sha}\t{rel}" for mode, sha, rel in entries]
     subprocess.run(["git", "update-index", "--add", "-z", "--index-info"], cwd=dest, env=env,
                    input="".join(e + "\0" for e in entries).encode(), check=True)
     note = f" ({len(big)} large file(s) linked read-only from shared/)" if big else ""
@@ -528,16 +550,36 @@ SCRATCH = ".work/"
 
 
 def write_result(ws: Path) -> Path | None:
-    """Write a plain-folder run's result to a new sibling folder; the source is never touched."""
+    """Write a plain-folder run's result to a new sibling folder; the source is never touched.
+
+    The folder is filled under a temporary name and renamed at the end, so a failure leaves no
+    partial result.
+    """
     meta = json.loads((ws / "murmur.json").read_text())
     if not meta.get("folder"):
         return None
-    origin, shared = ws / "work" / "origin.git", ws / "work" / "shared"
-    env = git_env(ws)
     out = Path(f"{meta['folder']}.murmur-{ws.name}")
     if out.exists():
         print(f"murmur: {out} already exists; not overwriting it", file=sys.stderr)
         return out
+    tmp = out.with_name(f".{out.name}.partial")
+    shutil.rmtree(tmp, ignore_errors=True)
+    try:
+        count = _fill_result(ws, tmp)
+        tmp.rename(out)
+    except (OSError, subprocess.CalledProcessError, SystemExit) as error:
+        shutil.rmtree(tmp, ignore_errors=True)
+        print(f"murmur: could not write the result to {out}: {error}", file=sys.stderr)
+        print(f"murmur: the result is still in {ws / 'work' / 'origin.git'} (branch main)",
+              file=sys.stderr)
+        return None
+    print(f"murmur: wrote {count} file(s) to {out}")
+    return out
+
+
+def _fill_result(ws: Path, out: Path) -> int:
+    origin, shared = ws / "work" / "origin.git", (ws / "work" / "shared").resolve()
+    env = git_env(ws)
     listing = git("ls-tree", "-r", "-z", "main", cwd=origin, env=env)
     out.mkdir(parents=True)
     count = 0
@@ -551,9 +593,10 @@ def write_result(ws: Path) -> Path | None:
         dest = out / path
         dest.parent.mkdir(parents=True, exist_ok=True)
         if mode == "120000":
-            target = data.decode()
-            if Path(target).is_relative_to(shared) and Path(target).is_file():
-                shutil.copyfile(target, dest)  # fill large-file links in with the real file
+            target = Path(data.decode())
+            real = (dest.parent / target).resolve()
+            if real.is_relative_to(shared) and real.is_file():
+                shutil.copyfile(real, dest)  # fill large-file links in with the real file
                 dest.chmod(0o644)
             else:
                 dest.symlink_to(target)
@@ -561,8 +604,7 @@ def write_result(ws: Path) -> Path | None:
             dest.write_bytes(data)
             dest.chmod(0o755 if mode == "100755" else 0o644)
         count += 1
-    print(f"murmur: wrote {count} file(s) to {out}")
-    return out
+    return count
 
 
 def setup(args: argparse.Namespace) -> None:

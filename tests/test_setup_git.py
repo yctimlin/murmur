@@ -147,3 +147,51 @@ def test_ignored_files_are_left_out(tmp_path: Path):
     assert (clone / ".gitignore").exists()
     shared = ws / "work" / "shared"
     assert sorted(p.name for p in shared.rglob("*") if p.is_file()) == ["big.bin"]
+
+
+def test_links_resolve_through_a_symlinked_workspace_path(tmp_path: Path):
+    from murmur.cli import write_result
+
+    _, ws, clone = _folder_run(tmp_path, max_mb="1")
+    _agent_work(clone)
+    alias = tmp_path / "alias"
+    alias.symlink_to(ws.parent)
+    out = write_result(alias / ws.name)
+    assert (out / "big.bin").read_bytes() == b"x" * 2_000_000 and not (out / "big.bin").is_symlink()
+
+
+def test_failed_result_write_leaves_no_partial_folder(tmp_path: Path, capsys, monkeypatch):
+    import murmur.cli as cli
+
+    folder, ws, clone = _folder_run(tmp_path)
+    _agent_work(clone)
+
+    def broken(ws_, out):
+        out.mkdir()
+        (out / "half.txt").write_text("x")
+        raise OSError("disk full")
+
+    monkeypatch.setattr(cli, "_fill_result", broken)
+    assert cli.write_result(ws) is None
+    assert "could not write the result" in capsys.readouterr().err
+    assert [p.name for p in tmp_path.iterdir() if "murmur-" in p.name] == []
+
+
+def test_user_global_gitignore_is_honoured(tmp_path: Path, monkeypatch):
+    import os
+
+    from murmur.cli import snapshot_folder
+
+    ignore = tmp_path / "my-ignore"
+    ignore.write_text(".DS_Store\n")
+    user_config = tmp_path / "user-gitconfig"
+    user_config.write_text(f"[core]\n\texcludesFile = {ignore}\n")
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "empty-xdg"))
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(user_config))
+    folder = tmp_path / "f"
+    folder.mkdir()
+    (folder / "keep.md").write_text("k\n")
+    (folder / ".DS_Store").write_text("junk\n")
+    env = {**os.environ, "GIT_CONFIG_GLOBAL": str(tmp_path / "ws-gitconfig")}
+    repo, _ = snapshot_folder(folder, tmp_path / "w" / "input", env, 50)
+    assert git(repo, "ls-files").split() == ["keep.md"]
