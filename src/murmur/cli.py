@@ -862,6 +862,8 @@ def run(args: argparse.Namespace) -> None:
             if counted.returncode == 0:
                 commits = counted.stdout.strip()
         label = "capped" if capped else "interrupted" if interrupted else f"exit {codex_exit}"
+        if exit_code != EXIT_OK and codex_exit == 0 and not capped and not interrupted:
+            label = diagnostic
         suffix = f", {commits} new commit(s)" if commits is not None else ""
         print(f"{ws.name}: {meta['mode']} finished in {elapsed / 60:.1f} min ({label}){suffix}")
         usage = record["usage"]

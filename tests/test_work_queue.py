@@ -1,11 +1,8 @@
 """Actual concurrent claims, recovery fencing, dependencies and setup/run boundaries."""
 from concurrent.futures import ThreadPoolExecutor
 import json
-from pathlib import Path
-import sqlite3
 import subprocess
 import sys
-import time
 
 import pytest
 
@@ -127,6 +124,7 @@ def test_unfinished_or_missing_queue_cannot_report_success(tmp_path, state):
     assert record['codex_exit_code'] == 0
     assert record['exit_code'] == 1
     assert 'work queue' in run.stderr
+    assert '(exit 0)' not in run.stdout
 
 
 def test_base_has_no_helper_or_gate(tmp_path):

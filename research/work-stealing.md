@@ -57,5 +57,33 @@ fencing, dependencies, release/handoff, bounded status, standalone helper invoca
 unused/unfinished/missing queue rejection, and unchanged disabled behavior. Test-model
 calls/tokens: zero; development-agent inference is separate and unmeasured here.
 
-Live screen results will be attached after the invented two-peer text-utilities task ends.
-The screening fixture is unrelated to the operator's sealed evaluation tasks.
+## Screens and disposition
+
+The live screen used two peers and a 25-minute cap to implement an invented lowercase word
+counter and a dependent summary utility. Both children were blocked before reading their
+prompts by the host error `app-server socket directory must be a user-owned directory with
+mode 0700`. The queue remained unused; the enabled completion barrier returned exit 1 despite
+Codex returning 0. No environment-limit workaround was attempted. The run took **192.1 seconds**
+and observed **597,695 input**, **514,688 cached input**, **83,007 uncached input** and
+**1,065 output** tokens (**598,760 total**). These are wasted/blocked-run observations,
+not mechanism overhead or a baseline comparison. [Live evidence](screens/a4-live.json).
+
+A separate scripted screen uses fake Codex with real helper subprocesses, SQLite and Git.
+It creates a payload task and a dependent byte-manifest task, releases the first peer's claim,
+lets the second peer steal it, rejects a stale completion, integrates the payload, unlocks
+the dependent task and validates the integrated byte count. Both units finish; the runner
+exits 0. Observed time including setup/operations: **0.668 seconds**, three claims, one
+release, two completions. Model calls/tokens: **zero**; fake rollouts correctly report usage
+unavailable. [Scripted evidence](screens/a4-scripted.json).
+
+Reproduce from `proto/a4-work-stealing`: `python scripts/screen_work_queue.py .work/new-screen`
+(the output path must not already exist), or `python -m pytest -q tests/test_work_queue.py`.
+These fixtures are unrelated to the operator's sealed evaluation tasks. The live attempt
+cannot establish agent adoption. The scripted attempt proves the mechanism fires and
+survives the invented handoff; it cannot substitute for held-out model evaluation.
+
+Recommendation: retain the prototype branch but defer it from the three operator candidate
+slots if integration-barrier, independent-review and interface-contract prototypes pass their
+mechanics screens. Those target the observed single-author and seam failures more directly.
+Synchronized finishing alone is not evidence of idle-peer imbalance or abandoned task claims.
+No performance winner is selected by voting.

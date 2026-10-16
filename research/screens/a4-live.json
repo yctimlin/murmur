@@ -1,0 +1,87 @@
+{
+  "mode": "live",
+  "task": "Invented lowercase word counter and dependent summary utility",
+  "peers": 2,
+  "cap": "25m",
+  "started_at": "2026-10-16T03:48:55+00:00",
+  "ended_at": "2026-10-16T03:52:07+00:00",
+  "seconds": 192.1,
+  "exit_code": 1,
+  "codex_exit_code": 0,
+  "usage": {
+    "status": "observed",
+    "source": "codex token_usage_record.usage",
+    "scope": "observed completed responses; missing/provider-unreported usage is unknown",
+    "rollout_files": 3,
+    "observed_responses": 27,
+    "duplicate_records": 0,
+    "unreadable_records_or_files": 0,
+    "threads_without_usage": [],
+    "tokens": {
+      "input_tokens": 597695,
+      "cached_input_tokens": 514688,
+      "output_tokens": 1065,
+      "reasoning_output_tokens": 56,
+      "uncached_input_tokens": 83007,
+      "total_tokens": 598760
+    },
+    "threads": [
+      {
+        "thread_id": "01a142d3-bf87-7f81-9e24-cd9ff4666fc4",
+        "agent_path": null,
+        "parent_thread_id": null,
+        "observed_responses": 13,
+        "tokens": {
+          "input_tokens": 280355,
+          "cached_input_tokens": 242432,
+          "output_tokens": 353,
+          "reasoning_output_tokens": 0,
+          "uncached_input_tokens": 37923,
+          "total_tokens": 280708
+        }
+      },
+      {
+        "thread_id": "01a142d3-d51b-7ef1-a8ab-1410f984057b",
+        "agent_path": "/root/a1",
+        "parent_thread_id": "01a142d3-bf87-7f81-9e24-cd9ff4666fc4",
+        "observed_responses": 6,
+        "tokens": {
+          "input_tokens": 134929,
+          "cached_input_tokens": 95360,
+          "output_tokens": 298,
+          "reasoning_output_tokens": 9,
+          "uncached_input_tokens": 39569,
+          "total_tokens": 135227
+        }
+      },
+      {
+        "thread_id": "01a142d3-f415-7f83-abda-3b08b837a878",
+        "agent_path": "/root/a2",
+        "parent_thread_id": "01a142d3-bf87-7f81-9e24-cd9ff4666fc4",
+        "observed_responses": 8,
+        "tokens": {
+          "input_tokens": 182411,
+          "cached_input_tokens": 176896,
+          "output_tokens": 414,
+          "reasoning_output_tokens": 47,
+          "uncached_input_tokens": 5515,
+          "total_tokens": 182825
+        }
+      }
+    ]
+  },
+  "queue": {
+    "status": "unused",
+    "total": 0,
+    "done": 0,
+    "running": 0,
+    "ready": 0,
+    "waiting": 0,
+    "tasks": [],
+    "next_offset": null,
+    "events": {}
+  },
+  "mechanism_fired": false,
+  "blocker": "Both child shells failed before reading their prompts: app-server socket directory must be a user-owned directory with mode 0700.",
+  "disposition": "Blocked; no live adoption or efficacy conclusion. No environment-limit workaround attempted."
+}

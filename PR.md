@@ -160,7 +160,15 @@ The normal user interface remains setup/run. `work_stealing = true` in setup TOM
 the default-disabled path leaves the original peer workflow active. See
 [work-stealing design](research/work-stealing.md) and [tests](tests/test_work_queue.py).
 Initial verification: 63 tests pass in 12.19s. These checks establish scheduling mechanics,
-not a measured quality or token improvement. Live screening evidence is pending.
+not a measured quality or token improvement. Live screening was blocked by host socket permissions before either peer read its prompt:
+192.1s, 598,760 observed total tokens, no activation. The enabled queue barrier correctly
+returned exit1 for the unused queue. A separate credential-free scripted screen completed
+in 0.668s and fired cross-peer stealing, stale-owner rejection and dependency handoff;
+it made zero model calls. Evidence is in `research/screens/a4-live.json` and
+`research/screens/a4-scripted.json`; `scripts/screen_work_queue.py` reproduces the latter.
+These observations prove mechanics only. Prioritize a1/a2/a5 for the limited operator slots
+because they address recorded seam/single-author bugs more directly; a4 remains on its
+prototype branch as a deferred alternative.
 
 Decisions: the round-two specific prototype/screen/no-vote instructions override the generic
 footer's draft voting. The local private origin's `main` is integration transport; no real
