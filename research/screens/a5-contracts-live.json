@@ -1,0 +1,128 @@
+{
+  "screen": "live two-peer invented packet interface",
+  "status": "infrastructure-blocked",
+  "reason": "Nested peer shell cannot start: app-server socket directory must be user-owned mode 0700; neither peer read brief.",
+  "contract_activations": 0,
+  "commits": 0,
+  "run": {
+    "started_at": "2026-10-16T03:45:32+00:00",
+    "ended_at": "2026-10-16T03:50:17+00:00",
+    "seconds": 155.5,
+    "command": [
+      "codex",
+      "exec",
+      "--json",
+      "--skip-git-repo-check",
+      "--disable",
+      "memories",
+      "--sandbox",
+      "workspace-write",
+      "-c",
+      "approval_policy=\"never\"",
+      "-c",
+      "sandbox_workspace_write.network_access=true",
+      "-c",
+      "shell_environment_policy.inherit=\"core\"",
+      "-c",
+      "shell_environment_policy.set={\"GIT_CONFIG_GLOBAL\" = \"/workspace/self2/ws/r2/work/peers/a5/.work/contract-screens/live-folder/gitconfig\", \"GIT_CONFIG_NOSYSTEM\" = \"1\", \"GH_CONFIG_DIR\" = \"/workspace/self2/ws/r2/work/peers/a5/.work/contract-screens/live-folder/gh\", \"ZDOTDIR\" = \"/workspace/self2/ws/r2/work/peers/a5/.work/contract-screens/live-folder/zdot\"}",
+      "-C",
+      "/workspace/self2/ws/r2/work/peers/a5/.work/contract-screens/live-folder/work",
+      "-o",
+      "/workspace/self2/ws/r2/work/peers/a5/.work/contract-screens/live-folder/logs/final.md",
+      "-c",
+      "features.multi_agent_v2={\"enabled\" = true, \"max_concurrent_threads_per_session\" = 3, \"max_wait_timeout_ms\" = 3600000}",
+      "--enable",
+      "agent_message_board",
+      "-"
+    ],
+    "exit_code": 0,
+    "codex_exit_code": 0,
+    "capped": false,
+    "interrupted": false,
+    "result": {
+      "head": "f189fde34536aa751ced9c4f3e142840fdff527c",
+      "new_commits": 0,
+      "changed_paths": 0,
+      "has_pr": false,
+      "peers": [
+        {
+          "id": "a1",
+          "head": "f189fde34536aa751ced9c4f3e142840fdff527c",
+          "head_in_main": true,
+          "tracked_changes": false,
+          "untracked_files": 0
+        },
+        {
+          "id": "a2",
+          "head": "f189fde34536aa751ced9c4f3e142840fdff527c",
+          "head_in_main": true,
+          "tracked_changes": false,
+          "untracked_files": 0
+        }
+      ],
+      "errors": []
+    },
+    "usage": {
+      "status": "observed",
+      "source": "codex token_usage_record.usage",
+      "scope": "observed completed responses; missing/provider-unreported usage is unknown",
+      "rollout_files": 3,
+      "observed_responses": 27,
+      "duplicate_records": 0,
+      "unreadable_records_or_files": 0,
+      "threads_without_usage": [],
+      "tokens": {
+        "input_tokens": 587855,
+        "cached_input_tokens": 529152,
+        "output_tokens": 1082,
+        "reasoning_output_tokens": 75,
+        "uncached_input_tokens": 58703,
+        "total_tokens": 588937
+      },
+      "threads": [
+        {
+          "thread_id": "01a142d0-a676-7ec1-be95-0e42e77ddddd",
+          "agent_path": null,
+          "parent_thread_id": null,
+          "observed_responses": 13,
+          "tokens": {
+            "input_tokens": 280030,
+            "cached_input_tokens": 242432,
+            "output_tokens": 332,
+            "reasoning_output_tokens": 0,
+            "uncached_input_tokens": 37598,
+            "total_tokens": 280362
+          }
+        },
+        {
+          "thread_id": "01a142d0-bf87-7d32-94f9-dc2355c68322",
+          "agent_path": "/root/a1",
+          "parent_thread_id": "01a142d0-a676-7ec1-be95-0e42e77ddddd",
+          "observed_responses": 7,
+          "tokens": {
+            "input_tokens": 149044,
+            "cached_input_tokens": 130432,
+            "output_tokens": 404,
+            "reasoning_output_tokens": 44,
+            "uncached_input_tokens": 18612,
+            "total_tokens": 149448
+          }
+        },
+        {
+          "thread_id": "01a142d0-dc72-75b1-9168-b4994d2a2902",
+          "agent_path": "/root/a2",
+          "parent_thread_id": "01a142d0-a676-7ec1-be95-0e42e77ddddd",
+          "observed_responses": 7,
+          "tokens": {
+            "input_tokens": 158781,
+            "cached_input_tokens": 156288,
+            "output_tokens": 346,
+            "reasoning_output_tokens": 31,
+            "uncached_input_tokens": 2493,
+            "total_tokens": 159127
+          }
+        }
+      ]
+    }
+  }
+}

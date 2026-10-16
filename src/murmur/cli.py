@@ -684,6 +684,11 @@ def setup(args: argparse.Namespace) -> None:
             fail(f"brief not found: {brief_file}")
         brief = brief_file.read_text().strip()
         agents, strategy = _prepare_clones(ws, origin, options, run_id, ids, procs)
+        contracts_enabled = os.environ.get("MURMUR_CONTRACTS") == "1"
+        contract_prompt = ""
+        if contracts_enabled:
+            from murmur.contracts import install
+            contract_prompt = install(ws, agents)
         closing = render("closing.md", cap=options["cap"])
         draft_minutes = max(10, seconds(options["cap"]) // 600)
         for agent in agents:
@@ -700,7 +705,7 @@ def setup(args: argparse.Namespace) -> None:
                     env=env_block(agent["env"]),
                     draft=str(draft_minutes),
                 )
-            (ws / "prompts" / f"{agent['id']}.md").write_text(f"{brief}\n\n{closing}\n\n{appendix}\n")
+            (ws / "prompts" / f"{agent['id']}.md").write_text(f"{brief}\n\n{closing}\n\n{appendix}\n{contract_prompt}")
         if not solo:
             spawns = "\n".join(
                 f"   - `task_name`: `{agent['id']}`, message: `Your instructions are in "
@@ -722,6 +727,7 @@ def setup(args: argparse.Namespace) -> None:
             "effort": options["effort"],
             "cap": options["cap"],
             "clone_strategy": strategy,
+            "contracts_enabled": contracts_enabled,
             "setup_per_agent": bool(options["setup_per_agent"]),
             "agents": agents,
             "created_at": now(),
