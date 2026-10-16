@@ -97,6 +97,13 @@ murmur run WORKSPACE
 A non-zero exit also prints a short diagnostic and the log path (`logs/session.err`). `PR.md` at
 the root of the result is the agents' summary.
 
+`logs/run.json` also inventories the delivered `origin/main` revision: new commits,
+changed paths, presence of `PR.md`, and whether each peer's local HEAD is included in
+that revision or has tracked edits. Missing repositories produce unknown fields and
+errors. Untracked files are not inventoried, and setup or discarded drafts can leave
+intentional local changes. These are delivery diagnostics, not a verdict that the
+objective is complete; they do not change the documented exit codes.
+
 | Code | Meaning |
 |------|---------|
 | 0 | Codex exited 0 |
