@@ -1,0 +1,204 @@
+{
+  "date": "2026-10-16",
+  "mechanism": "integration_barrier",
+  "live": {
+    "kind": "environment-blocked",
+    "task": "standard-library invoice formatter",
+    "peers": 2,
+    "cap": "25m",
+    "workspace": "/tmp/a1-integration-screen/enabled-folder",
+    "error": "app-server socket directory must be a user-owned directory with mode 0700",
+    "seconds": 188.7,
+    "exit_code": 2,
+    "codex_exit_code": 0,
+    "integration": {
+      "complete": false,
+      "revision": "a4309fcc9d82ddd5ca66615367226b3a2d13f7c5",
+      "pending_peers": [
+        "a1",
+        "a2"
+      ],
+      "claim": null,
+      "receipt": null
+    },
+    "usage": {
+      "status": "observed",
+      "source": "codex token_usage_record.usage",
+      "scope": "observed completed responses; missing/provider-unreported usage is unknown",
+      "rollout_files": 3,
+      "observed_responses": 29,
+      "duplicate_records": 0,
+      "unreadable_records_or_files": 0,
+      "threads_without_usage": [],
+      "tokens": {
+        "input_tokens": 652824,
+        "cached_input_tokens": 586752,
+        "output_tokens": 1126,
+        "reasoning_output_tokens": 79,
+        "uncached_input_tokens": 66072,
+        "total_tokens": 653950
+      },
+      "threads": [
+        {
+          "thread_id": "01a142d0-6c83-7e30-9001-67da9a1cc418",
+          "agent_path": null,
+          "parent_thread_id": null,
+          "observed_responses": 13,
+          "tokens": {
+            "input_tokens": 278831,
+            "cached_input_tokens": 240896,
+            "output_tokens": 310,
+            "reasoning_output_tokens": 0,
+            "uncached_input_tokens": 37935,
+            "total_tokens": 279141
+          }
+        },
+        {
+          "thread_id": "01a142d0-8274-7e80-a609-a2f9b6e48b27",
+          "agent_path": "/root/a1",
+          "parent_thread_id": "01a142d0-6c83-7e30-9001-67da9a1cc418",
+          "observed_responses": 8,
+          "tokens": {
+            "input_tokens": 204240,
+            "cached_input_tokens": 179712,
+            "output_tokens": 377,
+            "reasoning_output_tokens": 28,
+            "uncached_input_tokens": 24528,
+            "total_tokens": 204617
+          }
+        },
+        {
+          "thread_id": "01a142d0-98e0-7783-8635-f856d77a3c06",
+          "agent_path": "/root/a2",
+          "parent_thread_id": "01a142d0-6c83-7e30-9001-67da9a1cc418",
+          "observed_responses": 8,
+          "tokens": {
+            "input_tokens": 169753,
+            "cached_input_tokens": 166144,
+            "output_tokens": 439,
+            "reasoning_output_tokens": 51,
+            "uncached_input_tokens": 3609,
+            "total_tokens": 170192
+          }
+        }
+      ]
+    },
+    "adoption_observed": false
+  },
+  "scripted": {
+    "kind": "scripted-mechanism-screen",
+    "task": "producer-consumer key mismatch",
+    "quality_or_cost_claim": false,
+    "rows": [
+      {
+        "arm": "base",
+        "wall_seconds": 0.378,
+        "exit_code": 0,
+        "model_calls": 0,
+        "model_tokens": 0,
+        "usage_status": "unavailable",
+        "integration": null,
+        "screen_events": []
+      },
+      {
+        "arm": "enabled",
+        "wall_seconds": 0.877,
+        "exit_code": 0,
+        "model_calls": 0,
+        "model_tokens": 0,
+        "usage_status": "unavailable",
+        "integration": {
+          "complete": true,
+          "revision": "4b8b7332a8245e3714eb0638f2a08697fa1bbf2f",
+          "pending_peers": [],
+          "claim": null,
+          "receipt": {
+            "peer": "a2",
+            "revision": "4b8b7332a8245e3714eb0638f2a08697fa1bbf2f",
+            "argv": [
+              "/workspace/self2/ws/r2/work/peers/a1/.venv/bin/python",
+              "-B",
+              "check.py"
+            ],
+            "exit_code": 0,
+            "seconds": 0.02,
+            "clean_after": true,
+            "passed": true,
+            "error": null,
+            "log": "/workspace/self2/ws/r2/work/peers/a1/.work/integration-screen-offline-v2/enabled/work/.murmur-integration/02e998347ac9f5a9fa29e6e7.log"
+          }
+        },
+        "screen_events": [
+          {
+            "claim": null,
+            "complete": false,
+            "pending_peers": [
+              "a2"
+            ],
+            "receipt": null,
+            "revision": "2b3f05ac136645f4297fdf966e925f0ee868be5e"
+          },
+          {
+            "claim": null,
+            "complete": false,
+            "pending_peers": [],
+            "receipt": null,
+            "revision": "2b3f05ac136645f4297fdf966e925f0ee868be5e"
+          },
+          {
+            "argv": [
+              "/workspace/self2/ws/r2/work/peers/a1/.venv/bin/python",
+              "-B",
+              "check.py"
+            ],
+            "clean_after": true,
+            "error": null,
+            "exit_code": 1,
+            "log": "/workspace/self2/ws/r2/work/peers/a1/.work/integration-screen-offline-v2/enabled/work/.murmur-integration/81f3cbcb82856eebcb29c2e1.log",
+            "passed": false,
+            "peer": "a2",
+            "revision": "2b3f05ac136645f4297fdf966e925f0ee868be5e",
+            "seconds": 0.036
+          },
+          {
+            "argv": [
+              "/workspace/self2/ws/r2/work/peers/a1/.venv/bin/python",
+              "-B",
+              "check.py"
+            ],
+            "clean_after": true,
+            "error": null,
+            "exit_code": 0,
+            "log": "/workspace/self2/ws/r2/work/peers/a1/.work/integration-screen-offline-v2/enabled/work/.murmur-integration/8a3aacacf50da70da33d9843.log",
+            "passed": true,
+            "peer": "a2",
+            "revision": "53b91c628a15b7ac7cac8762642da2d9e26e6bda",
+            "seconds": 0.02
+          },
+          {
+            "claim": null,
+            "complete": false,
+            "pending_peers": [],
+            "receipt": null,
+            "revision": "4b8b7332a8245e3714eb0638f2a08697fa1bbf2f"
+          },
+          {
+            "argv": [
+              "/workspace/self2/ws/r2/work/peers/a1/.venv/bin/python",
+              "-B",
+              "check.py"
+            ],
+            "clean_after": true,
+            "error": null,
+            "exit_code": 0,
+            "log": "/workspace/self2/ws/r2/work/peers/a1/.work/integration-screen-offline-v2/enabled/work/.murmur-integration/02e998347ac9f5a9fa29e6e7.log",
+            "passed": true,
+            "peer": "a2",
+            "revision": "4b8b7332a8245e3714eb0638f2a08697fa1bbf2f",
+            "seconds": 0.02
+          }
+        ]
+      }
+    ]
+  }
+}
