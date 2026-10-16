@@ -151,3 +151,13 @@ suite, public GitHub availability of the supplied source revision, or isolation 
 malicious agents, macOS or Python 3.11 runtime behavior, or present/future product behavior beyond
 the retrieved documentation and pinned source. The observed token report cannot recover usage
 that the provider or killed process never persisted.
+
+## Round-two prototype a2: independent review
+
+`proto/a2-cross-review` implements content-bound independent receipts and a final
+run gate for sole-author changed paths. The user-facing CLI remains setup/run;
+enable with `independent_review = true` in the existing setup TOML. Full design,
+limitations, evidence strength, and reproduction notes:
+[research/proposals/a2-cross-review.md](research/proposals/a2-cross-review.md).
+Initial validation: 62 tests passed in 13.51 seconds; no performance or quality
+improvement is established by the deterministic tests.

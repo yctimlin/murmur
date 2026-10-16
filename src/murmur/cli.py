@@ -31,6 +31,7 @@ from string import Template
 from murmur.cow import CowCopyError, cow_copy
 from murmur.usage import summarize_usage
 from murmur.result import inspect_result
+from murmur import review
 from murmur.procutil import (
     install_interrupt_handlers,
     restore_interrupt_handlers,
@@ -322,6 +323,10 @@ def resolve_options(args: argparse.Namespace) -> dict:
         options["setup_per_agent"] = True
     elif not isinstance(options["setup_per_agent"], bool):
         fail("setup_per_agent must be a boolean")
+    if not isinstance(options.get("independent_review", False), bool):
+        fail("independent_review must be a boolean")
+    if options.get("independent_review") and options["peers"] < 2:
+        fail("independent_review requires at least two peers")
     options["setup"] = _as_string_list(options.get("setup"), "setup")
     agent_env = options.get("agent_env") or {}
     if not isinstance(agent_env, dict):
@@ -684,6 +689,7 @@ def setup(args: argparse.Namespace) -> None:
             fail(f"brief not found: {brief_file}")
         brief = brief_file.read_text().strip()
         agents, strategy = _prepare_clones(ws, origin, options, run_id, ids, procs)
+        review_prompt = review.install(ws, agents, base) if options.get("independent_review") else ""
         closing = render("closing.md", cap=options["cap"])
         draft_minutes = max(10, seconds(options["cap"]) // 600)
         for agent in agents:
@@ -700,7 +706,7 @@ def setup(args: argparse.Namespace) -> None:
                     env=env_block(agent["env"]),
                     draft=str(draft_minutes),
                 )
-            (ws / "prompts" / f"{agent['id']}.md").write_text(f"{brief}\n\n{closing}\n\n{appendix}\n")
+            (ws / "prompts" / f"{agent['id']}.md").write_text(f"{brief}\n\n{closing}\n\n{appendix}\n{review_prompt}")
         if not solo:
             spawns = "\n".join(
                 f"   - `task_name`: `{agent['id']}`, message: `Your instructions are in "
@@ -724,6 +730,7 @@ def setup(args: argparse.Namespace) -> None:
             "clone_strategy": strategy,
             "setup_per_agent": bool(options["setup_per_agent"]),
             "agents": agents,
+            "independent_review": bool(options.get("independent_review", False)),
             "created_at": now(),
         }
         (ws / "murmur.json").write_text(json.dumps(meta, indent=2) + "\n")
@@ -834,6 +841,11 @@ def run(args: argparse.Namespace) -> None:
             "interrupted": interrupted,
             "result": inspect_result(ws, meta),
         }
+        if meta.get("independent_review"):
+            record["independent_review"] = review.inspect(ws)
+            if exit_code == EXIT_OK and not record["independent_review"]["complete"]:
+                exit_code, diagnostic = EXIT_CODEX_FAILED, "independent review incomplete; inspect logs/run.json"
+                record["exit_code"] = exit_code
         record["usage"] = summarize_usage(ws / "codex-home")
         (ws / "logs" / "run.json").write_text(json.dumps(record, indent=2) + "\n")
         origin = ws / "work" / "origin.git"
