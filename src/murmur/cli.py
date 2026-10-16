@@ -28,6 +28,7 @@ from importlib.resources import files
 from pathlib import Path
 from string import Template
 
+from murmur import integration
 from murmur.cow import CowCopyError, cow_copy
 from murmur.usage import summarize_usage
 from murmur.result import inspect_result
@@ -39,6 +40,7 @@ from murmur.procutil import (
 
 EXIT_OK = 0
 EXIT_CODEX_FAILED = 1
+EXIT_INCOMPLETE = 2
 EXIT_CAPPED = 124
 EXIT_LAUNCHER = 3
 EXIT_INTERRUPTED = 130
@@ -47,6 +49,7 @@ DURATION_RE = re.compile(r"^(\d+)([smh])$")
 ENV_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 DEFAULTS = {
     "peers": 2,
+    "integration_barrier": False,
     "model": None,
     "effort": None,
     "cap": "3h",
@@ -322,6 +325,8 @@ def resolve_options(args: argparse.Namespace) -> dict:
         options["setup_per_agent"] = True
     elif not isinstance(options["setup_per_agent"], bool):
         fail("setup_per_agent must be a boolean")
+    if not isinstance(options["integration_barrier"], bool):
+        fail("integration_barrier must be a boolean")
     options["setup"] = _as_string_list(options.get("setup"), "setup")
     agent_env = options.get("agent_env") or {}
     if not isinstance(agent_env, dict):
@@ -684,6 +689,8 @@ def setup(args: argparse.Namespace) -> None:
             fail(f"brief not found: {brief_file}")
         brief = brief_file.read_text().strip()
         agents, strategy = _prepare_clones(ws, origin, options, run_id, ids, procs)
+        barrier_enabled = options["integration_barrier"] and not solo
+        barrier_prompt = integration.install(ws, agents, seconds(options["cap"])) if barrier_enabled else ""
         closing = render("closing.md", cap=options["cap"])
         draft_minutes = max(10, seconds(options["cap"]) // 600)
         for agent in agents:
@@ -700,7 +707,7 @@ def setup(args: argparse.Namespace) -> None:
                     env=env_block(agent["env"]),
                     draft=str(draft_minutes),
                 )
-            (ws / "prompts" / f"{agent['id']}.md").write_text(f"{brief}\n\n{closing}\n\n{appendix}\n")
+            (ws / "prompts" / f"{agent['id']}.md").write_text(f"{brief}\n\n{closing}\n\n{appendix}\n" + (f"\n{barrier_prompt}\n" if barrier_prompt else ""))
         if not solo:
             spawns = "\n".join(
                 f"   - `task_name`: `{agent['id']}`, message: `Your instructions are in "
@@ -722,6 +729,7 @@ def setup(args: argparse.Namespace) -> None:
             "effort": options["effort"],
             "cap": options["cap"],
             "clone_strategy": strategy,
+            "integration_barrier": barrier_enabled,
             "setup_per_agent": bool(options["setup_per_agent"]),
             "agents": agents,
             "created_at": now(),
@@ -834,6 +842,11 @@ def run(args: argparse.Namespace) -> None:
             "interrupted": interrupted,
             "result": inspect_result(ws, meta),
         }
+        if meta.get("integration_barrier"):
+            record["integration"] = integration.inspect(ws)
+            if exit_code == EXIT_OK and not record["integration"]["complete"]:
+                exit_code, diagnostic = EXIT_INCOMPLETE, "integration incomplete; see logs/run.json and .murmur/integration status"
+                record["exit_code"] = exit_code
         record["usage"] = summarize_usage(ws / "codex-home")
         (ws / "logs" / "run.json").write_text(json.dumps(record, indent=2) + "\n")
         origin = ws / "work" / "origin.git"
