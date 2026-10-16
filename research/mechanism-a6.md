@@ -119,3 +119,8 @@ failed→retry→promoted recovery, unchanged checks, old evidence retention, an
 of a second retry. This is a lifecycle correction, not new performance evidence.
 
 After the recovery correction, the full suite passed **61 tests in 13.27 s**.
+
+Final lifecycle hardening makes missing/corrupt ledgers fail closed while preserving
+`logs/run.json`, and turns termination signals during checks into cleanup so separately
+grouped child processes are reaped. The final full suite passed **63 tests in 13.91 s**;
+these remain deterministic tests without model inference.

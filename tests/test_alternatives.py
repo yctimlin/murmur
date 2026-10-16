@@ -145,3 +145,39 @@ def test_failed_trial_has_one_audited_retry_with_frozen_checks(tmp_path):
         db.execute("UPDATE trials SET status='rejected'")
     with pytest.raises(ValueError, match='one retry'):
         alt.retry(state, origin, 'unit')
+
+
+def test_missing_ledger_still_records_failed_run(tmp_path):
+    ws, origin, state = fixture(tmp_path)
+    state.unlink()
+    result = run_cli('run', str(ws))
+    assert result.returncode == 1
+    record = json.loads((ws / 'logs' / 'run.json').read_text())
+    assert record['alternatives']['complete'] is False
+    assert 'error' in record['alternatives']
+    assert not state.exists()
+
+
+def test_interrupted_helper_reaps_check_child_and_records_failure(tmp_path):
+    import os
+    import signal
+    import time
+    marker = tmp_path / 'child-pid'
+    command = [[sys.executable, '-c', f"import os,time; from pathlib import Path; Path({str(marker)!r}).write_text(str(os.getpid())); time.sleep(30)"]]
+    ws, origin, state, base, bad, good = ready(tmp_path, command, 30)
+    helper = ws / 'work' / 'peers' / 'a1' / '.murmur' / 'alternatives'
+    proc = subprocess.Popen([str(helper), 'evaluate', 'unit'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    deadline = time.monotonic() + 5
+    while not marker.exists():
+        assert time.monotonic() < deadline
+        assert proc.poll() is None
+        time.sleep(.01)
+    child = int(marker.read_text())
+    proc.send_signal(signal.SIGTERM)
+    proc.communicate(timeout=5)
+    assert proc.returncode == 2
+    with pytest.raises(ProcessLookupError):
+        os.kill(child, 0)
+    report = alt.inspect(state)
+    assert not report['complete'] and report['trials'][0]['status'] == 'failed'
+    assert git(origin, 'rev-parse', 'main') == base

@@ -125,7 +125,12 @@ def _check(argv: list[str], cwd: Path, timeout: float) -> dict:
                                     start_new_session=True)
         except OSError as error:
             return {"argv": argv, "exit_code": None, "error": str(error), "passed": False}
+        handlers = {}
+        def interrupted(signum, frame):
+            raise InterruptedError(f"check interrupted by signal {signum}")
         try:
+            for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+                handlers[sig] = signal.signal(sig, interrupted)
             code = proc.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
             timed_out = True
@@ -136,6 +141,8 @@ def _check(argv: list[str], cwd: Path, timeout: float) -> dict:
             except ProcessLookupError:
                 pass
             proc.wait()
+            for sig, handler in handlers.items():
+                signal.signal(sig, handler)
         output.seek(0, 2)
         size = output.tell()
         output.seek(max(0, size - 4000))
@@ -192,12 +199,15 @@ def evaluate(state: Path, origin: Path, name: str) -> dict:
 
 
 def inspect(state: Path) -> dict:
-    with sqlite3.connect(state) as db:
-        db.row_factory = sqlite3.Row
-        trials = [dict(r) for r in db.execute("SELECT name,base,status,winner,attempts FROM trials ORDER BY name")]
-        events = db.execute("SELECT COUNT(*) FROM events").fetchone()[0]
-    return {"trials": trials, "event_count": events,
-            "complete": all(t['status'] == 'promoted' for t in trials)}
+    try:
+        with sqlite3.connect(state.resolve().as_uri() + '?mode=rw', uri=True) as db:
+            db.row_factory = sqlite3.Row
+            trials = [dict(r) for r in db.execute("SELECT name,base,status,winner,attempts FROM trials ORDER BY name")]
+            events = db.execute("SELECT COUNT(*) FROM events").fetchone()[0]
+        return {"trials": trials, "event_count": events,
+                "complete": all(t['status'] == 'promoted' for t in trials)}
+    except (OSError, sqlite3.Error) as error:
+        return {"complete": False, "error": str(error)}
 
 
 def install(ws: Path, agents: list[dict]) -> str:
