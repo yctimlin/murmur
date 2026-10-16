@@ -30,6 +30,7 @@ from string import Template
 
 from murmur.cow import CowCopyError, cow_copy
 from murmur.usage import summarize_usage
+from murmur.result import inspect_result
 from murmur.procutil import (
     install_interrupt_handlers,
     restore_interrupt_handlers,
@@ -811,6 +812,7 @@ def run(args: argparse.Namespace) -> None:
             "codex_exit_code": codex_exit,
             "capped": capped,
             "interrupted": interrupted,
+            "result": inspect_result(ws, meta),
         }
         record["usage"] = summarize_usage(ws / "codex-home")
         (ws / "logs" / "run.json").write_text(json.dumps(record, indent=2) + "\n")
