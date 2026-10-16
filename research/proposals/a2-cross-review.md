@@ -116,4 +116,7 @@ Final review hardening adds regressions for missing ledgers, malformed config, a
 ordinary merges. Runtime ledger opens never recreate lost state. A6 identified
 merge-attribution risk; Git path-history simplification preserves the imported
 content's actual author, and a normal no-conflict merge regression rejects that
-author's self-review. Final full suite: **65 passed in 14.24 seconds**, including 12 review-specific tests.
+author's self-review. Final full suite: **66 passed in 14.91 seconds**, including 13 review-specific tests.
+A3 also identified Git wildcard/pathspec interpretation in author lookup; the final
+lookup uses literal pathspecs and a colliding-filename regression. A failed review
+gate now prints its diagnostic in the run summary instead of the child's exit 0.

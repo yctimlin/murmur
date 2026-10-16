@@ -51,6 +51,8 @@ def test_launcher_rejects_unreviewed_success(tmp_path):
     result = run_cli("run", str(ws))
     assert result.returncode == 1
     assert "independent review incomplete" in result.stderr
+    assert "(independent review incomplete" in result.stdout
+    assert "(exit 0)" not in result.stdout
     record = json.loads((ws / "logs/run.json").read_text())
     assert record["codex_exit_code"] == 0
     assert record["exit_code"] == 1
@@ -185,4 +187,22 @@ def test_plain_merge_does_not_let_content_author_self_review(tmp_path):
         sign(ws, a1, head, ["widget.txt"])
     sign(ws, a2, head, ["widget.txt"])
     sign(ws, a1, head, ["other.txt"])
+    assert review.inspect(ws)["complete"]
+
+
+def test_author_lookup_treats_wildcard_filenames_literally(tmp_path):
+    ws, a1, a2 = workspace(tmp_path)
+    (a1 / "a[1].txt").write_text("a1 authored this literal path\n")
+    git(a1, "--literal-pathspecs", "add", "--", "a[1].txt")
+    git(a1, "commit", "-qm", "literal path")
+    git(a1, "push", "origin", "HEAD:main")
+    git(a2, "pull", "--ff-only")
+    head = land(a2, "a1.txt", "a2 authored this different path\n")
+    git(a1, "pull", "--ff-only")
+    with pytest.raises(review.ReviewError, match="self-review"):
+        sign(ws, a1, head, ["a[1].txt"])
+    with pytest.raises(review.ReviewError, match="self-review"):
+        sign(ws, a2, head, ["a1.txt"])
+    sign(ws, a2, head, ["a[1].txt"])
+    sign(ws, a1, head, ["a1.txt"])
     assert review.inspect(ws)["complete"]

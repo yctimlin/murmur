@@ -74,7 +74,7 @@ def inventory(directory: Path) -> dict:
         # Default path-history simplification follows a TREESAME parent through
         # ordinary merges. A merger who merely imported a peer's content must not
         # replace that content's author and let its actual author self-sign.
-        writer = git(origin, "log", "-1", "--format=%ae", "--no-renames",
+        writer = git(origin, "--literal-pathspecs", "log", "-1", "--format=%ae", "--no-renames",
                      f"{base}..{head}", "--", name).decode().strip()
         if not writer:
             raise ReviewError("cannot identify latest author for changed path")
