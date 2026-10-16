@@ -1,4 +1,4 @@
-"""Independent review receipts for sole-author paths (experimental, opt-in).
+"""Independent review receipts for changed paths (experimental, opt-in).
 
 This file is also copied into a run so peers need no installed murmur package.
 The ledger is coordination state, not a security boundary against hostile peers.
@@ -50,7 +50,8 @@ def inventory(directory: Path) -> dict:
     git(origin, "merge-base", "--is-ancestor", base, head)
     changed = set(filter(None, git(origin, "diff", "--name-only", "--no-renames", "-z", base, head).split(b"\0")))
     writers: dict[bytes, set[str]] = {path: set() for path in changed}
-    commits = git(origin, "log", "--format=%H %ae", f"{base}..{head}").decode().splitlines()
+    last_writer: dict[bytes, str] = {}
+    commits = git(origin, "log", "--topo-order", "--format=%H %ae", f"{base}..{head}").decode().splitlines()
     for commit in commits:
         sha, email = commit.split(" ", 1)
         # Compare merge commits to each parent, conservatively counting the merger.
@@ -58,6 +59,7 @@ def inventory(directory: Path) -> dict:
         for path in touched.split(b"\0"):
             if path in writers:
                 writers[path].add(email)
+                last_writer.setdefault(path, email)
     tree = {}
     for entry in git(origin, "ls-tree", "-r", "-z", head).split(b"\0"):
         if entry:
@@ -66,15 +68,15 @@ def inventory(directory: Path) -> dict:
     obligations = []
     for path in sorted(changed):
         authors = sorted(writers[path])
-        # Multiple writers are visible in the report; only sole-author paths gate.
-        if len(authors) != 1:
-            continue
+        if path not in last_writer:
+            raise ReviewError("cannot identify latest author for changed path")
+        writer = last_writer[path]
         name = os.fsdecode(path)
         content = tree.get(path, "deleted")
-        fingerprint = hashlib.sha256(json.dumps([base, name, content, authors], ensure_ascii=True).encode()).hexdigest()
-        obligations.append({"path": name, "writer": authors[0], "content": content, "fingerprint": fingerprint})
+        fingerprint = hashlib.sha256(json.dumps([base, name, content, writer], ensure_ascii=True).encode()).hexdigest()
+        obligations.append({"path": name, "writer": writer, "authors": authors, "content": content, "fingerprint": fingerprint})
     return {"head": head, "changed_paths": len(changed), "required": obligations,
-            "multi_author_paths": len(changed) - len(obligations)}
+            "multi_author_paths": sum(len(authors) > 1 for authors in writers.values())}
 
 
 def status(directory: Path) -> dict:
@@ -109,7 +111,7 @@ def attest(directory: Path, clone: Path, revision: str, paths: list[str], note: 
     chosen = []
     for path in dict.fromkeys(paths):
         if path not in by_path:
-            raise ReviewError(f"no sole-author review obligation for {path!r}")
+            raise ReviewError(f"no review obligation for {path!r}")
         item = by_path[path]
         if item["writer"] == agent["email"]:
             raise ReviewError(f"self-review rejected for {path!r}; another peer must inspect it")
@@ -142,8 +144,8 @@ def install(ws: Path, agents: list[dict], base: str) -> str:
             shlex.quote(str(directory / "review.py")) + " --directory " + shlex.quote(str(directory)) + ' "$@"\n')
         helper.chmod(0o755)
     return """Independent review is enforced for this run. Run `.murmur/review status` after
-integrating and before finishing. Every changed path written by only one peer requires a
-second peer's review. Ask another peer on the board to inspect the diff and behavior; any
+integrating and before finishing. Every changed path requires review by a peer other than its latest
+change author, including paths edited by several peers. Ask another peer on the board to inspect the diff and behavior; any
 peer may take the duty. Pull accepted main into a clean tracked checkout, inspect the
 requested paths, then record the exact revision you inspected with:
 `.murmur/review attest --revision FULL_HEAD_SHA --note 'what you checked and found' -- PATH...`

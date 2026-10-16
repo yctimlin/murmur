@@ -155,7 +155,7 @@ that the provider or killed process never persisted.
 ## Round-two prototype a2: independent review
 
 `proto/a2-cross-review` implements content-bound independent receipts and a final
-run gate for sole-author changed paths. The user-facing CLI remains setup/run;
+run gate for all changed paths, reviewed by another peer than their latest author. The user-facing CLI remains setup/run;
 enable with `independent_review = true` in the existing setup TOML. Full design,
 limitations, evidence strength, and reproduction notes:
 [research/proposals/a2-cross-review.md](research/proposals/a2-cross-review.md).

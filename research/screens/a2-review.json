@@ -1,0 +1,362 @@
+{
+  "mechanical": [
+    {
+      "arm": "base",
+      "seconds": 0.262,
+      "exit_code": 0,
+      "model_tokens": 0,
+      "usage": {
+        "status": "unavailable",
+        "source": "codex token_usage_record.usage",
+        "scope": "observed completed responses; missing/provider-unreported usage is unknown",
+        "rollout_files": 0,
+        "observed_responses": 0,
+        "duplicate_records": 0,
+        "unreadable_records_or_files": 0,
+        "threads_without_usage": [],
+        "tokens": null,
+        "threads": []
+      },
+      "review": null,
+      "events": [
+        {
+          "kind": "boundary-defect-detected",
+          "exit_code": 1
+        }
+      ]
+    },
+    {
+      "arm": "enabled",
+      "seconds": 0.56,
+      "exit_code": 0,
+      "model_tokens": 0,
+      "usage": {
+        "status": "unavailable",
+        "source": "codex token_usage_record.usage",
+        "scope": "observed completed responses; missing/provider-unreported usage is unknown",
+        "rollout_files": 0,
+        "observed_responses": 0,
+        "duplicate_records": 0,
+        "unreadable_records_or_files": 0,
+        "threads_without_usage": [],
+        "tokens": null,
+        "threads": []
+      },
+      "review": {
+        "head": "2ad588eab0c816c8587629259fd089ccf6f2d788",
+        "changed_paths": 1,
+        "required": [
+          {
+            "path": "greeting.py",
+            "writer": "a1@murmur.local",
+            "authors": [
+              "a1@murmur.local"
+            ],
+            "content": "100644 blob fddc510e559c9286168382bfa2c0bec5b75a57e1",
+            "fingerprint": "e55bdcb6199c7d5e02f5bebc4fb1b0f3d6e2b9c7f27d69d525f511887fd9f44c",
+            "reviewers": [
+              "a2"
+            ]
+          }
+        ],
+        "multi_author_paths": 0,
+        "pending": [],
+        "complete": true
+      },
+      "events": [
+        {
+          "kind": "boundary-defect-detected",
+          "exit_code": 1
+        },
+        {
+          "kind": "self-review-rejected",
+          "detail": {
+            "error": "self-review rejected for 'greeting.py'; another peer must inspect it"
+          }
+        },
+        {
+          "kind": "stale-rejected",
+          "detail": {
+            "error": "stale review: pull main and inspect the current revision before signing"
+          }
+        },
+        {
+          "kind": "independent-review",
+          "detail": {
+            "reviewer": "a2",
+            "revision": "2ad588eab0c816c8587629259fd089ccf6f2d788",
+            "reviewed": [
+              "greeting.py"
+            ]
+          }
+        },
+        {
+          "kind": "coverage",
+          "detail": {
+            "head": "2ad588eab0c816c8587629259fd089ccf6f2d788",
+            "changed_paths": 1,
+            "required": [
+              {
+                "path": "greeting.py",
+                "writer": "a1@murmur.local",
+                "authors": [
+                  "a1@murmur.local"
+                ],
+                "content": "100644 blob fddc510e559c9286168382bfa2c0bec5b75a57e1",
+                "fingerprint": "e55bdcb6199c7d5e02f5bebc4fb1b0f3d6e2b9c7f27d69d525f511887fd9f44c",
+                "reviewers": [
+                  "a2"
+                ]
+              }
+            ],
+            "multi_author_paths": 0,
+            "pending": [],
+            "complete": true
+          }
+        }
+      ]
+    },
+    {
+      "arm": "missing-review",
+      "seconds": 0.349,
+      "exit_code": 1,
+      "model_tokens": 0,
+      "usage": {
+        "status": "unavailable",
+        "source": "codex token_usage_record.usage",
+        "scope": "observed completed responses; missing/provider-unreported usage is unknown",
+        "rollout_files": 0,
+        "observed_responses": 0,
+        "duplicate_records": 0,
+        "unreadable_records_or_files": 0,
+        "threads_without_usage": [],
+        "tokens": null,
+        "threads": []
+      },
+      "review": {
+        "head": "94dd6e220d3c9c246cfdea19817429d028db2909",
+        "changed_paths": 1,
+        "required": [
+          {
+            "path": "greeting.py",
+            "writer": "a1@murmur.local",
+            "authors": [
+              "a1@murmur.local"
+            ],
+            "content": "100644 blob fddc510e559c9286168382bfa2c0bec5b75a57e1",
+            "fingerprint": "e55bdcb6199c7d5e02f5bebc4fb1b0f3d6e2b9c7f27d69d525f511887fd9f44c",
+            "reviewers": []
+          }
+        ],
+        "multi_author_paths": 0,
+        "pending": [
+          "greeting.py"
+        ],
+        "complete": false
+      },
+      "events": [
+        {
+          "kind": "boundary-defect-detected",
+          "exit_code": 1
+        },
+        {
+          "kind": "self-review-rejected",
+          "detail": {
+            "error": "self-review rejected for 'greeting.py'; another peer must inspect it"
+          }
+        },
+        {
+          "kind": "stale-rejected",
+          "detail": {
+            "error": "stale review: pull main and inspect the current revision before signing"
+          }
+        },
+        {
+          "kind": "coverage",
+          "detail": {
+            "head": "94dd6e220d3c9c246cfdea19817429d028db2909",
+            "changed_paths": 1,
+            "required": [
+              {
+                "path": "greeting.py",
+                "writer": "a1@murmur.local",
+                "authors": [
+                  "a1@murmur.local"
+                ],
+                "content": "100644 blob fddc510e559c9286168382bfa2c0bec5b75a57e1",
+                "fingerprint": "e55bdcb6199c7d5e02f5bebc4fb1b0f3d6e2b9c7f27d69d525f511887fd9f44c",
+                "reviewers": []
+              }
+            ],
+            "multi_author_paths": 0,
+            "pending": [
+              "greeting.py"
+            ],
+            "complete": false
+          }
+        }
+      ]
+    }
+  ],
+  "live_attempts": [
+    {
+      "arm": "base-folder",
+      "seconds": 206.4,
+      "exit_code": 0,
+      "usage": {
+        "status": "observed",
+        "source": "codex token_usage_record.usage",
+        "scope": "observed completed responses; missing/provider-unreported usage is unknown",
+        "rollout_files": 3,
+        "observed_responses": 31,
+        "duplicate_records": 0,
+        "unreadable_records_or_files": 0,
+        "threads_without_usage": [],
+        "tokens": {
+          "input_tokens": 665139,
+          "cached_input_tokens": 642560,
+          "output_tokens": 1266,
+          "reasoning_output_tokens": 113,
+          "uncached_input_tokens": 22579,
+          "total_tokens": 666405
+        },
+        "threads": [
+          {
+            "thread_id": "01a142cf-fd48-7801-9573-106e0bec7ede",
+            "agent_path": null,
+            "parent_thread_id": null,
+            "observed_responses": 13,
+            "tokens": {
+              "input_tokens": 280441,
+              "cached_input_tokens": 268160,
+              "output_tokens": 334,
+              "reasoning_output_tokens": 0,
+              "uncached_input_tokens": 12281,
+              "total_tokens": 280775
+            }
+          },
+          {
+            "thread_id": "01a142d0-19fe-7cf1-a9d9-7f20e8a9f0e5",
+            "agent_path": "/root/a1",
+            "parent_thread_id": "01a142cf-fd48-7801-9573-106e0bec7ede",
+            "observed_responses": 9,
+            "tokens": {
+              "input_tokens": 192570,
+              "cached_input_tokens": 186112,
+              "output_tokens": 465,
+              "reasoning_output_tokens": 48,
+              "uncached_input_tokens": 6458,
+              "total_tokens": 193035
+            }
+          },
+          {
+            "thread_id": "01a142d0-3ce8-7963-9ce9-3aa6ecfd0f90",
+            "agent_path": "/root/a2",
+            "parent_thread_id": "01a142cf-fd48-7801-9573-106e0bec7ede",
+            "observed_responses": 9,
+            "tokens": {
+              "input_tokens": 192128,
+              "cached_input_tokens": 188288,
+              "output_tokens": 467,
+              "reasoning_output_tokens": 65,
+              "uncached_input_tokens": 3840,
+              "total_tokens": 192595
+            }
+          }
+        ]
+      },
+      "new_commits": 0,
+      "changed_paths": 0,
+      "failures": [
+        {
+          "session": "rollout-2026-10-16T11-44-56-01a142d0-19fe-7cf1-a9d9-7f20e8a9f0e5.jsonl",
+          "message": "Could not read `prompts/a1.md`: both shell attempts failed before execution with:\n\n`error building bubblewrap command: app-server socket directory must be a user-owned directory with mode 0700`\n\nNo files were changed. Please provide the prompt contents or repair the execution environment."
+        },
+        {
+          "session": "rollout-2026-10-16T11-45-05-01a142d0-3ce8-7963-9ce9-3aa6ecfd0f90.jsonl",
+          "message": "Could not read `prompts/a2.md`: shell execution fails with:\n\n`error building bubblewrap command: app-server socket directory must be a user-owned directory with mode 0700`\n\nNo files changed. Provide the prompt contents or repair the execution environment to continue."
+        }
+      ]
+    },
+    {
+      "arm": "enabled-folder",
+      "seconds": 203.8,
+      "exit_code": 0,
+      "usage": {
+        "status": "observed",
+        "source": "codex token_usage_record.usage",
+        "scope": "observed completed responses; missing/provider-unreported usage is unknown",
+        "rollout_files": 3,
+        "observed_responses": 30,
+        "duplicate_records": 0,
+        "unreadable_records_or_files": 0,
+        "threads_without_usage": [],
+        "tokens": {
+          "input_tokens": 641571,
+          "cached_input_tokens": 581248,
+          "output_tokens": 1267,
+          "reasoning_output_tokens": 90,
+          "uncached_input_tokens": 60323,
+          "total_tokens": 642838
+        },
+        "threads": [
+          {
+            "thread_id": "01a142cf-caa6-7ab0-9b6c-3c328111dc8e",
+            "agent_path": null,
+            "parent_thread_id": null,
+            "observed_responses": 13,
+            "tokens": {
+              "input_tokens": 280831,
+              "cached_input_tokens": 242816,
+              "output_tokens": 336,
+              "reasoning_output_tokens": 0,
+              "uncached_input_tokens": 38015,
+              "total_tokens": 281167
+            }
+          },
+          {
+            "thread_id": "01a142cf-e3fc-7383-99c8-6a2478563176",
+            "agent_path": "/root/a1",
+            "parent_thread_id": "01a142cf-caa6-7ab0-9b6c-3c328111dc8e",
+            "observed_responses": 8,
+            "tokens": {
+              "input_tokens": 169686,
+              "cached_input_tokens": 151040,
+              "output_tokens": 445,
+              "reasoning_output_tokens": 48,
+              "uncached_input_tokens": 18646,
+              "total_tokens": 170131
+            }
+          },
+          {
+            "thread_id": "01a142cf-fecd-7531-95fe-c036a6074cf0",
+            "agent_path": "/root/a2",
+            "parent_thread_id": "01a142cf-caa6-7ab0-9b6c-3c328111dc8e",
+            "observed_responses": 9,
+            "tokens": {
+              "input_tokens": 191054,
+              "cached_input_tokens": 187392,
+              "output_tokens": 486,
+              "reasoning_output_tokens": 42,
+              "uncached_input_tokens": 3662,
+              "total_tokens": 191540
+            }
+          }
+        ]
+      },
+      "new_commits": 0,
+      "changed_paths": 0,
+      "failures": [
+        {
+          "session": "rollout-2026-10-16T11-44-43-01a142cf-e3fc-7383-99c8-6a2478563176.jsonl",
+          "message": "Blocked before reading a1.md. Both command attempts failed with: `error building bubblewrap command: app-server socket directory must be a user-owned directory with mode 0700`.\n\nPlease provide the prompt contents or repair the command runtime."
+        },
+        {
+          "session": "rollout-2026-10-16T11-44-49-01a142cf-fecd-7531-95fe-c036a6074cf0.jsonl",
+          "message": "Blocked before reading instructions. Three shell attempts failed with:\n\n`error building bubblewrap command: app-server socket directory must be a user-owned directory with mode 0700`\n\nPlease repair the execution environment or provide the contents of `prompts/a2.md`."
+        }
+      ]
+    }
+  ],
+  "interpretation": "Mechanical screen proves enforcement transitions; scripted agents make zero inference calls. Live attempts were infrastructure-blocked, delivered no work, and cannot establish quality or token overhead. Development-agent tokens are not included."
+}

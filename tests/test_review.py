@@ -102,14 +102,21 @@ def test_deletions_and_modes_are_reviewable(tmp_path):
     assert review.inspect(ws)["pending"] == ["tool"]
 
 
-def test_multi_author_path_is_reported_without_sole_author_gate(tmp_path):
+def test_historical_second_author_does_not_waive_later_review(tmp_path):
     ws, a1, a2 = workspace(tmp_path)
     land(a1, "widget.txt", "v1\n")
     git(a2, "pull", "--ff-only")
     land(a2, "widget.txt", "v2\n")
+    git(a1, "pull", "--ff-only")
+    head = land(a1, "widget.txt", "rewritten solely by a1\n")
     result = review.inspect(ws)
-    assert result["complete"]
+    assert not result["complete"]
     assert result["multi_author_paths"] == 1
+    with pytest.raises(review.ReviewError, match="self-review"):
+        sign(ws, a1, head, ["widget.txt"])
+    git(a2, "pull", "--ff-only")
+    sign(ws, a2, head, ["widget.txt"])
+    assert review.inspect(ws)["complete"]
 
 
 def test_helper_runs_without_package_and_rejects_empty_notes(tmp_path):
