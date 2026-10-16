@@ -2,6 +2,7 @@
 
 Status: code prototype; deterministic screen passed; live adoption unverified because the
 host blocked both nested peers before reading their brief. Branch `proto/a1-integration-barrier`.
+Check out that prototype branch before running its helper/tests/screen commands.
 Enable with `integration_barrier = true` in the TOML passed to existing `murmur setup --config`.
 The default is false and solo runs omit the mechanism. No new public command or flag.
 
@@ -80,7 +81,7 @@ checkout; it was never run. The actual live screen used a distinct plain folder 
 
 ## Verification and disposition
 
-The full suite passed **63 tests** after implementation. New tests cover off/solo behavior,
+The full suite passed **64 tests** after implementation. New tests cover off/solo behavior,
 missing evidence exit, frozen helper execution, readiness/current-main checks, failed and
 mutating commands, stale receipts, simultaneous claim exclusion, expired-lease recovery,
 main moving during a running check, readiness withdrawal, timeout and missing ledger.

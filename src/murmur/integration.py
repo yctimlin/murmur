@@ -78,7 +78,8 @@ class Ledger:
 
     @contextmanager
     def transaction(self):
-        db = sqlite3.connect(self.folder / "ledger.sqlite3", timeout=10)
+        db_path = (self.folder / "ledger.sqlite3").resolve()
+        db = sqlite3.connect(db_path.as_uri() + "?mode=rw", uri=True, timeout=10)
         try:
             db.execute("BEGIN IMMEDIATE")
             row = db.execute("SELECT data FROM state WHERE id=1").fetchone()

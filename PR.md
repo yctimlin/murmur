@@ -26,7 +26,7 @@ cap and interrupt statuses retain precedence. Solo and baseline runs omit the ba
 ## Evidence and how to see it
 
 - Enable: add `integration_barrier = true` to the TOML used by existing `murmur setup --config`.
-- Tests: `.venv/bin/python -m pytest -q` — 63 passed.
+- Tests: `.venv/bin/python -m pytest -q` — 64 passed.
 - Screen: `.venv/bin/python scripts/screen_integration.py NEW_DIRECTORY` — real Git and frozen
   helpers; failure, repair, late-push invalidation and recheck fire; no model calls.
 - Read [the mechanism note](research/integration-barrier.md) and [screen data](research/screens/a1-integration.json).

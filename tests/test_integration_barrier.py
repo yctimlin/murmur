@@ -50,6 +50,7 @@ def test_missing_receipt_changes_run_exit_and_records_why(tmp_path):
     ws, ledger = enabled(tmp_path)
     result = run_cli("run", str(ws))
     assert result.returncode == 2, result.stderr
+    assert "integration incomplete" in result.stdout
     record = json.loads((ws / "logs" / "run.json").read_text())
     assert record["codex_exit_code"] == 0
     assert record["exit_code"] == 2
@@ -166,3 +167,13 @@ def test_timeout_and_missing_ledger_fail_closed(tmp_path):
     assert not result["passed"] and result["error"]
     (ledger.folder / "ledger.sqlite3").unlink()
     assert not inspect(ws)["complete"]
+
+
+def test_corrupt_or_missing_state_fails_closed_without_recreating_db(tmp_path):
+    ws, ledger = enabled(tmp_path)
+    with sqlite3.connect(ledger.folder / "ledger.sqlite3") as db:
+        db.execute("DELETE FROM state")
+    assert not inspect(ws)["complete"]
+    (ledger.folder / "ledger.sqlite3").unlink()
+    assert not inspect(ws)["complete"]
+    assert not (ledger.folder / "ledger.sqlite3").exists()
