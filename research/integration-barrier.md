@@ -66,10 +66,11 @@ installed, so push throughput and existing repository hooks remain unchanged.
   Both return zero; enabled does so after repair and a final-head check. This fixture makes
   **zero model calls/tokens**; run.json correctly labels usage unavailable. The fake peer
   driver is explicitly programmed to use the mechanism, so this does not establish adoption.
-- The live invoice-formatter screen used **2 peers, cap 25m**, ran for **188.7 seconds**, and
+- The live invoice-formatter screen used **2 peers, cap 25m**, recorded **188.7 seconds** of launcher elapsed time, and
   stopped with both peers unable to execute a shell because the app-server socket directory
   failed its ownership/mode-0700 requirement. No environment or sandbox workaround was used.
-  Codex exited zero; the barrier correctly returned **2**, with both peers pending. Observed
+  Its UTC start/end span is **319 seconds** (03:45:17–03:50:36 UTC); the clocks differ,
+  and no cause or pause-adjusted duration is inferred. Codex exited zero; the barrier correctly returned **2**, with both peers pending. Observed
   usage: **652,824 input**, **586,752 cached**, **66,072 uncached input**, **1,126 output**;
   **653,950 total**, 29 observed responses. No implementation or integration check fired in
   that live run. This is a blocked adoption screen, not a quality or cost comparison.

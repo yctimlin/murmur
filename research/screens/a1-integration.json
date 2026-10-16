@@ -83,7 +83,11 @@
         }
       ]
     },
-    "adoption_observed": false
+    "adoption_observed": false,
+    "started_at": "2026-10-16T03:45:17+00:00",
+    "ended_at": "2026-10-16T03:50:36+00:00",
+    "utc_span_seconds": 319.0,
+    "timing_note": "seconds is the launcher monotonic elapsed reading; UTC span differs. No pause adjustment or cause is inferred."
   },
   "scripted": {
     "kind": "scripted-mechanism-screen",
