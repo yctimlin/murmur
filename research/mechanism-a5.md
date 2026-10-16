@@ -17,7 +17,8 @@ No external benchmark or new survey was performed.
 Any peer freezes a standalone executable probe and argv after it passes current accepted main.
 The private origin materializes each incoming main tree and executes all frozen probes. A
 failing, missing or timed-out command rejects that main update. A probe is stored outside
-incoming changes; overwriting the original file cannot weaken it. Git's ref transaction lock
+incoming changes; overwriting the original file cannot weaken it. The runner checks tracked candidate content/mode after every probe and rejects changes.
+Git's ref transaction lock
 serializes contract activation and incoming main changes, preventing an activation/push race.
 Any peer can register; no fixed reviewer, coordinator or root work is added. Existing names
 cannot be changed or removed during the run. Draft refs remain available.
@@ -41,23 +42,24 @@ The deterministic screen invents a note packet with `kind` and `payload`. Script
 freezes the shape, peer a2 attempts renaming `payload` to `body` (rejected), then restores the
 contract and adds an optional label (accepted). It runs real `murmur setup`, `murmur run`,
 Git pushes and the frozen runtime, with a fake Codex driver. It fired: three receipts show
-activation pass, incoming violation fail, repaired incoming pass. Run exit 0; 0.6277 seconds
+activation pass, incoming violation fail, repaired incoming pass. Run exit 0; 0.6238 seconds
 including setup; **zero model calls/tokens**. This proves mechanics, not autonomous adoption,
-semantic quality, or token savings. Reproduce with:
+semantic quality, or token savings. Check out `proto/a5-contracts` before reproducing; aggregate main stores evidence only. Run:
 
 ```
 .venv/bin/python scripts/screen_contracts.py /tmp/a5-contract-screen-new
 ```
 
-Evidence: `research/screens/a5-contracts-scripted.json`. Full suite before final review:
-58 tests passed in 13.52s. Five new tests cover freeze, rejection/repair, draft exclusion,
-activation failure/timeouts, ref-lock concurrency and disabled baseline.
+Evidence: `research/screens/a5-contracts-scripted.json`. Final full suite: 63 tests passed in 15.08s. Ten new cases cover freeze, rejection/repair,
+draft exclusion, activation failure/timeouts, ref-lock concurrency, disabled baseline,
+interruption cleanup, and rejection when a probe mutates tracked candidate content/mode
+or deletes an input. The scripted screen was rerun successfully after these corrections.
 
 A real two-peer, cap25m screen was also attempted on a distinct tiny packet emit/read task.
 Both children failed before reading their briefs because nested shell startup reported that
 the app-server socket directory must be user-owned mode 0700. No contract activated and no
-commit landed. The launcher exited 0; **that is not screen success**. Observed wall time
-155.5s; 587,855 input, 529,152 cached, 58,703 uncached, 1,082 output tokens (588,937 total).
+commit landed. The launcher exited 0; **that is not screen success**. Observed process elapsed (`run.json.seconds`)
+155.5s; UTC start/end span 285s, recorded separately because host pauses/clocks can differ; 587,855 input, 529,152 cached, 58,703 uncached, 1,082 output tokens (588,937 total).
 Evidence: `research/screens/a5-contracts-live.json`. No permissions, authentication or sandbox
 workaround was attempted. Development-agent tokens are unmeasured and excluded from screen
 numbers. This candidate passes a scripted mechanics screen; live adoption remains blocked.
@@ -83,3 +85,9 @@ Candidate selection among surviving prototypes must use expected effect on measu
 operator evaluation, not peer preference or diff size, chooses a performance winner. This
 contract mechanism should remain available on its prototype branch even if other mechanisms
 are shortlisted, because early invariant rejection differs from final-head evidence.
+
+Independent reviews: a3 identified candidate mutation as a possible false receipt; the
+prototype now rejects a probe that repairs a broken input before asserting. a4 reviewed
+the lock order and frozen bytes. a5 added TERM/INT/HUP cleanup and a real-process regression
+showing the probe dies and a subsequent activation can obtain the released main ref lock.
+These corrections are mechanics coverage, not evidence of live adoption.
