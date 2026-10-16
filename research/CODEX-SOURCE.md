@@ -47,8 +47,8 @@ or a performance advantage for worktrees over murmur's clones.
 | Message-board delivery | The adapter never starts/restores recipients or queues notices for idle agents. It delivers to the current active turn with `trigger_turn=false`; inactive delivery is skipped. Posts are separate from notifications. [board adapter](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/core/src/agent_message_board.rs#L1), [notify](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/core/src/agent_message_board.rs#L204) | Posting on the board does not wake a finished peer. Coordination that requires another turn needs the explicit follow-up mechanism. |
 | Board storage | Local non-ephemeral mode opens a local board using SQLite config; remote and explicitly in-memory variants also exist. [installation](https://github.com/openai/codex/blob/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/core/src/agent_message_board.rs#L36) | Do not confuse persistent post storage with guaranteed notification delivery. |
 
-The deeper sandbox audit is owned by the separate coordination/source survey. This file's
-sandbox conclusion is deliberately narrow: inherited permissions are verified; per-peer clones
+See the [deeper sandbox audit](survey-a3.md#installed-codex-sandbox-source-not-assumptions).
+This file's sandbox conclusion is deliberately narrow: inherited permissions are verified; per-peer clones
 are not proven security boundaries by the fresh-thread change.
 
 ## Ranked improvements from this audit
