@@ -31,6 +31,7 @@ from string import Template
 from murmur.cow import CowCopyError, cow_copy
 from murmur.usage import summarize_usage
 from murmur.result import inspect_result
+from murmur import alternatives
 from murmur.procutil import (
     install_interrupt_handlers,
     restore_interrupt_handlers,
@@ -684,6 +685,8 @@ def setup(args: argparse.Namespace) -> None:
             fail(f"brief not found: {brief_file}")
         brief = brief_file.read_text().strip()
         agents, strategy = _prepare_clones(ws, origin, options, run_id, ids, procs)
+        alternatives_enabled = os.environ.get("MURMUR_ALTERNATIVES") == "1" and not solo
+        alternatives_prompt = alternatives.install(ws, agents) if alternatives_enabled else ""
         closing = render("closing.md", cap=options["cap"])
         draft_minutes = max(10, seconds(options["cap"]) // 600)
         for agent in agents:
@@ -700,7 +703,7 @@ def setup(args: argparse.Namespace) -> None:
                     env=env_block(agent["env"]),
                     draft=str(draft_minutes),
                 )
-            (ws / "prompts" / f"{agent['id']}.md").write_text(f"{brief}\n\n{closing}\n\n{appendix}\n")
+            (ws / "prompts" / f"{agent['id']}.md").write_text(f"{brief}\n\n{closing}\n\n{appendix}\n\n{alternatives_prompt}\n")
         if not solo:
             spawns = "\n".join(
                 f"   - `task_name`: `{agent['id']}`, message: `Your instructions are in "
@@ -722,6 +725,7 @@ def setup(args: argparse.Namespace) -> None:
             "effort": options["effort"],
             "cap": options["cap"],
             "clone_strategy": strategy,
+            "alternatives": alternatives_enabled,
             "setup_per_agent": bool(options["setup_per_agent"]),
             "agents": agents,
             "created_at": now(),
@@ -834,6 +838,11 @@ def run(args: argparse.Namespace) -> None:
             "interrupted": interrupted,
             "result": inspect_result(ws, meta),
         }
+        if meta.get("alternatives"):
+            record["alternatives"] = alternatives.inspect(ws / "work" / "alternatives" / "trials.sqlite3")
+            if exit_code == EXIT_OK and not record["alternatives"]["complete"]:
+                exit_code, diagnostic = EXIT_CODEX_FAILED, "alternative trial unresolved"
+                record["exit_code"] = exit_code
         record["usage"] = summarize_usage(ws / "codex-home")
         (ws / "logs" / "run.json").write_text(json.dumps(record, indent=2) + "\n")
         origin = ws / "work" / "origin.git"

@@ -151,3 +151,16 @@ suite, public GitHub availability of the supplied source revision, or isolation 
 malicious agents, macOS or Python 3.11 runtime behavior, or present/future product behavior beyond
 the retrieved documentation and pinned source. The observed token report cannot recover usage
 that the provider or killed process never persisted.
+
+## Round-2 a6 prototype: executable alternatives
+
+`proto/a6-alternatives` adds a durable two-candidate trial and executable selection,
+with a generated peer helper and small opt-in setup/run hooks. The mechanism targets
+single-author defects by testing independent implementations before promoting one.
+See [design, enablement, evidence and limits](research/mechanism-a6.md).
+
+Decision: the round-2 specific prototype/screen/no-vote instructions override the
+generic round-1 draft-election footer. Local `origin/main` is shared integration
+transport; no real-repository main branch or PR is touched. A first-passing tie is
+only a deterministic admissibility rule, not a claim of superior quality. Commands
+are frozen but indirectly invoked test code is not; the screen uses inline assertions.
