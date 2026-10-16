@@ -83,16 +83,18 @@ activation; recorded exits and token totals describe those failed attempts only.
 
 | Prototype / evidence | Independent a3 full suite | Scripted firing screen | Live-peer screen recorded elapsed |
 | --- | --- | --- | --- |
-| [a1 integration duty](screens/a1-integration.json) | 64 passed / 15.32s at `cd4aea1` | Mismatch fails, repaired result passes, late commit invalidates receipt; 0.378s base / 0.877s enabled | 188.7s; exit 2; no ready peers/check |
-| [a2 changed-path review](screens/a2-review.json) | Initial draft: 62 passed / 13.64s; revised 12 review tests / 3.33s | Self/stale receipts rejected, independent receipt accepted; 0.237s base / 0.560s enabled / 0.403s missing-review; missing-review exits 1 | 203.8s enabled / 206.4s base; zero delivered changes or attestations |
+| [a1 integration duty](screens/a1-integration.json) | 64 passed / 15.32s at `cd4aea1` | Mismatch fails, repaired result passes, late commit invalidates receipt; 0.378s base / 0.877s enabled | 188.7s recorded elapsed / 319s UTC span; exit 2; no ready peers/check |
+| [a2 changed-path review](screens/a2-review.json) | Initial draft: 62 passed / 13.64s; final 13 review tests / 3.98s | Self/stale receipts rejected, independent receipt accepted; 0.237s base / 0.560s enabled / 0.403s missing-review; missing-review exits 1 | 203.8s enabled / 206.4s base; zero delivered changes or attestations |
 | [a4 work stealing](screens/a4-scripted.json) | 63 passed / 12.57s | Two tasks, three claims, handoff to another peer, old owner rejected; 0.668s | [192.1s](screens/a4-live.json); exit 1, unused queue |
-| [a5 executable contracts](screens/a5-contracts-scripted.json) | Initial draft: 58 passed / 12.87s; final 10 contract tests / 4.06s | Frozen activation, rejected violation, accepted repair; 0.6277s | [155.5s recorded elapsed](screens/a5-contracts-live.json); UTC timestamps span 285s; no activations or commits |
-| [a6 alternatives](screens/a6-alternatives.json) | Initial draft: 60 passed / 12.70s; 8 retry-inclusive tests / 2.81s | Bad candidate fails, good candidate promoted; 0.6435s including setup | No run.json survived interruption; rollout timestamp span 303.979s, no trial |
+| [a5 executable contracts](screens/a5-contracts-scripted.json) | Initial draft: 58 passed / 12.87s; final 10 contract tests / 4.06s | Frozen activation, rejected violation, accepted repair; 0.6238s | [155.5s recorded elapsed](screens/a5-contracts-live.json); UTC timestamps span 285s; no activations or commits |
+| [a6 alternatives](screens/a6-alternatives.json) | Initial draft: 60 passed / 12.70s; final 10 alternative tests / 3.10s | Bad candidate fails, good candidate promoted; 0.6435s including setup | No run.json survived interruption; rollout timestamp span 303.979s, no trial |
 
 Every scripted row makes **zero model calls**; its run accounting correctly reports usage
 unavailable. Scripted behavior is programmed, so these examples do not demonstrate that live
 peers will adopt the helper. A3 independently reproduced the a5 screen in 0.6885s and the a1
-screen from archived branches, in addition to running each published draft's full suite.
+screen from archived branches, in addition to running each published draft's full suite. Detailed independent snapshots
+and commands are summarized in [a3 review evidence](screens/a3-independent-review.json);
+[a6 review notes](review-a6.md) record additional independent findings and fixes.
 
 | Blocked live attempt | Input | Cached input | Uncached input | Output |
 | --- | ---: | ---: | ---: | ---: |
@@ -112,11 +114,13 @@ Independent review found and prompted substantive corrections:
 - A2's initial all-history author count let an old second author exempt later sole-author
   rewrites. The prototype now requires a different peer from the **latest effective change author
   for every changed path**, including historical multi-author paths. Ordinary merges preserve
-  the underlying content author (`99773f3`). Content-bound
-  receipts deliberately survive unrelated commits; they do not certify dependency behavior.
+  the underlying content author (`99773f3`). Literal-path handling and a colliding-filename regression now protect
+  names containing wildcard syntax (`a19c01c`, 66 full-suite tests reported by owner). Content-bound receipts deliberately survive unrelated commits; they do not certify dependency behavior.
 - A6's initial retry wording could never restore final completion after a failed trial.
   An explicit, at-most-once retry now records the prior outcome, retains acceptance settings,
-  and resets candidates against current main (`0bdc35b`). The original attempt remains evidence.
+  and resets candidates against current main. Final `bd3e0e2` also preserves run evidence when
+  the ledger is missing and cleans up interrupted check process groups; the owner reports
+  63 full-suite tests. The original attempt remains evidence.
 - A5 fixed the finding that a probe could repair the temporary input before checking it;
   tracked-input immutability and interrupted-probe cleanup now have real-subprocess tests
   (`22ed84c`, 63 full-suite tests reported by owner, 10 focused tests independently passed).
@@ -158,13 +162,13 @@ baseline runtime plus the reports/auditor; it does not silently combine unvalida
 For TOML settings, put the shown one-line entry in the file passed through the **existing**
 `murmur setup --config CONFIG` option. Omit it or set false for base from the same build.
 
-| Branch | Internal enable line | Detailed mechanism / reproduction |
+| Branch / final pinned revision | Internal enable line | Detailed mechanism / reproduction |
 | --- | --- | --- |
-| `proto/a1-integration-barrier` | `integration_barrier = true` | [Integration duty](integration-barrier.md) |
-| `proto/a2-cross-review` | `independent_review = true` | [Changed-path review](proposals/a2-cross-review.md) |
-| `proto/a4-work-stealing` | `work_stealing = true` | [Leased work stealing](work-stealing.md) |
-| `proto/a5-contracts` | `MURMUR_CONTRACTS=1 murmur setup BRIEF [existing options]` | [Executable contracts](mechanism-a5.md) |
-| `proto/a6-alternatives` | `MURMUR_ALTERNATIVES=1 murmur setup BRIEF [existing options]` | [Executable alternatives](mechanism-a6.md) |
+| `proto/a1-integration-barrier` @ `b585ab5` | `integration_barrier = true` | [Integration duty](integration-barrier.md) |
+| `proto/a2-cross-review` @ `a19c01c` | `independent_review = true` | [Changed-path review](proposals/a2-cross-review.md) |
+| `proto/a4-work-stealing` @ `3305f42` | `work_stealing = true` | [Leased work stealing](work-stealing.md) |
+| `proto/a5-contracts` @ `22ed84c` | `MURMUR_CONTRACTS=1 murmur setup BRIEF [existing options]` | [Executable contracts](mechanism-a5.md) |
+| `proto/a6-alternatives` @ `bd3e0e2` | `MURMUR_ALTERNATIVES=1 murmur setup BRIEF [existing options]` | [Executable alternatives](mechanism-a6.md) |
 
 Environment switches are frozen at setup; omit them or set `0` for the branch's base arm.
 No new public flags or model constants are needed. The final operator decision is governed

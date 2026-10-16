@@ -105,11 +105,14 @@ on this aggregate branch.
 
 ## Verification
 
-All five initially published prototype suites passed independent a3 archive review: a1 **64**,
+Independently inspected prototype snapshots passed a3 archive review: a1 **64**,
 a2 **62**, a4 **63**, a5 **58**, a6 **60** tests. Subsequent focused fixes and final branch revisions
 are recorded in [MECHANISMS.md](research/MECHANISMS.md); aggregate validation passes **57 tests in 10.54 seconds**. The six-state capture retains
 expected exits **0 / 1 / 1 / 124 / 130 / 0**; both original launcher behavior and additive
-audit export were checked. Current focused follow-up suites also pass: a2 12, a5 10, a6 8. The original [research/evidence/](research/evidence/) files are
+audit export were checked. Final full-suite counts reported by prototype owners are a1 **64**, a2 **66**, a4 **63**,
+a5 **63**, a6 **63**. Independent focused follow-up suites pass for the corrected review,
+contract and alternatives code; exact revisions/results are in
+[the a3 review record](research/screens/a3-independent-review.json). The original [research/evidence/](research/evidence/) files are
 unchanged. Environment-blocked live attempts retain observed token totals and explicit lack
 of activation. No macOS/Windows behavior, live quality improvement, speedup or token-ratio
 success is claimed.

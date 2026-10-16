@@ -1,0 +1,104 @@
+{
+  "reviewer": "a3",
+  "date": "2026-10-16",
+  "method": "git archive into own-clone .work directories; same local Python/pytest, real Git/SQLite and fake Codex; no model calls for checks",
+  "full_suites": [
+    {
+      "prototype": "a1",
+      "revision": "cd4aea1",
+      "passed": 64,
+      "seconds": 15.32
+    },
+    {
+      "prototype": "a2",
+      "revision": "babf4b5",
+      "passed": 62,
+      "seconds": 13.64
+    },
+    {
+      "prototype": "a4",
+      "revision": "1289fc3",
+      "passed": 63,
+      "seconds": 12.57
+    },
+    {
+      "prototype": "a5",
+      "revision": "83a768d",
+      "passed": 58,
+      "seconds": 12.87
+    },
+    {
+      "prototype": "a6",
+      "revision": "b1e953f",
+      "passed": 60,
+      "seconds": 12.7
+    }
+  ],
+  "focused_followups": [
+    {
+      "prototype": "a2",
+      "revision": "99773f3",
+      "passed": 12,
+      "seconds": 3.33
+    },
+    {
+      "prototype": "a5",
+      "revision": "22ed84c",
+      "passed": 10,
+      "seconds": 4.06
+    },
+    {
+      "prototype": "a6",
+      "revision": "0bdc35b",
+      "passed": 8,
+      "seconds": 2.81
+    },
+    {
+      "prototype": "a6",
+      "revision": "bd3e0e2",
+      "passed": 10,
+      "seconds": 3.1
+    },
+    {
+      "prototype": "a2",
+      "revision": "a19c01c",
+      "passed": 13,
+      "seconds": 3.98
+    }
+  ],
+  "scripted_reproductions": [
+    {
+      "prototype": "a1",
+      "revision": "cd4aea1",
+      "base_seconds": 0.405,
+      "enabled_seconds": 0.924,
+      "model_calls": 0,
+      "model_tokens": 0,
+      "events": "failed mismatch, repaired check, stale receipt after late commit, final passing check"
+    },
+    {
+      "prototype": "a5",
+      "revision": "83a768d",
+      "seconds": 0.6885,
+      "model_calls": 0,
+      "model_tokens": 0,
+      "events": "activation, violation rejected, repair accepted"
+    }
+  ],
+  "aggregate": {
+    "tests": 57,
+    "seconds": 10.54,
+    "lifecycle_exits": [
+      0,
+      1,
+      1,
+      124,
+      130,
+      0
+    ],
+    "relative_markdown_links": "all checked local paths exist",
+    "prior_evidence": "unchanged from 658d82a",
+    "audit_fixture": "recomputed usage agrees; absent tokens remain unknown; no errors"
+  },
+  "limits": "These checks establish mechanics only. Live adoption screens were host-blocked; no quality/speed/token superiority established. Development-agent inference not measured in fixture zero counts."
+}
