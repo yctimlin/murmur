@@ -58,7 +58,8 @@ are not proven security boundaries by the fresh-thread change.
    no live-model compliance claim is made. Source: V2 wait links above.
 2. **Use two peers by default, retain explicit overrides.** Moderate task-specific evidence:
    in both rows of the prior two-versus-three-peer lean comparison, the two-peer arm used less
-   total and uncached input; the intervention also bundled prompt rules, the sample is small,
+   total and uncached input. The `lean2` and `lean3` arms used the same build, so peer count
+   is the comparison of interest; their shared build differed from base. The sample is small,
    and neither outcome proves a general 1.5–2x token target or quality parity. Source:
    [prior lean2 results](evidence/lean2-RESULTS.md),
    [prior plan](evidence/lean2-PLAN.md). These repository-relative evidence URLs refer to
@@ -83,6 +84,7 @@ instruction. ` .venv/bin/python -m pytest -q ` passed **34 tests in 9.41 seconds
 on 2026-10-16; these tests use the repository's fake Codex and temporary Git repositories.
 The run used **zero model calls and zero model tokens** for validation; agent research and
 implementation inference costs are not measured by that number. Exact new behavioral checks
-are in `tests/test_config.py` and `tests/test_setup_git.py` in that draft. No live Codex swarm,
+are in [configuration tests](../tests/test_config.py) and [setup tests](../tests/test_setup_git.py)
+in that draft. No live Codex swarm,
 Rust test suite, server-side cache behavior, sandbox escape resistance, numerical speedup,
 quality parity, or token-ratio improvement was validated.
