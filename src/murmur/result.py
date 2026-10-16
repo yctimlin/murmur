@@ -42,12 +42,14 @@ def inspect_result(workspace: Path, meta: dict) -> dict:
         report["errors"].append(f"origin: {error}")
     for agent in meta.get("agents", []):
         peer = {"id": agent["id"], "head": None, "head_in_main": None,
-                "tracked_changes": None}
+                "tracked_changes": None, "untracked_files": None}
         report["peers"].append(peer)
         try:
             clone = Path(agent["clone"])
             peer["head"] = _git(clone, "rev-parse", "--verify", "HEAD^{commit}").decode().strip()
             peer["tracked_changes"] = bool(_git(clone, "status", "--porcelain=v1", "-z", "--untracked-files=no"))
+            untracked = _git(clone, "ls-files", "--others", "--exclude-standard", "-z", "--", ".", ":(exclude).work")
+            peer["untracked_files"] = len([path for path in untracked.split(b"\0") if path])
             if report["head"]:
                 # An absent object is normally an unpushed local commit. The result
                 # cannot contain it; no fetch into a stopped peer is necessary.

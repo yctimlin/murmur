@@ -21,7 +21,7 @@ def test_clean_unchanged_result_is_not_invented_success(tmp_path):
     assert record["new_commits"] == record["changed_paths"] == 0
     assert record["has_pr"] is False
     assert record["peers"] == [{"id": "solo", "head": meta["base"],
-                                "head_in_main": True, "tracked_changes": False}]
+                                "head_in_main": True, "tracked_changes": False, "untracked_files": 0}]
     assert record["errors"] == []
 
 
@@ -80,3 +80,15 @@ def test_run_records_result_for_success_and_failure(tmp_path):
     record = json.loads((workspace / "logs" / "run.json").read_text())
     assert record["result"]["new_commits"] == 1
     assert record["result"]["head"] == git(clone, "rev-parse", "HEAD")
+
+
+def test_untracked_delivery_is_visible_but_ignored_files_and_scratch_are_excluded(tmp_path):
+    workspace, meta, clone = _state(tmp_path)
+    (clone / "deliverable.txt").write_text("not yet added")
+    (clone / ".work").mkdir()
+    (clone / ".work" / "notes.txt").write_text("scratch")
+    (clone / ".git" / "info" / "exclude").write_text(".murmur/\nignored.txt\n")
+    (clone / "ignored.txt").write_text("dependency")
+    record = inspect_result(workspace, meta)
+    assert record["peers"][0]["untracked_files"] == 1
+    assert record["peers"][0]["tracked_changes"] is False
