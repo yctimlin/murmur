@@ -27,6 +27,8 @@ Read the report together with:
   hazards and incomplete telemetry.
 - [Orchestration frameworks](ORCHESTRATORS.md): AutoGen, Magentic-One, Microsoft Agent
   Framework, CrewAI, LangGraph and Anthropic research engineering.
+- [Coding products and integration](PRODUCTS-INTEGRATION.md): Cursor, Devin, Jules, OpenHands,
+  SWE-agent and their coordination/merge mechanisms.
 - [Evaluation and research](evaluation.md): closest leaderless-swarm study, multi-agent failure
   taxonomy, architecture scaling, compiler case study, Agentless and evaluation validity.
 - [Supplemental coordination and source survey](survey-a3.md): additional coding-system

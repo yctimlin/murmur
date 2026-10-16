@@ -189,17 +189,25 @@ strict isolation, run murmur as a separate OS user.
 
 ## What we have measured
 
-One pilot so far: a customer-facing UI feature in a large TypeScript monorepo, 4 peers versus one
-agent, the same model and brief.
+The prior experiments include coding and plain-folder tasks, multiple peer counts, and held-out
+validation. Two peers often used fewer tokens than three, but the favorable exploratory result
+of 1.7–1.8× solo **uncached input** did not replicate: held-out lean2 runs used 4.4–4.6× solo
+uncached input and failed the keep rule. Total input was higher still in many comparisons.
+Speedups varied with the task; quality parity and a 1.5–2× **total-token** budget are unproven.
+See the [research report](research/REPORT.md), [prior results](research/evidence/lean2-RESULTS.md),
+and [held-out validation](research/evidence/val-RESULTS.md).
 
-| | Swarm (4 peers) | Solo |
-|---|---|---|
-| Time to done | 46 min | 120 min |
-| Uncached input / output tokens | 1.5M / 0.13M | 0.9M / 0.11M |
-| Review | Native look, safer integration, plainer UI, weak mobile layout | Richer UI and motion, one unreachable state, a risky product change |
+`murmur run` now adds two observations to `logs/run.json`:
 
-The swarm was 2.6× faster; the single agent's result was narrowly better. One run each is a
-first read, not a conclusion.
+- `usage`: per-thread and aggregate input, cached input, derived uncached input, output and
+  observed response counts from this run's Codex rollouts. Duplicate response records are
+  counted once; missing telemetry stays unknown. These are observed completed responses,
+  not guaranteed complete API usage or a bill. The terminal prints a short usage summary.
+- `result`: the delivered `origin/main` revision and peer worktree/integration state. This is
+  delivery evidence, not a statement that the requested work is correct or complete.
+
+The run remains reviewable after failure, a cap, or interruption. Exit codes keep their existing
+meaning. No model pricing table or guessed active-time adjustment is applied.
 
 ## Tests
 
