@@ -44,7 +44,7 @@ EXIT_INTERRUPTED = 130
 DURATION_RE = re.compile(r"^(\d+)([smh])$")
 ENV_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 DEFAULTS = {
-    "peers": 4,
+    "peers": 2,
     "model": "gpt-6-astra",
     "effort": "high",
     "cap": "3h",
@@ -851,7 +851,7 @@ def main() -> None:
     p_setup.add_argument("--repo", help="git repo to start from (default: current)")
     p_setup.add_argument("--base", help="commit or ref to start from (default: HEAD)")
     mode = p_setup.add_mutually_exclusive_group()
-    mode.add_argument("--peers", type=int, help="number of peer agents (default: 4)")
+    mode.add_argument("--peers", type=int, help="number of peer agents (default: 2)")
     mode.add_argument("--solo", action="store_true", help="one agent, no swarm")
     p_setup.add_argument("--model", help="Codex model (default: gpt-6-astra)")
     p_setup.add_argument("--effort", help="reasoning effort (default: high)")

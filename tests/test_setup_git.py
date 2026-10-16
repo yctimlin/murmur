@@ -195,3 +195,28 @@ def test_user_global_gitignore_is_honoured(tmp_path: Path, monkeypatch):
     env = {**os.environ, "GIT_CONFIG_GLOBAL": str(tmp_path / "ws-gitconfig")}
     repo, _ = snapshot_folder(folder, tmp_path / "w" / "input", env, 50)
     assert git(repo, "ls-files").split() == ["keep.md"]
+
+
+def test_default_swarm_launches_two_fresh_peers_with_complete_prompts(tmp_path: Path):
+    import json
+
+    repo, brief = init_repo(tmp_path / "src")
+    result = run_cli(
+        "setup", str(brief), "--repo", str(repo), "--into", str(tmp_path / "runs"),
+        "--id", "fresh", "--cap", "30s",
+    )
+    assert result.returncode == 0, result.stderr
+    workspace = Path(result.stdout.strip().splitlines()[-1])
+    meta = json.loads((workspace / "murmur.json").read_text())
+    assert [agent["id"] for agent in meta["agents"]] == ["a1", "a2"]
+    root = (workspace / "prompts" / "root.md").read_text()
+    assert '`fork_turns` set to `"none"`' in root
+    assert 'with only `timeout_ms`' in root
+    assert "every agent id" not in root
+    for agent in meta["agents"]:
+        prompt = workspace / "prompts" / f"{agent['id']}.md"
+        assert str(prompt) in root
+        text = prompt.read_text()
+        assert brief.read_text().strip() in text
+        assert agent["clone"] in text
+        assert "AGENTS.md" in text

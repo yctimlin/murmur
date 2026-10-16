@@ -36,7 +36,9 @@ other agents. It renders a prompt per agent: your brief, shared rules, and that 
 and port range.
 
 `murmur run` starts one `codex exec` session. Its root only spawns the peers through Codex's
-Multi-Agent V2 tools and waits for them. The peers work in four moves:
+Multi-Agent V2 tools and waits for them. Each peer starts with a fresh conversation and reads
+its own complete instruction file; the launcher history is not copied into every peer. The peers
+work in four moves:
 
 1. **Shared tools:** one peer builds a way to run and capture the result without credentials.
 2. **Explore:** each peer claims a different direction for the parts that decide quality and
@@ -53,6 +55,10 @@ Multi-Agent V2 tools and waits for them. The peers work in four moves:
 The run ends when no peer is running, or at the time cap. On the way out, including success,
 failure, the cap, and interruption, murmur signals the Codex process group: `SIGTERM`, then
 `SIGKILL` if any member is still alive.
+
+Two peers are the default because the prior [peer-count experiments](research/evidence/lean2-RESULTS.md)
+showed lower input usage with two peers than with three. Those small experiments do not establish
+a general speedup, equal quality, or a fixed token ratio; `--peers` remains configurable.
 
 `murmur setup --solo` builds the same isolated workspace for a single agent, as a baseline.
 
@@ -80,7 +86,7 @@ murmur run WORKSPACE
 | `--repo` | current repo | Agents start from one commit; uncommitted changes are not included. A plain folder also works (see below) |
 | `--max-file-mb` | see `--help` | Plain-folder input only: larger files are shared read-only links instead of git content |
 | `--base` | `HEAD` | Commit or ref to start from |
-| `--peers` / `--solo` | 4 peers | Two peers are often as good as four |
+| `--peers` / `--solo` | 2 peers | Start with two; increase explicitly when the task has enough independent work |
 | `--setup` | none | Shell command run once, in the first clone, before the clock starts (repeatable) |
 | `--setup-per-agent` | off | Run `--setup` in every clone. Use this when the install embeds absolute paths |
 | `--cap` | `3h` | Hard time limit, e.g. `90m` |

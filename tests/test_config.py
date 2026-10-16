@@ -41,3 +41,10 @@ def test_string_setup_is_rejected(tmp_path: Path):
         assert exc.code == 3
     else:
         raise AssertionError("expected setup to be rejected")
+
+
+def test_two_peers_by_default_and_explicit_counts_are_preserved(tmp_path: Path):
+    brief = str(tmp_path / "brief.md")
+    assert resolve_options(_args(brief=brief))["peers"] == 2
+    assert resolve_options(_args(brief=brief, peers=6))["peers"] == 6
+    assert resolve_options(_args(brief=brief, solo=True))["peers"] == 1
