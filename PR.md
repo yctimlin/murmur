@@ -61,6 +61,16 @@ The root wait instruction now passes only `timeout_ms`, matching the source's
 `deny_unknown_fields` argument parser. See [source audit](research/CODEX-SOURCE.md),
 [setup tests](tests/test_setup_git.py), and [config tests](tests/test_config.py).
 
+The delivered-state inventory records the actual `origin/main` commit, new commits and changed
+paths, PR.md presence, and each peer HEAD's inclusion in main, tracked dirt and nonignored
+untracked count. It excludes `.work/` scratch and never fetches or alters a peer tree. Missing
+repositories stay unknown, and these observations never change the process exit code or assert
+functional completion. Evidence is strong for these narrow mechanics: [real-git regression
+tests](tests/test_result.py) cover clean/stale/pushed/unpushed/dirty/missing states and a failed
+Codex run with a pushed commit. Ignored deliverables, discarded draft intent, objective quality,
+and whether tests cover requirements are not inferred. The research rationale is [verification
+and termination evidence](research/evaluation.md); improved task outcomes remain unverified.
+
 The remaining selected mechanisms are integrated by their owners under the shared plan above;
 this document will record the resulting behavior and final validation before completion.
 
