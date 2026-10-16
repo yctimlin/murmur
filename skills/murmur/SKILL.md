@@ -57,7 +57,7 @@ the run when the task is large.
 ## 2. Set up the workspace
 
 ```bash
-murmur setup brief.md --repo <repo> --peers 4 \
+murmur setup brief.md --repo <repo> \
   --setup "cp .env.example .env" --setup "pnpm install --frozen-lockfile"
 ```
 
@@ -70,7 +70,12 @@ murmur setup brief.md --repo <repo> --peers 4 \
   hard-code `NODE_PATH` to `a1`'s `node_modules`. Pass `--setup-per-agent` when the install embeds
   absolute paths (virtualenvs, node shebangs).
 - Setup uses the environment you launched murmur with, including your pnpm store. Never pass secrets.
-- `--peers 2` is often as good as 4. `--cap` defaults to `3h`.
+- Two peers are the default; use `--peers N` when the task warrants more parallel work.
+  The prior two-versus-three-peer experiments used fewer tokens with two peers, but do not
+  establish universal quality parity or a fixed token ratio. `--cap` defaults to `3h`.
+- Model and reasoning effort follow explicit murmur flags/config, then top-level preferences
+  in the user's Codex config. Unspecified values are left to Codex; named profiles and project
+  overrides are not imported. No model name or compaction threshold is imposed by murmur.
 - Each agent's `PORT_BASE` is exported for zsh started in its clone. Commands that start outside
   the clone, such as in `work/`, do not export it; the prompt tells the agent to export it there.
   You do not paste it into the setup command. `HOME` is not changed.
@@ -153,7 +158,7 @@ that touch paths outside the workspace, credential files, `~/.codex` or GitHub.
 |---|---|
 | `murmur.json` | Run settings, base commit, agents, ports |
 | `prompts/` | The exact prompt each agent received |
-| `logs/run.json` | Start, end, duration, exit code, capped or interrupted |
+| `logs/run.json` | Start/end, exit state, observed response usage, delivered revision and peer Git state |
 | `logs/session.jsonl` | The root (or solo) session's event stream |
 | `codex-home/sessions/` | One rollout per agent: commands, edits, tokens |
 | `codex-home/agent_message_board_1.sqlite` | Board posts (`posts` table, plain text) |
@@ -167,5 +172,7 @@ fetched and reviewed.
 - Codex's agent message board is still marked "under development".
 - The root's spawn messages are encrypted in the logs; each agent's first action is reading its
   own prompt file, which shows what it received.
-- The swarm is tuned for `gpt-6-astra`. With other models, check `status` early for spawn
-  failures.
+- Model/provider support for the required Codex agent tools varies; inspect early activity for
+  spawn failures. An unspecified model preference is displayed as `Codex default`.
+- Final `usage` counts only observed per-response records, so missing usage is unknown, not
+  zero. The `result` inventory describes delivered Git state; it is not a quality verdict.

@@ -79,7 +79,9 @@ def main() -> None:
             row["agent"] = "solo"
     if state == "RUNNING" and first:
         state += f" for {ago(first).removesuffix(' ago')}"
-    print(f"{ws.name} · {meta['mode']} · {meta['peers']} agent(s) · {meta['model']}/{meta['effort']} · {state}")
+    model = meta.get("model") or "Codex default"
+    effort = meta.get("effort") or "Codex default"
+    print(f"{ws.name} · {meta['mode']} · {meta['peers']} agent(s) · {model}/{effort} · {state}")
 
     if meta["mode"] == "swarm":
         ok = spawns.count("ok")
