@@ -55,7 +55,7 @@ not included in zero-model-call fixture accounting.
 A live screen uses a fresh plain folder, two peers, 25-minute cap, standard-library
 integer-span compression with frozen inline assertions for empty, unsorted, repeated,
 negative and singleton inputs. It is an invented small screening task, not an
-operator evaluation task. Results are appended after completion.
+operator evaluation task. Results follow below.
 
 ## Limits and cost
 
@@ -77,3 +77,29 @@ Concurrent ordinary main pushes can make a trial stale; no rebase/retry is guess
 A failed/stale trial is retained as failed run evidence rather than silently erased.
 There is no automatic waking of finished peers or guarantee of unbiased independent
 solutions. Screen success establishes firing and lifecycle compatibility only.
+
+## Screen outcome (October 16, 2026)
+
+The scripted real-Git screen passed in **0.6435 s including setup**, emitted seven
+ledger events, rejected the intentionally defective span implementation, promoted
+the passing candidate, and finished `murmur run` with exit 0. Model calls/tokens: zero.
+Reproduce with `.venv/bin/python scripts/screen_alternatives.py NEW_OUTPUT_DIRECTORY`.
+This substitutes deterministic peer actions for Codex and is explicitly a mechanics
+screen, not real-agent adoption evidence. The underlying fake run's usage is unknown
+(no provider records); zero inference is established by the fixture implementation.
+
+The real two-peer attempt was **infrastructure-blocked**: both peers' shell tools
+failed before reading their instructions with `app-server socket directory must be
+a user-owned directory with mode 0700`. No trials or mechanism events occurred.
+Its own exec session was interrupted; no final `logs/run.json` survived the external
+interrupt. Durable rollouts show **602,795 input**, **540,800 cached**, **61,995 uncached**,
+and **1,043 output** tokens across 28 observed responses. These are costs of an
+unusable environment, not measured alternative-selection overhead. The evidence
+JSON records the observed rollout time span separately from a missing run duration.
+No environment/security workaround was attempted.
+
+Machine-readable evidence: [screens/a6-alternatives.json](screens/a6-alternatives.json).
+The prototype remains available but is **not a live-screen survivor**; its expected
+extra implementation cost also makes it lower priority than mechanisms directly
+checking integrated work. The operator must obtain a successful real screen before
+including it in a performance claim.
