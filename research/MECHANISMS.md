@@ -37,7 +37,7 @@ different topologies/workloads. We do not borrow their benchmark numbers as murm
 | Mechanism | Owner / branch | Failure targeted | New code behavior | Cost hypothesis |
 | --- | --- | --- | --- | --- |
 | Final-revision integration duty | a1 / `proto/a1-integration-barrier` | Final merged state lacks a late check | Any peer claims an expiring duty, executes a check on clean accepted main and records revision-bound evidence; a later main update invalidates completion | One claimed late check and bounded status/receipt calls; no extra model thread |
-| Independent sole-author review | a2 / `proto/a2-cross-review` | Single-author logic receives no independent inspection | Derive changed-path author obligations from Git, reject self/stale/dirty attestations and gate final completion on another peer's content-bound receipt | Claimed estimate <=15% incremental screen input; unverified |
+| Independent changed-path review | a2 / `proto/a2-cross-review` | Single-author logic receives no independent inspection | Derive changed-path author obligations from Git, reject self/stale/dirty attestations and gate final completion on another peer's content-bound receipt | Claimed estimate <=15% incremental screen input; unverified |
 | Leased work stealing | a4 / `proto/a4-work-stealing` | Unstarted/abandoned units and synchronized finishes | Atomic ready-task claims, dependencies, lease expiry, fencing tokens and a completion barrier on declared work | Roughly add/claim/finish per unit; predicts >=10% lower imbalanced-task time at <=1.2x base input; unverified |
 | Frozen executable interface contracts | a5 / `proto/a5-contracts` | Independent changes silently break an agreed interface | Freeze peer-authored probe bytes; run them on incoming main under Git ref locking; reject violating updates before acceptance | Bounded local checks per push; no new inference call, but extra check latency |
 | Two-candidate executable alternatives | a6 / `proto/a6-alternatives` | Risky logic has one implementation and correlated review misses it | Two peers submit different candidate commits; frozen argv checks execute in disposable clones and the first passing candidate is promoted with old-head compare-and-swap | Two bounded implementations plus trial calls; may exceed the token budget |
@@ -58,7 +58,7 @@ specific round-two requirement; the generic draft/vote footer does not override 
   stale, and a successful enabled run has executed evidence for the final delivered revision.
 - **Independent review:** [products-other.md](products-other.md) documents Claude Code teams'
   shared state/lifecycle hooks; [survey-a3.md](survey-a3.md) discusses revision/content evidence.
-  Prediction: every eligible delivered sole-author path has another peer's current-content
+  Prediction: every delivered changed path has another peer's current-content
   attestation, with self/stale/dirty attempts rejected. Attestations do not prove review quality.
 - **Work stealing:** Claude Code task claims and Gas Town tracking in
   [products-other.md](products-other.md), compiler task locks in [evaluation.md](evaluation.md),
@@ -78,22 +78,48 @@ These are prospective mechanism predictions, not retrospective claims of superio
 ## Screening and independent review
 
 Screen examples were invented for this run, separately from the sealed evaluation tasks. Live
-runs use two peers and a 25-minute cap. The authoritative attempt reports and per-owner notes
-are being collected below; pending entries are not passing results.
+runs use two peers and a 25-minute cap. The authoritative attempt reports are linked below. Every live attempt was blocked before
+activation; recorded exits and token totals describe those failed attempts only.
 
-| Prototype | Full suite at initial published revision | Scripted firing screen | Live-peer screen |
+| Prototype / evidence | Independent a3 full suite | Scripted firing screen | Live-peer screen recorded elapsed |
 | --- | --- | --- | --- |
-| a1 integration duty | Owner: 63 passed / 14.88s | Pending report | Infrastructure-blocked; report pending |
-| a2 independent review | Independent a3 archive: 62 passed / 13.64s | Pending report | Infrastructure-blocked; report pending |
-| a4 work stealing | Owner: 63 passed / 12.19s | Pending report | Infrastructure-blocked; report pending |
-| a5 executable contracts | Owner: 58 passed / 13.52s | Frozen activation, rejected violation, accepted repair; 0.6277s, zero model calls | Blocked before prompt read; 155.5s, 587,855 input / 529,152 cached / 58,703 uncached / 1,082 output; no activations or commits |
-| a6 alternatives | Owner: 60 passed / 13.40s | Pending report | Infrastructure-blocked; report pending |
+| [a1 integration duty](screens/a1-integration.json) | 64 passed / 15.32s at `cd4aea1` | Mismatch fails, repaired result passes, late commit invalidates receipt; 0.378s base / 0.877s enabled | 188.7s; exit 2; no ready peers/check |
+| [a2 changed-path review](screens/a2-review.json) | Initial draft: 62 passed / 13.64s; revised 12 review tests / 3.33s | Self/stale receipts rejected, independent receipt accepted; 0.237s base / 0.560s enabled / 0.403s missing-review; missing-review exits 1 | 203.8s enabled / 206.4s base; zero delivered changes or attestations |
+| [a4 work stealing](screens/a4-scripted.json) | 63 passed / 12.57s | Two tasks, three claims, handoff to another peer, old owner rejected; 0.668s | [192.1s](screens/a4-live.json); exit 1, unused queue |
+| [a5 executable contracts](screens/a5-contracts-scripted.json) | Initial draft: 58 passed / 12.87s; final 10 contract tests / 4.06s | Frozen activation, rejected violation, accepted repair; 0.6277s | [155.5s recorded elapsed](screens/a5-contracts-live.json); UTC timestamps span 285s; no activations or commits |
+| [a6 alternatives](screens/a6-alternatives.json) | Initial draft: 60 passed / 12.70s; 8 retry-inclusive tests / 2.81s | Bad candidate fails, good candidate promoted; 0.6435s including setup | No run.json survived interruption; rollout timestamp span 303.979s, no trial |
 
-A3 independently inspected published code and identified two meaningful limits: historical
-path-touch authors can exempt subsequently rewritten sole-author logic in a2, and a stale trial
-in a6 cannot currently be erased by a later successful retry despite suggested retry wording.
-A3 also requested immutable-input checking for a5's temporary probe tree. Owners are reviewing
-these findings; final disposition and exact final tests will be recorded before delivery.
+Every scripted row makes **zero model calls**; its run accounting correctly reports usage
+unavailable. Scripted behavior is programmed, so these examples do not demonstrate that live
+peers will adopt the helper. A3 independently reproduced the a5 screen in 0.6885s and the a1
+screen from archived branches, in addition to running each published draft's full suite.
+
+| Blocked live attempt | Input | Cached input | Uncached input | Output |
+| --- | ---: | ---: | ---: | ---: |
+| a1 enabled | 652,824 | 586,752 | 66,072 | 1,126 |
+| a2 base | 665,139 | 642,560 | 22,579 | 1,266 |
+| a2 enabled | 641,571 | 581,248 | 60,323 | 1,267 |
+| a4 enabled | 597,695 | 514,688 | 83,007 | 1,065 |
+| a5 enabled | 587,855 | 529,152 | 58,703 | 1,082 |
+| a6 enabled | 602,795 | 540,800 | 61,995 | 1,043 |
+
+These totals are provider-observed response usage, not complete billing guarantees. There is
+no task-outcome comparison to infer from them. Recorded monotonic elapsed, UTC timestamp span
+and rollout span are kept distinct; no machine-pause adjustment is guessed.
+
+Independent review found and prompted substantive corrections:
+
+- A2's initial all-history author count let an old second author exempt later sole-author
+  rewrites. The prototype now requires a different peer from the **latest effective change author
+  for every changed path**, including historical multi-author paths. Ordinary merges preserve
+  the underlying content author (`99773f3`). Content-bound
+  receipts deliberately survive unrelated commits; they do not certify dependency behavior.
+- A6's initial retry wording could never restore final completion after a failed trial.
+  An explicit, at-most-once retry now records the prior outcome, retains acceptance settings,
+  and resets candidates against current main (`0bdc35b`). The original attempt remains evidence.
+- A5 fixed the finding that a probe could repair the temporary input before checking it;
+  tracked-input immutability and interrupted-probe cleanup now have real-subprocess tests
+  (`22ed84c`, 63 full-suite tests reported by owner, 10 focused tests independently passed).
 
 The read-only [screen auditor](../scripts/audit_screen.py) recomputes observed usage from rollout
 records, preserves unknown values, fingerprints the source report files and exports mechanism
@@ -101,12 +127,45 @@ sections. A caller-declared fixture label is never interpreted as measured zero 
 Scripted screens explicitly make zero model calls; the agents writing/reviewing these mechanisms
 consume separate inference that these fixture counts do not measure.
 
-## Eligibility and dropped work
+## Eligibility, conditional shortlist and dropped work
 
-No live-screen winner or performance recommendation is made. All substantive prototype code
-is retained on its branch for review/re-screening. A3's duplicate implementation was dropped
-before publication; merged proposal ideas remain documented. No prototype may be combined
-before both have passed the required screen. The operator may later advance at most three
-live-screen survivors based on expected effect on the measured defects, followed by the fixed
-quality/time/token evaluation. Candidate ranking and exact enable lines will be finalized with
-the remaining screen reports; missing live evidence will remain visibly missing.
+**Zero candidates are eligible for the live performance comparison yet.** All five substantive
+code prototypes remain on their branches. Re-screen in a functioning environment first; do not
+combine mechanisms before both pass. For that re-screen, the conditional shortlist is:
+
+1. **a2 independent changed-path review:** directly targets every observed L1/L2 swarm P0's
+   single-author exposure. The corrected policy also covers multi-author files. Receipt
+   quality and peer adherence remain the central uncertainty.
+2. **a1 final-revision integration duty:** directly targets the measured absence of checks
+   after late commits and requires executed final-head evidence. Check relevance remains
+   a peer judgment that the mechanism cannot establish.
+3. **a5 frozen executable contracts:** targets the demonstrated UI/API seam before a bad
+   update is accepted. Benefit depends on peers declaring useful invariants early enough;
+   fresh-tree dependency setup and local check latency are costs to measure.
+
+This ordering is based on expected effect on the measured failures, not votes, diff size, or
+screen timings. It is **not a winner selection or claim of efficacy**. A4 work stealing is
+retained as a reserve because the log establishes synchronized finish but not a measured
+backlog of abandoned runnable units. A6 alternatives is retained as a reserve because it adds
+duplicate implementation work and needs a sufficient executable oracle; its causal relevance
+and budget cost remain less directly supported. These reserves are not dropped for code size.
+A3's duplicate code was discarded and its two proposals merged as described above.
+
+## Enable each prototype
+
+Check out the corresponding branch first. Aggregate `experiment/self-improve-r2` retains
+baseline runtime plus the reports/auditor; it does not silently combine unvalidated candidates.
+For TOML settings, put the shown one-line entry in the file passed through the **existing**
+`murmur setup --config CONFIG` option. Omit it or set false for base from the same build.
+
+| Branch | Internal enable line | Detailed mechanism / reproduction |
+| --- | --- | --- |
+| `proto/a1-integration-barrier` | `integration_barrier = true` | [Integration duty](integration-barrier.md) |
+| `proto/a2-cross-review` | `independent_review = true` | [Changed-path review](proposals/a2-cross-review.md) |
+| `proto/a4-work-stealing` | `work_stealing = true` | [Leased work stealing](work-stealing.md) |
+| `proto/a5-contracts` | `MURMUR_CONTRACTS=1 murmur setup BRIEF [existing options]` | [Executable contracts](mechanism-a5.md) |
+| `proto/a6-alternatives` | `MURMUR_ALTERNATIVES=1 murmur setup BRIEF [existing options]` | [Executable alternatives](mechanism-a6.md) |
+
+Environment switches are frozen at setup; omit them or set `0` for the branch's base arm.
+No new public flags or model constants are needed. The final operator decision is governed
+by [eval-plan.md](../eval-plan.md), not by this conditional ranking.

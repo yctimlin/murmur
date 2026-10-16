@@ -29,7 +29,9 @@ not selection criteria. Record the final candidate IDs and rationale before eval
 
 ## Arms and controls
 
-For every sealed task, run three replicates of each eligible arm:
+For every sealed task, run three replicates of each eligible arm. Each prototype is its own
+branch build: compare its enabled arm with the same branch build disabled. Do not pool base
+runs across different builds without first verifying identical disabled behavior:
 
 - **Solo:** the same model/provider configuration, task, dependencies, tools and time budget,
   using the existing solo mode.

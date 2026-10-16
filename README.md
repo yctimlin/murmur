@@ -1,5 +1,9 @@
 # murmur
 
+Round-two collaboration prototypes are documented in [PR.md](PR.md) and
+[research/MECHANISMS.md](research/MECHANISMS.md). Their executable code lives on the listed
+`proto/*` branches; this aggregate branch retains baseline runtime until live screening succeeds.
+
 Run a leaderless swarm of [Codex](https://github.com/openai/codex) agents on one objective.
 
 `murmur` gives N Codex agents the same brief and the same authority. They share a private git

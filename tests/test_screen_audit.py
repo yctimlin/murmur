@@ -53,6 +53,18 @@ def test_missing_or_malformed_report_is_an_incomplete_screen(tmp_path):
     fixture(tmp_path)
     (tmp_path / 'logs/run.json').write_text('{')
     report = audit(tmp_path, kind='live', sections=['missing'])
-    assert report['wall_seconds'] is None and report['exit_code'] is None
+    assert report['recorded_elapsed_seconds'] is None and report['exit_code'] is None
     assert len(report['errors']) == 2
     assert report['mechanism_evidence']['missing'] is None
+
+
+def test_elapsed_and_timestamp_span_are_not_conflated(tmp_path):
+    fixture(tmp_path)
+    path = tmp_path / 'logs/run.json'
+    record = json.loads(path.read_text())
+    record.update(started_at='2026-10-16T03:45:32+00:00', ended_at='2026-10-16T03:50:17+00:00', seconds=155.5)
+    path.write_text(json.dumps(record))
+    report = audit(tmp_path, kind='live', sections=[])
+    assert report['recorded_elapsed_seconds'] == 155.5
+    assert report['timestamp_span_seconds'] == 285
+    assert report['errors'] == []

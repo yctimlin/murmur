@@ -8,6 +8,7 @@ No success/quality verdict is inferred from a process exit or a populated eviden
 from __future__ import annotations
 
 import argparse
+from datetime import datetime
 import hashlib
 import json
 from pathlib import Path
@@ -54,6 +55,13 @@ def audit(workspace: Path, *, kind: str, sections: list[str]) -> dict:
     for key, value in evidence.items():
         if value is None:
             errors.append(f"run.json has no mechanism evidence section {key!r}")
+    timestamp_span = None
+    if record.get("started_at") and record.get("ended_at"):
+        try:
+            timestamp_span = (datetime.fromisoformat(record["ended_at"]) -
+                              datetime.fromisoformat(record["started_at"])).total_seconds()
+        except (TypeError, ValueError):
+            errors.append("run.json timestamps are invalid or use inconsistent timezone formats")
     result = record.get("result")
     result = result if isinstance(result, dict) else {}
     return {
@@ -67,7 +75,9 @@ def audit(workspace: Path, *, kind: str, sections: list[str]) -> dict:
         "delivered_head": result.get("head"),
         "started_at": record.get("started_at"),
         "ended_at": record.get("ended_at"),
-        "wall_seconds": record.get("seconds"),
+        "recorded_elapsed_seconds": record.get("seconds"),
+        "timestamp_span_seconds": timestamp_span,
+        "timing_note": "Elapsed and timestamp span are distinct clocks; no pause correction inferred.",
         "exit_code": record.get("exit_code"),
         "codex_exit_code": record.get("codex_exit_code"),
         "capped": record.get("capped"),

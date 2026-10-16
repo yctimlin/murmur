@@ -1,153 +1,115 @@
 # Shared plan and user experience
 
-Keep `murmur setup` and `murmur run` as the only public commands. Build on the selected
-a2 draft: a new swarm starts two peers with separate conversation histories and complete
-instruction files, while explicit peer counts and solo runs retain their meaning. The root
-uses the actual Codex V2 wait contract. Preserve the user's model choices and Codex defaults;
-do not prescribe compaction thresholds. Report observed per-response usage and the delivered
-Git state in the existing run report, without equating process exit or a clean tree with
-objective quality.
+Round two targets the observed collaboration failures with executable mechanisms: missing
+independent review, absent checks of late integration, unclaimed work, interface drift, and
+single-candidate risky logic. Every peer has the same authority; root remains spawn/wait-only.
+The public interface stays `murmur setup` and `murmur run`, with no required new flags and no
+hardcoded model, effort, context or compaction settings. Each prototype is default-disabled,
+uses the existing private Git origin plus small durable state, and can compare enabled versus
+base from the same build. Mechanisms apply to repositories, snapshotted folders and greenfield
+work; their code prescribes no task filename or language.
 
-The shared interfaces are the existing setup metadata (`murmur.json`), generated peer/root
-prompts, and additive `usage` and `result` objects in `logs/run.json`. Missing usage/state must
-remain explicitly unknown. The hard seams are model/config precedence, fresh-thread runtime
-inheritance, usage deduplication across copied histories, and final-state inspection after
-success, failure, timeout, or interruption. Owners: a2 launcher/source audit; a4 configuration;
-a1 accounting/report synthesis; a6 delivery inventory; a3/a5 broader research and independent
-review. No shared infrastructure change is needed beyond the launcher mechanisms in scope.
+Five code prototypes are delivered on separate `proto/*` branches. The aggregate
+`experiment/self-improve-r2` branch contains research, screen evidence, the operator evaluation
+plan and a read-only screen auditor. It preserves baseline runtime because **none completed a
+live adoption screen in this environment**. This separation follows the explicit requirement
+not to combine mechanisms before screening; it is not a claim that a docs-only intervention
+solves the objective. The substantive new mechanism implementations and tests are on the
+published prototype branches, ready for independent review and re-screening.
 
-## Drafts and selection
+Shared contracts are existing setup metadata and `logs/run.json`, with prototype-specific
+state under `work/` and generated peer helpers. Owners: a1 integration duty, a2 independent
+review, a4 leased queue, a5 executable interface contracts, a6 measured alternatives; a3
+merged duplicate proposals, independently reviewed drafts, provided accounting support and
+assembled this report. Every prototype received independent archived-suite review. Findings
+were returned to their authors and corrected rather than selecting the smallest diff.
 
-Every peer built an independent draft before examining the others. All six peers ran each
-draft's tests and reviewed its implementation. The posted rankings selected a2 with four
-first-place votes; a4 received two. No tie-break was needed.
+## What changed and evidence strength
 
-| Voter | Ranking, first to last |
-|---|---|
-| a1 | a4, a2, a1, a6, a5, a3 |
-| a2 | a2, a4, a1, a6, a3, a5 |
-| a3 | a2, a4, a1, a6, a3, a5 |
-| a4 | a2, a4, a1, a6, a3, a5 |
-| a5 | a2, a4, a1, a6, a3, a5 |
-| a6 | a4, a2, a1, a6, a3, a5 |
+| Prototype | Concrete behavior | Evidence and limits |
+| --- | --- | --- |
+| `proto/a1-integration-barrier` | Any peer claims and executes a final-main check; stale/missing evidence prevents a successful run | [Real-Git tests and mismatch/repair/late-commit screen](research/integration-barrier.md). Proves mechanics, not check quality or live adoption. |
+| `proto/a2-cross-review` | Every changed path requires an attestation from a peer other than its latest change author; self/stale/dirty receipts are rejected | [Author/revision tests and independent-review screen](research/proposals/a2-cross-review.md). Historical-author waiver was closed after review. Receipt quality remains human/model judgment. |
+| `proto/a4-work-stealing` | Atomic ready-task claims, dependency ordering, lease recovery and fencing protect a durable shared work queue | [Concurrent-claim tests and two-unit handoff screen](research/work-stealing.md). Completion covers declared tasks, not the whole objective automatically. |
+| `proto/a5-contracts` | Frozen executable probes reject violating main updates under Git's ref lock | [Activation/rejection/repair screen and race tests](research/mechanism-a5.md). Coverage is limited to declared invariants and available dependencies. |
+| `proto/a6-alternatives` | Two peer candidates execute the same registered checks; only a passing candidate can advance unchanged main | [Candidate-selection/stale-head tests and screen](research/mechanism-a6.md). Duplicate coding costs tokens; executable checks must actually distinguish quality. |
 
-| Draft | Inspected code revision | Idea and disposition |
-|---|---|---|
-| a1 | `dabf73e` | Per-response usage accounting: retain; makes subsequent optimization measurable without claiming billing completeness. |
-| a2 | `fb5ebaa` | Two-peer default, fresh histories, valid V2 waits: selected base; smallest directly supported execution improvement. |
-| a3 | `b6d4d15` | Revision-bound check receipts: defer; useful provenance but optional adoption and efficiency gains remain unmeasured. |
-| a4 | `563d3cf` | Configured model/effort fidelity: retain and finish source-informed cleanup; meets explicit flexibility requirement. |
-| a5 | `c50c5b6` | Per-push integration receipts: defer; adds a hook and subprocesses for information already present in Git, without measured review gains. |
-| a6 | `77c4be7` | Final delivered-revision/peer-state inventory: retain; distinguish observable delivery from objective completion. |
+The proposal inventory, prior art, cost hypotheses, exact screening measurements and conditional
+shortlist are in [research/MECHANISMS.md](research/MECHANISMS.md). Sources are the supplied
+round-one evidence and already-completed surveys; no sealed task or hidden test was inspected.
+Every stronger claim about quality, speed, token targets or live adherence remains unverified.
 
-The source code and full tests of each draft remain reproducible from `draft/a1` through
-`draft/a6`. Research commits can follow the listed code revisions. In a2's independent archived
-checkouts, full suites passed: a1 37, a2 34, a3 36, a4 38, a5 35, a6 38. Those are deterministic
-fake-Codex tests, not evidence of a real swarm's speed or quality.
+The shared [audit script](scripts/audit_screen.py) recomputes provider-observed per-response
+usage, detects disagreement with the persisted run record, preserves missing usage as unknown,
+exports requested mechanism sections, and fingerprints the source files. It distinguishes
+recorded elapsed seconds from UTC timestamp span. This is accounting/review support, not a
+new optimization claim. Tests cover missing/malformed data, copied response deduplication,
+stale totals, caller-declared fixture limits and differing clocks.
 
-## What changed and why
+## Decisions and uncompleted work
 
-The selected base changes the default from four peers to two while preserving explicit
-`--peers` and `--solo`. The matched `lean2`/`lean3` prior arms used the same build and observed
-lower total and uncached input with two peers on both tasks. This is useful local evidence,
-not a universal guarantee or proof of quality parity. See [prior plan](research/evidence/lean2-PLAN.md)
-and [results](research/evidence/lean2-RESULTS.md).
-
-Fresh peers read complete instruction files instead of inheriting the launcher's conversation.
-Source inspection verifies fresh-child configuration inheritance and absent parent history;
-setup tests verify that every generated peer instruction file contains the brief, clone path,
-and project-instruction entry point. Token savings and task-quality effects are unmeasured.
-The root wait instruction now passes only `timeout_ms`, matching the source's
-`deny_unknown_fields` argument parser. See [source audit](research/CODEX-SOURCE.md),
-[setup tests](tests/test_setup_git.py), and [config tests](tests/test_config.py).
-
-The delivered-state inventory records the actual `origin/main` commit, new commits and changed
-paths, PR.md presence, and each peer HEAD's inclusion in main, tracked dirt and nonignored
-untracked count. It excludes `.work/` scratch and never fetches or alters a peer tree. Missing
-repositories stay unknown, and these observations never change the process exit code or assert
-functional completion. Evidence is strong for these narrow mechanics: [real-git regression
-tests](tests/test_result.py) cover clean/stale/pushed/unpushed/dirty/missing states and a failed
-Codex run with a pushed commit. Ignored deliverables, discarded draft intent, objective quality,
-and whether tests cover requirements are not inferred. The research rationale is [verification
-and termination evidence](research/evaluation.md); improved task outcomes remain unverified.
-
-Model and effort now follow explicit murmur flags, murmur TOML, the user's top-level Codex
-configuration, then installed Codex defaults. Explicit preferences are frozen at setup. No model
-name, reasoning level or compaction threshold is imposed. The source audit also corrects the old
-blanket catalog-effort workaround: ordinary child effort inherits from the session; the catalog
-field resolves the Ultra alias and is left intact. Strong evidence for configuration behavior is
-[configuration tests](tests/test_config.py), [catalog tests](tests/test_catalog.py), and the
-[version-specific audit](research/CODEX-SOURCE.md). Named profiles and project-level configuration
-are deliberately not reimplemented; users can express those choices via existing flags/TOML.
-This is portability/correctness work, not a demonstrated speed improvement.
-
-Run accounting reads only this run's Codex rollouts and sums provider-observed per-response
-usage, deduplicating `(thread_id, response_id)` across copied or replayed records. Input, cached
-input, derived uncached input, output and response count remain separate; cumulative thread
-counters and reasoning output are not added again. Missing data stays unknown, malformed or
-truncated records are counted, and the terminal prints a short summary. Strong narrow evidence:
-[source definitions/persistence](research/usage.md) and [accounting tests](tests/test_usage.py),
-including a failed run and inherited/replayed records. Complete billing, all failed API calls,
-provider reporting fidelity and efficiency gains are not established.
-
-The [research report](research/REPORT.md) and its linked appendices cover the named products,
-additional discovered projects, original research/engineering accounts, the installed source,
-and all supplied prior evidence. Each externally sourced claim links to its source; gaps and
-vendor-only results are marked. Prior evidence was not edited. The [README](README.md) and
-existing [murmur skill](skills/murmur/SKILL.md) now describe the selected defaults and limits,
-including the distinction between an exited process, delivered work and functional quality.
-[State captures](scripts/capture_states.py) make the launcher reviewable without credentials.
-
-## Decisions and evidence strength
-
-- Favor mechanical behavior and observable results over extra coordination prose, because prior
-  prompt/sync-helper rounds did not meet their keep rules. [Prior evidence overview](research/README.md),
-  [lean results](research/evidence/lean-RESULTS.md), [large results](research/evidence/large-RESULTS.md).
-- Keep the peer count user-configurable. Two is an evidence-informed default, not an enforced
-  optimum. The sample is small and tasks differ. [Matched experiment](research/evidence/lean2-RESULTS.md).
-- Keep compaction under Codex/user control. Thresholds and implementation depend on model/config
-  and provider capability. [Version-specific source audit](research/CODEX-SOURCE.md).
-- Keep draft receipts out of the shipped footprint until their adoption/value can be measured.
-  Their tests establish local correctness, not lower coordination cost. Draft review and prior
-  failed sync-helper evidence support this scope choice.
-- The broad product survey is necessarily bounded by discoverable primary sources as of the
-  audit date; unsupported claims must be marked unverified, not filled in from memory.
+- **Specific round-two instructions override generic draft voting.** There is no majority-vote
+  winner. A3's overlapping work-stealing and contract proposals merged into a4/a5; the duplicate
+  uncommitted implementation was discarded. [Proposal/disposition](research/proposal-a3.md).
+- **No live survivor is claimed.** Every live attempt failed before children could read their
+  briefs with `app-server socket directory must be a user-owned directory with mode 0700`.
+  No sandbox, ownership, authentication or shared-host workaround was attempted. Some launchers
+  returned zero because no scoped work was registered; those attempts still delivered no work
+  and are explicitly failed adoption screens. [Attempt evidence](research/MECHANISMS.md#screening-and-independent-review).
+- **Scripted screens are separate evidence.** They invoke real Git/SQLite/helpers but scripted
+  fake peers. They prove firing and lifecycle behavior with zero model calls; they do not prove
+  natural helper adoption. Development-agent inference is separate and unmeasured in those zeros.
+- **No premature combination.** All prototype code stays isolated. The conditional re-screen
+  shortlist is a2 review, a1 integration duty and a5 contracts because they directly address
+  measured C1/C2/seam failures. A4/a6 remain reserves. This is effect-based triage, not an efficacy
+  ranking or a result of screen timings. [Rationale](research/MECHANISMS.md#eligibility-conditional-shortlist-and-dropped-work).
+- **Performance selection remains with the operator.** [eval-plan.md](eval-plan.md) requires
+  functioning live screens, sealed-task/configuration freeze, matched off/enabled builds,
+  repeated solo/base/candidate arms, blind checks, and fixed quality/time/total-input gates.
+  Missing telemetry cannot pass a budget gate. No performance experiment was completed here.
+- **Branch destination:** this environment's `origin` is the private local bare repository at
+  `/workspace/self2/ws/r2/work/origin.git`. Its `main` is integration transport required by the
+  peer workflow, not the real project's main branch. Final aggregate output is also published
+  as `experiment/self-improve-r2`; prototype refs are preserved. No PR is opened, no force push
+  is used, and no real upstream main is modified.
 
 ## How to see it
 
+On the aggregate branch:
+
 ```bash
 .venv/bin/python -m pytest -q
-.venv/bin/python scripts/capture_states.py .work/capture-review
-.venv/bin/python -m murmur setup --help
+.venv/bin/python scripts/capture_states.py /tmp/murmur-r2-states-new
+.venv/bin/python scripts/audit_screen.py /path/to/completed/workspace --kind live --section KEY
 ```
 
-The capture destination must be new. It produces success, failure, partial-result, timeout,
-interruption, and resistant-descendant fixtures without credentials or model calls. The state
-capture is a launcher exercise, not a live-agent evaluation. For real usage, run the unchanged
-`murmur setup BRIEF --repo REPO` and `murmur run WORKSPACE`; inspect the generated root prompt,
-peer files, and `logs/run.json`.
+The capture destination must not exist. Replace `KEY` with the prototype's actual run-report
+section (`integration`, `independent_review`, `work_queue`, or `alternatives`); omit it for base
+runs or use the contract prototype's separate event ledger. The audit command does not run a
+model and does not treat a populated section as proof of mechanism activation.
 
-## Verification and remaining limits
+For a prototype, check out its branch first and use its documented screen script and full suite.
+The enable lines are:
 
-The integrated code at `8ccb0d5` passed **53 tests** in all six peer reviews. In a1's clone,
-`.venv/bin/python -m pytest -q` took **11.22 seconds**. The six-state capture produced exits
-**0 / 1 / 1 / 124 / 130 / 0**, with additive `usage` and `result` fields after success, failure,
-cap and interruption. All relative Markdown links in README/PR/research resolve locally.
-Other peers independently reviewed generated prompts, configuration precedence, returned state,
-and the unchanged command surface. a3 also built a wheel on Linux/Python 3.13, installed it into a clean virtualenv, and verified
-isolated imports, the installed entry point and packaged prompts. Evidence files are unchanged
-from baseline `3775a84`. These packaging checks establish the tested local installation path;
-they do not establish macOS/Python 3.11 support. This document update changes no executable behavior.
+| Branch | Internal setting at setup |
+| --- | --- |
+| `proto/a1-integration-barrier` | TOML `integration_barrier = true` via existing `--config` |
+| `proto/a2-cross-review` | TOML `independent_review = true` via existing `--config` |
+| `proto/a4-work-stealing` | TOML `work_stealing = true` via existing `--config` |
+| `proto/a5-contracts` | `MURMUR_CONTRACTS=1 murmur setup BRIEF [existing options]` |
+| `proto/a6-alternatives` | `MURMUR_ALTERNATIVES=1 murmur setup BRIEF [existing options]` |
 
-The selected base separately passed 34 tests in 9.41 seconds in a2's clone. All six draft full
-suites also passed in independent archived checkouts; these validation runs used fake Codex,
-made zero model calls and consumed zero model tokens. Research/implementation agent inference
-cost is separate and was not measured by those validation figures. These timings are test
-runtime, not agent-speed measurements. No paid/live performance experiment was run.
+Omit/disable the setting for base from that same branch build. Re-screen before enabling more
+than one mechanism in a future combined build. No prototype configuration is silently active
+on this aggregate branch.
 
-Not verified: real-task speedup, quality parity, the target 1.5–2x total token ratio, backend
-cache affinity/hit rates, live-model adherence to generated prompts, the installed Rust test
-suite, public GitHub availability of the supplied source revision, or isolation against
-malicious agents, macOS or Python 3.11 runtime behavior, or present/future product behavior beyond
-the retrieved documentation and pinned source. The observed token report cannot recover usage
-that the provider or killed process never persisted.
+## Verification
+
+All five initially published prototype suites passed independent a3 archive review: a1 **64**,
+a2 **62**, a4 **63**, a5 **58**, a6 **60** tests. Subsequent focused fixes and final branch revisions
+are recorded in [MECHANISMS.md](research/MECHANISMS.md); aggregate validation passes **57 tests in 10.54 seconds**. The six-state capture retains
+expected exits **0 / 1 / 1 / 124 / 130 / 0**; both original launcher behavior and additive
+audit export were checked. Current focused follow-up suites also pass: a2 12, a5 10, a6 8. The original [research/evidence/](research/evidence/) files are
+unchanged. Environment-blocked live attempts retain observed token totals and explicit lack
+of activation. No macOS/Windows behavior, live quality improvement, speedup or token-ratio
+success is claimed.

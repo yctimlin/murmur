@@ -43,7 +43,7 @@ the generic “each peer draft” boilerplate in favor of the explicit no-duplic
 ## Reusable screen audit
 
 A3 contributes [scripts/audit_screen.py](../scripts/audit_screen.py), which reads a finished
-workspace and emits the measured wall time, process and launcher exits, original/final revision,
+workspace and emits the recorded elapsed time and UTC timestamp span separately, process and launcher exits, original/final revision,
 observed input/cached/uncached/output/total tokens, and requested mechanism evidence sections.
 It recomputes usage from persisted per-response rollout records using the existing deduplicating
 accountant and flags disagreement with `logs/run.json`. SHA-256 fingerprints identify the exact
