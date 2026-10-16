@@ -1,0 +1,126 @@
+{
+  "mode": "scripted-real-git",
+  "model_calls": 0,
+  "model_tokens": 0,
+  "seconds": 0.6277,
+  "run_exit": 0,
+  "evidence": "run/logs/contract-screen.json",
+  "run_record": "run/logs/run.json",
+  "details": {
+    "driver": "scripted; zero model calls",
+    "activation": {
+      "frozen": "packet-shape",
+      "base": "8c3e184929c32f6be31da3927808773cb37af2a5",
+      "sha256": "7c97bb3fa36bfd91177c3e7aa8f93d0e0a81b095767863b071f82c8712f815e5"
+    },
+    "rejected_exit": 128,
+    "rejection": "murmur contract rejected: {\"name\": \"packet-shape\", \"revision\": \"4205d53ef3098da9f184651bcfbe5d2caacab018\", \"passed\": false, \"exit_code\": 1, \"reason\": null, \"output\": \"Traceback (most recent call last):\\n  File \\\"/workspace/self2/ws/r2/work/peers/a5/.work/contract-scripted-screen/run/work/.murmur-contracts/contract-yf5umcd9/probe\\\", line 4, in <module>\\n    assert p[\\\"payload\\\"]==\\\"hello\\\"\\n           ~^^^^^^^^^^^\\nKeyError: 'payload'\\n\", \"seconds\": 0.036}\nfatal: ref updates aborted by hook\nsend-pack: unexpected disconnect while reading sideband packet\nfatal: the remote end hung up unexpectedly\n",
+    "accepted_exit": 0,
+    "events": [
+      {
+        "time": 1792122697.9666572,
+        "action": "activation",
+        "name": "packet-shape",
+        "revision": "8c3e184929c32f6be31da3927808773cb37af2a5",
+        "passed": true,
+        "exit_code": 0,
+        "reason": null,
+        "output": "",
+        "seconds": 0.0195
+      },
+      {
+        "time": 1792122698.084242,
+        "action": "gate",
+        "name": "packet-shape",
+        "revision": "4205d53ef3098da9f184651bcfbe5d2caacab018",
+        "passed": false,
+        "exit_code": 1,
+        "reason": null,
+        "output": "Traceback (most recent call last):\n  File \"/workspace/self2/ws/r2/work/peers/a5/.work/contract-scripted-screen/run/work/.murmur-contracts/contract-yf5umcd9/probe\", line 4, in <module>\n    assert p[\"payload\"]==\"hello\"\n           ~^^^^^^^^^^^\nKeyError: 'payload'\n",
+        "seconds": 0.036
+      },
+      {
+        "time": 1792122698.2026432,
+        "action": "gate",
+        "name": "packet-shape",
+        "revision": "d24f7722c18795c635cc435f955cdc6f1ea7c429",
+        "passed": true,
+        "exit_code": 0,
+        "reason": null,
+        "output": "",
+        "seconds": 0.0371
+      }
+    ]
+  },
+  "run": {
+    "started_at": "2026-10-16T03:51:37+00:00",
+    "ended_at": "2026-10-16T03:51:38+00:00",
+    "seconds": 0.4,
+    "command": [
+      "codex",
+      "exec",
+      "--json",
+      "--skip-git-repo-check",
+      "--disable",
+      "memories",
+      "--sandbox",
+      "workspace-write",
+      "-c",
+      "approval_policy=\"never\"",
+      "-c",
+      "sandbox_workspace_write.network_access=true",
+      "-c",
+      "shell_environment_policy.inherit=\"core\"",
+      "-c",
+      "shell_environment_policy.set={\"GIT_CONFIG_GLOBAL\" = \"/workspace/self2/ws/r2/work/peers/a5/.work/contract-scripted-screen/run/gitconfig\", \"GIT_CONFIG_NOSYSTEM\" = \"1\", \"GH_CONFIG_DIR\" = \"/workspace/self2/ws/r2/work/peers/a5/.work/contract-scripted-screen/run/gh\", \"ZDOTDIR\" = \"/workspace/self2/ws/r2/work/peers/a5/.work/contract-scripted-screen/run/zdot\"}",
+      "-C",
+      "/workspace/self2/ws/r2/work/peers/a5/.work/contract-scripted-screen/run/work",
+      "-o",
+      "/workspace/self2/ws/r2/work/peers/a5/.work/contract-scripted-screen/run/logs/final.md",
+      "-c",
+      "features.multi_agent_v2={\"enabled\" = true, \"max_concurrent_threads_per_session\" = 3, \"max_wait_timeout_ms\" = 3600000}",
+      "--enable",
+      "agent_message_board",
+      "-"
+    ],
+    "exit_code": 0,
+    "codex_exit_code": 0,
+    "capped": false,
+    "interrupted": false,
+    "result": {
+      "head": "d24f7722c18795c635cc435f955cdc6f1ea7c429",
+      "new_commits": 2,
+      "changed_paths": 1,
+      "has_pr": false,
+      "peers": [
+        {
+          "id": "a1",
+          "head": "8c3e184929c32f6be31da3927808773cb37af2a5",
+          "head_in_main": true,
+          "tracked_changes": false,
+          "untracked_files": 0
+        },
+        {
+          "id": "a2",
+          "head": "d24f7722c18795c635cc435f955cdc6f1ea7c429",
+          "head_in_main": true,
+          "tracked_changes": false,
+          "untracked_files": 0
+        }
+      ],
+      "errors": []
+    },
+    "usage": {
+      "status": "unavailable",
+      "source": "codex token_usage_record.usage",
+      "scope": "observed completed responses; missing/provider-unreported usage is unknown",
+      "rollout_files": 0,
+      "observed_responses": 0,
+      "duplicate_records": 0,
+      "unreadable_records_or_files": 0,
+      "threads_without_usage": [],
+      "tokens": null,
+      "threads": []
+    }
+  }
+}
