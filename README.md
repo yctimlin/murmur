@@ -8,7 +8,7 @@ git, and stop when they agree they are done. No agent is in charge. You get the 
 branch to review.
 
 ```bash
-murmur setup brief.md --repo . --peers 4 --setup "npm ci"
+murmur setup brief.md --repo . --setup "npm ci"
 murmur run ~/.murmur/runs/3f9a1c2e
 git fetch ~/.murmur/runs/3f9a1c2e/work/origin.git main:murmur/3f9a1c2e
 ```
@@ -20,11 +20,11 @@ flowchart TB
   subgraph ws["workspace (~/.murmur/runs/&lt;id&gt;)"]
     R[root session<br/>spawns peers, then waits]
     B[[Codex message board]]
-    A1[a1] & A2[a2] & A3[a3] & A4[a4]
+    A1[a1] & A2[a2]
     O[(origin.git)]
-    R -. spawn .-> A1 & A2 & A3 & A4
-    A1 & A2 & A3 & A4 <--> B
-    A1 & A2 & A3 & A4 -- "pull --rebase / push" --> O
+    R -. spawn .-> A1 & A2
+    A1 & A2 <--> B
+    A1 & A2 -- "pull --rebase / push" --> O
   end
   U[your repo] -- "one commit" --> O
   O -- "git fetch" --> U

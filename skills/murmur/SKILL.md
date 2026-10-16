@@ -13,10 +13,10 @@ fetch the result into the user's repo as a branch.
 ## When to use it
 
 - **Good fit:** broad work that splits into parts, such as a feature spanning API, UI, docs and
-  tests, or many independent changes. In a pilot on a real UI feature, 4 peers finished in 46 min
-  where a single agent took 120 min.
-- **Weigh it:** for work where craft matters more than speed, especially visual polish. In the same
-  pilot the single agent's UI was richer and better on mobile; the swarm's was safer but plainer.
+  tests, or many independent changes.
+- **Weigh it:** parallelism adds coordination and token cost. Prior experiments have mixed
+  speed/quality outcomes, and held-out runs missed the token target; see the repository's
+  `research/REPORT.md` before promising a speedup or quality parity.
 - **Poor fit:** small or tightly coupled changes. Use one agent, for example the `codex` skill.
 - `murmur setup --solo` runs one agent with the same isolation, as a baseline.
 
