@@ -151,3 +151,20 @@ suite, public GitHub availability of the supplied source revision, or isolation 
 malicious agents, macOS or Python 3.11 runtime behavior, or present/future product behavior beyond
 the retrieved documentation and pinned source. The observed token report cannot recover usage
 that the provider or killed process never persisted.
+
+## Round-two a4 prototype: recoverable peer task queue
+
+The prototype on `proto/a4-work-stealing` adds atomic task claims, dependency readiness,
+release/handoff, expiring leases and fencing tokens, plus an enabled-run completion barrier.
+The normal user interface remains setup/run. `work_stealing = true` in setup TOML enables it;
+the default-disabled path leaves the original peer workflow active. See
+[work-stealing design](research/work-stealing.md) and [tests](tests/test_work_queue.py).
+Initial verification: 63 tests pass in 12.19s. These checks establish scheduling mechanics,
+not a measured quality or token improvement. Live screening evidence is pending.
+
+Decisions: the round-two specific prototype/screen/no-vote instructions override the generic
+footer's draft voting. The local private origin's `main` is integration transport; no real
+upstream main is modified. The queue is general task metadata and works with the private Git
+snapshot that setup already creates for plain folders/greenfield work. Ledger fencing cannot
+prevent a slow old owner from writing files; recovery instructions require inspecting prior
+work. Completion means all declared units finished, not independent semantic correctness.

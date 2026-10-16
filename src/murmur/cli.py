@@ -31,6 +31,7 @@ from string import Template
 from murmur.cow import CowCopyError, cow_copy
 from murmur.usage import summarize_usage
 from murmur.result import inspect_result
+from murmur import work_queue
 from murmur.procutil import (
     install_interrupt_handlers,
     restore_interrupt_handlers,
@@ -47,6 +48,7 @@ DURATION_RE = re.compile(r"^(\d+)([smh])$")
 ENV_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 DEFAULTS = {
     "peers": 2,
+    "work_stealing": False,
     "model": None,
     "effort": None,
     "cap": "3h",
@@ -314,8 +316,12 @@ def resolve_options(args: argparse.Namespace) -> dict:
         value = options[name]
         if value is not None and (not isinstance(value, str) or not value.strip()):
             fail(f"{name} must be a non-empty string")
+    if not isinstance(options["work_stealing"], bool):
+        fail("work_stealing must be a boolean")
     if args.solo:
         options["peers"] = 1
+        if options["work_stealing"]:
+            fail("work_stealing requires a swarm")
     elif not isinstance(options["peers"], int) or isinstance(options["peers"], bool) or options["peers"] < 2:
         fail("a swarm needs at least 2 peers; use --solo for a single agent")
     if args.setup_per_agent:
@@ -684,6 +690,7 @@ def setup(args: argparse.Namespace) -> None:
             fail(f"brief not found: {brief_file}")
         brief = brief_file.read_text().strip()
         agents, strategy = _prepare_clones(ws, origin, options, run_id, ids, procs)
+        queue_helper = work_queue.install(ws, agents) if options["work_stealing"] else None
         closing = render("closing.md", cap=options["cap"])
         draft_minutes = max(10, seconds(options["cap"]) // 600)
         for agent in agents:
@@ -700,6 +707,8 @@ def setup(args: argparse.Namespace) -> None:
                     env=env_block(agent["env"]),
                     draft=str(draft_minutes),
                 )
+            if queue_helper:
+                appendix += "\n\n" + work_queue.instructions(queue_helper)
             (ws / "prompts" / f"{agent['id']}.md").write_text(f"{brief}\n\n{closing}\n\n{appendix}\n")
         if not solo:
             spawns = "\n".join(
@@ -713,6 +722,7 @@ def setup(args: argparse.Namespace) -> None:
         meta = {
             "run_id": run_id,
             "mode": "solo" if solo else "swarm",
+            "work_stealing": options["work_stealing"],
             "peers": len(ids),
             "brief": str(brief_file),
             "repo": str(repo),
@@ -834,6 +844,12 @@ def run(args: argparse.Namespace) -> None:
             "interrupted": interrupted,
             "result": inspect_result(ws, meta),
         }
+        if meta.get("work_stealing"):
+            record["work_queue"] = work_queue.inspect(ws / "work" / ".murmur" / "work_queue.sqlite3")
+            if exit_code == EXIT_OK and record["work_queue"]["status"] != "complete":
+                exit_code = EXIT_CODEX_FAILED
+                diagnostic = "work queue is " + record["work_queue"]["status"]
+                record["exit_code"] = exit_code
         record["usage"] = summarize_usage(ws / "codex-home")
         (ws / "logs" / "run.json").write_text(json.dumps(record, indent=2) + "\n")
         origin = ws / "work" / "origin.git"
