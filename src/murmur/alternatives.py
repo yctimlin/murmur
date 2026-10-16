@@ -41,7 +41,8 @@ def initialize(state: Path) -> None:
         db.executescript("""
         CREATE TABLE trials (
           name TEXT PRIMARY KEY, base TEXT NOT NULL, checks TEXT NOT NULL,
-          timeout REAL NOT NULL, status TEXT NOT NULL DEFAULT 'open', winner TEXT);
+          timeout REAL NOT NULL, status TEXT NOT NULL DEFAULT 'open', winner TEXT,
+          attempts INTEGER NOT NULL DEFAULT 1);
         CREATE TABLE candidates (
           trial TEXT NOT NULL, peer TEXT NOT NULL, revision TEXT NOT NULL,
           position INTEGER NOT NULL, PRIMARY KEY(trial,peer), UNIQUE(trial,revision));
@@ -90,6 +91,28 @@ def submit(state: Path, origin: Path, name: str, peer: str, revision: str) -> di
         db.execute("INSERT INTO candidates VALUES (?,?,?,?)", (name, peer, revision, count))
         event(db, name, "submitted", {"peer": peer, "revision": revision})
     return {"trial": name, "peer": peer, "revision": revision, "position": count}
+
+
+
+def retry(state: Path, origin: Path, name: str) -> dict:
+    """One bounded recovery, with old outcomes preserved in immutable event history."""
+    with transaction(state) as db:
+        trial = db.execute("SELECT * FROM trials WHERE name=?", (name,)).fetchone()
+        if not trial or trial['status'] not in ('rejected', 'stale', 'failed'):
+            raise ValueError("only a rejected, stale or failed trial can retry")
+        if trial['attempts'] >= 2:
+            raise ValueError("one retry per trial is the limit")
+        if db.execute("SELECT 1 FROM trials WHERE status IN ('open','evaluating')").fetchone():
+            raise ValueError("finish the existing trial before retrying")
+        base = git(origin, 'rev-parse', 'refs/heads/main')
+        event(db, name, 'retried', {'previous_status': trial['status'],
+                                   'previous_base': trial['base'],
+                                   'previous_winner': trial['winner'], 'base': base,
+                                   'attempt': trial['attempts'] + 1})
+        db.execute("DELETE FROM candidates WHERE trial=?", (name,))
+        db.execute("UPDATE trials SET base=?,status='open',winner=NULL,attempts=attempts+1 WHERE name=?",
+                   (base, name))
+    return {'trial': name, 'base': base, 'slots': 2, 'attempt': trial['attempts'] + 1}
 
 
 def _check(argv: list[str], cwd: Path, timeout: float) -> dict:
@@ -171,7 +194,7 @@ def evaluate(state: Path, origin: Path, name: str) -> dict:
 def inspect(state: Path) -> dict:
     with sqlite3.connect(state) as db:
         db.row_factory = sqlite3.Row
-        trials = [dict(r) for r in db.execute("SELECT name,base,status,winner FROM trials ORDER BY name")]
+        trials = [dict(r) for r in db.execute("SELECT name,base,status,winner,attempts FROM trials ORDER BY name")]
         events = db.execute("SELECT COUNT(*) FROM events").fetchone()[0]
     return {"trials": trials, "event_count": events,
             "complete": all(t['status'] == 'promoted' for t in trials)}
@@ -202,7 +225,9 @@ commit, push their existing allowed draft branch, then each runs
 the first submitted wins deterministically. Checks run in fresh tracked-file clones without
 ignored setup artifacts; choose self-contained checks or an argv that prepares dependencies.
 Inspect `.murmur/alternatives status`. Avoid starting more than one bounded trial for the task.
-A changed main makes the result stale; reopen at the new base only if the task warrants it.
+A changed main makes the result stale. Use `.murmur/alternatives retry NAME` once
+to recover a failed/stale trial at current main, keeping the same acceptance checks;
+resubmit two corrected candidates descending from its returned base.
 An unresolved/rejected/stale trial makes run completion fail; it does not overwrite other work.
 """
 
@@ -222,6 +247,8 @@ def main() -> int:
     submitted.add_argument('revision')
     evaluated = commands.add_parser('evaluate')
     evaluated.add_argument('name')
+    retried = commands.add_parser('retry')
+    retried.add_argument('name')
     commands.add_parser('status')
     args = parser.parse_args()
     try:
@@ -229,6 +256,8 @@ def main() -> int:
             result = open_trial(args.state, args.origin, args.name, json.loads(args.checks), args.timeout)
         elif args.action == 'submit':
             result = submit(args.state, args.origin, args.name, args.peer, args.revision)
+        elif args.action == 'retry':
+            result = retry(args.state, args.origin, args.name)
         elif args.action == 'evaluate':
             result = evaluate(args.state, args.origin, args.name)
         else:

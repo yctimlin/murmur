@@ -118,3 +118,30 @@ def test_check_diagnostics_are_bounded(tmp_path):
     assert result['winner'] == bad  # both pass: first registered wins, not quality ranking
     assert all(r['checks'][0]['output_truncated'] for r in result['results'])
     assert all(len(r['checks'][0]['output_tail']) <= 4000 for r in result['results'])
+
+
+def test_failed_trial_has_one_audited_retry_with_frozen_checks(tmp_path):
+    ws, origin, state = fixture(tmp_path)
+    alt.open_trial(state, origin, 'unit', checks(), 5)
+    first = candidate(ws, 'a1', 'bad-first')
+    second = candidate(ws, 'a2', 'bad-second')
+    alt.submit(state, origin, 'unit', 'a1', first)
+    alt.submit(state, origin, 'unit', 'a2', second)
+    assert alt.evaluate(state, origin, 'unit')['status'] == 'rejected'
+    assert not alt.inspect(state)['complete']
+    with sqlite3.connect(state) as db:
+        frozen = db.execute('SELECT checks,timeout FROM trials').fetchone()
+    retried = alt.retry(state, origin, 'unit')
+    assert retried['attempt'] == 2
+    good = candidate(ws, 'a1', 'good', message='corrected')
+    alt.submit(state, origin, 'unit', 'a1', good)
+    alt.submit(state, origin, 'unit', 'a2', second)
+    assert alt.evaluate(state, origin, 'unit')['status'] == 'promoted'
+    assert alt.inspect(state)['complete']
+    with sqlite3.connect(state) as db:
+        assert db.execute('SELECT checks,timeout FROM trials').fetchone() == frozen
+        assert db.execute("SELECT COUNT(*) FROM events WHERE kind='candidate_checked'").fetchone()[0] == 4
+        assert db.execute("SELECT COUNT(*) FROM events WHERE kind='retried'").fetchone()[0] == 1
+        db.execute("UPDATE trials SET status='rejected'")
+    with pytest.raises(ValueError, match='one retry'):
+        alt.retry(state, origin, 'unit')
