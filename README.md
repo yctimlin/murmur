@@ -94,6 +94,10 @@ murmur run WORKSPACE
 | `--port-base` | `40000` | Each agent gets 100 ports. Shells started in its clone export `PORT_BASE` |
 | `--config` | none | TOML with any of the above, plus `setup_per_agent` and `agent_env` templates (`$agent`, `$index`, `$port_base`, `$run`). Flags override it. |
 
+Model inheritance reads only top-level user config values; named Codex profiles and project-level
+model overrides are not imported. Use `--model` / `--effort` or murmur TOML to select those values.
+Unspecified values stay unset so the installed Codex runtime selects its defaults.
+
 `murmur run` prints how long the run took, how many commits it made, and the `git fetch` command.
 A non-zero exit also prints a short diagnostic and the log path (`logs/session.err`). `PR.md` at
 the root of the result is the agents' summary.

@@ -140,6 +140,17 @@ def user_codex_home() -> Path:
     return Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")).expanduser()
 
 
+def read_codex_config() -> dict:
+    """Read only the user's top-level config, with a useful launcher diagnostic."""
+    config_file = user_codex_home() / "config.toml"
+    try:
+        return tomllib.loads(config_file.read_text())
+    except FileNotFoundError:
+        return {}
+    except (OSError, UnicodeError, tomllib.TOMLDecodeError) as error:
+        fail(f"cannot read Codex config {config_file}: {error}")
+
+
 def write_model_catalog(path: Path, model: str | None, effort: str | None, solo: bool) -> None:
     """Pin how the model catalog treats sub-agents.
 
@@ -169,8 +180,7 @@ def write_model_catalog(path: Path, model: str | None, effort: str | None, solo:
 def write_codex_home(home: Path, trusted: Path, catalog: Path) -> None:
     """A minimal CODEX_HOME that carries over only the user's model provider and auth."""
     source = user_codex_home()
-    config_file = source / "config.toml"
-    user = tomllib.loads(config_file.read_text()) if config_file.exists() else {}
+    user = read_codex_config()
     provider = user.get("model_provider")
     lines = [f"model_catalog_json = {toml_value(str(catalog))}"]
     if provider:
@@ -278,11 +288,9 @@ def resolve_options(args: argparse.Namespace) -> dict:
     options = dict(DEFAULTS)
     # Carry only explicit model preferences into the isolated run. With no preference,
     # omit the override entirely and let this installed Codex choose its own default.
-    config_file = user_codex_home() / "config.toml"
-    if config_file.exists():
-        user_config = tomllib.loads(config_file.read_text())
-        options["model"] = user_config.get("model")
-        options["effort"] = user_config.get("model_reasoning_effort")
+    user_config = read_codex_config()
+    options["model"] = user_config.get("model")
+    options["effort"] = user_config.get("model_reasoning_effort")
     if args.config:
         config_path = Path(args.config).expanduser().resolve()
         config = tomllib.loads(config_path.read_text())

@@ -104,3 +104,16 @@ def test_setup_freezes_explicit_user_model_settings(tmp_path: Path, monkeypatch)
     cmd = codex_command(ws, meta, {})
     assert cmd[cmd.index("-m") + 1] == "user-model"
     assert 'model_reasoning_effort="low"' in cmd
+
+
+def test_malformed_user_config_is_a_launcher_error(tmp_path: Path, monkeypatch, capsys):
+    import pytest
+
+    home = tmp_path / "broken-codex"
+    home.mkdir()
+    (home / "config.toml").write_text("model = [")
+    monkeypatch.setenv("CODEX_HOME", str(home))
+    with pytest.raises(SystemExit) as error:
+        resolve_options(_args(brief="brief.md"))
+    assert error.value.code == 3
+    assert "cannot read Codex config" in capsys.readouterr().err
