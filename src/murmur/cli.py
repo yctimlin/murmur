@@ -29,6 +29,7 @@ from pathlib import Path
 from string import Template
 
 from murmur.cow import CowCopyError, cow_copy
+from murmur.usage import summarize_usage
 from murmur.procutil import (
     install_interrupt_handlers,
     restore_interrupt_handlers,
@@ -811,6 +812,7 @@ def run(args: argparse.Namespace) -> None:
             "capped": capped,
             "interrupted": interrupted,
         }
+        record["usage"] = summarize_usage(ws / "codex-home")
         (ws / "logs" / "run.json").write_text(json.dumps(record, indent=2) + "\n")
         origin = ws / "work" / "origin.git"
         commits = None
@@ -824,6 +826,14 @@ def run(args: argparse.Namespace) -> None:
         label = "capped" if capped else "interrupted" if interrupted else f"exit {codex_exit}"
         suffix = f", {commits} new commit(s)" if commits is not None else ""
         print(f"{ws.name}: {meta['mode']} finished in {elapsed / 60:.1f} min ({label}){suffix}")
+        usage = record["usage"]
+        if usage["tokens"] is not None:
+            tokens = usage["tokens"]
+            print(f"observed usage: {tokens['input_tokens']:,} input "
+                  f"({tokens['uncached_input_tokens']:,} uncached), "
+                  f"{tokens['output_tokens']:,} output; {usage['status']}")
+        else:
+            print("observed usage: unavailable (no per-response records)")
         if exit_code != EXIT_OK:
             print(f"murmur: {diagnostic}", file=sys.stderr)
             print(f"murmur: log: {log_err}", file=sys.stderr)
