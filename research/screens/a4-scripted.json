@@ -1,0 +1,125 @@
+{
+  "mode": "scripted-fake-codex",
+  "model_calls": 0,
+  "model_tokens": 0,
+  "elapsed_seconds": 0.668,
+  "run_seconds": 0.0,
+  "queue": {
+    "status": "complete",
+    "total": 2,
+    "done": 2,
+    "running": 0,
+    "ready": 0,
+    "waiting": 0,
+    "tasks": [
+      {
+        "id": "payload",
+        "title": "Write text payload",
+        "state": "done",
+        "owner": "a2",
+        "expires": null
+      },
+      {
+        "id": "manifest",
+        "title": "Write byte manifest",
+        "state": "done",
+        "owner": "a1",
+        "expires": null
+      }
+    ],
+    "next_offset": null,
+    "events": {
+      "added": 2,
+      "claimed": 3,
+      "finish": 2,
+      "release": 1
+    }
+  },
+  "events": [
+    {
+      "actor": "a1",
+      "kind": "added",
+      "task": "payload",
+      "data": {
+        "dependencies": []
+      }
+    },
+    {
+      "actor": "a1",
+      "kind": "added",
+      "task": "manifest",
+      "data": {
+        "dependencies": [
+          "payload"
+        ]
+      }
+    },
+    {
+      "actor": "a1",
+      "kind": "claimed",
+      "task": "payload",
+      "data": {
+        "recovered_from": null,
+        "stolen": false
+      }
+    },
+    {
+      "actor": "a1",
+      "kind": "release",
+      "task": "payload",
+      "data": {
+        "note": "No code yet; another peer can implement this unit"
+      }
+    },
+    {
+      "actor": "a2",
+      "kind": "claimed",
+      "task": "payload",
+      "data": {
+        "recovered_from": "a1",
+        "stolen": true
+      }
+    },
+    {
+      "actor": "a2",
+      "kind": "finish",
+      "task": "payload",
+      "data": {
+        "note": "Delivered fdd396db25f37511bba863b09bdcb98d43ad81f8"
+      }
+    },
+    {
+      "actor": "a1",
+      "kind": "claimed",
+      "task": "manifest",
+      "data": {
+        "recovered_from": null,
+        "stolen": false
+      }
+    },
+    {
+      "actor": "a1",
+      "kind": "finish",
+      "task": "manifest",
+      "data": {
+        "note": "Byte assertion passed; delivered 49089c58e727d5f4579f0ed507dc1dd6cbcd3b99"
+      }
+    }
+  ],
+  "stale_owner_rejected": true,
+  "manifest_assertion": true,
+  "exit_code": 0,
+  "observed_usage": {
+    "status": "unavailable",
+    "source": "codex token_usage_record.usage",
+    "scope": "observed completed responses; missing/provider-unreported usage is unknown",
+    "rollout_files": 0,
+    "observed_responses": 0,
+    "duplicate_records": 0,
+    "unreadable_records_or_files": 0,
+    "threads_without_usage": [],
+    "tokens": null,
+    "threads": []
+  },
+  "limits": "Scripted peers prove mechanics, not live model adoption or task quality gains."
+}
