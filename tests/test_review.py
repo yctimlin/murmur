@@ -150,3 +150,39 @@ def test_broken_ledger_fails_closed(tmp_path):
     result = run_cli("run", str(ws))
     assert result.returncode == 1
     assert "error" in json.loads((ws / "logs/run.json").read_text())["independent_review"]
+
+
+def test_missing_ledger_fails_closed_even_without_changes(tmp_path):
+    ws, _, _ = workspace(tmp_path)
+    (ws / "work/.murmur-review/reviews.sqlite").unlink()
+    result = run_cli("run", str(ws))
+    assert result.returncode == 1
+    assert "error" in json.loads((ws / "logs/run.json").read_text())["independent_review"]
+    assert not (ws / "work/.murmur-review/reviews.sqlite").exists()
+
+
+def test_malformed_config_is_recorded_instead_of_losing_run_log(tmp_path):
+    ws, _, _ = workspace(tmp_path)
+    (ws / "work/.murmur-review/config.json").write_text("{}")
+    result = run_cli("run", str(ws))
+    assert result.returncode == 1
+    assert "error" in json.loads((ws / "logs/run.json").read_text())["independent_review"]
+
+
+def test_plain_merge_does_not_let_content_author_self_review(tmp_path):
+    ws, a1, a2 = workspace(tmp_path)
+    land(a1, "widget.txt", "authored only by a1\n")
+    # a2 has not pulled a1's change; create a divergent independent change.
+    (a2 / "other.txt").write_text("a2 work\n")
+    git(a2, "add", "other.txt")
+    git(a2, "commit", "-qm", "a2 branch")
+    git(a2, "fetch", "origin")
+    git(a2, "merge", "--no-edit", "origin/main")
+    git(a2, "push", "origin", "HEAD:main")
+    head = git(a2, "rev-parse", "HEAD")
+    git(a1, "pull", "--ff-only")
+    with pytest.raises(review.ReviewError, match="self-review"):
+        sign(ws, a1, head, ["widget.txt"])
+    sign(ws, a2, head, ["widget.txt"])
+    sign(ws, a1, head, ["other.txt"])
+    assert review.inspect(ws)["complete"]

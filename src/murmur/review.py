@@ -29,9 +29,13 @@ def git(repo: Path, *args: str) -> bytes:
     return result.stdout
 
 
-def connect(directory: Path) -> sqlite3.Connection:
-    db = sqlite3.connect(directory / "reviews.sqlite", timeout=20)
+def connect(directory: Path, *, create: bool = False) -> sqlite3.Connection:
+    path = directory / "reviews.sqlite"
+    db = sqlite3.connect(path if create else path.resolve().as_uri() + "?mode=rw",
+                         uri=not create, timeout=20)
     db.execute("PRAGMA busy_timeout=20000")
+    if not create:
+        return db
     db.execute("""CREATE TABLE IF NOT EXISTS receipts (
         fingerprint TEXT NOT NULL, reviewer TEXT NOT NULL, revision TEXT NOT NULL,
         path TEXT NOT NULL, note TEXT NOT NULL, created REAL NOT NULL,
@@ -50,7 +54,6 @@ def inventory(directory: Path) -> dict:
     git(origin, "merge-base", "--is-ancestor", base, head)
     changed = set(filter(None, git(origin, "diff", "--name-only", "--no-renames", "-z", base, head).split(b"\0")))
     writers: dict[bytes, set[str]] = {path: set() for path in changed}
-    last_writer: dict[bytes, str] = {}
     commits = git(origin, "log", "--topo-order", "--format=%H %ae", f"{base}..{head}").decode().splitlines()
     for commit in commits:
         sha, email = commit.split(" ", 1)
@@ -59,7 +62,6 @@ def inventory(directory: Path) -> dict:
         for path in touched.split(b"\0"):
             if path in writers:
                 writers[path].add(email)
-                last_writer.setdefault(path, email)
     tree = {}
     for entry in git(origin, "ls-tree", "-r", "-z", head).split(b"\0"):
         if entry:
@@ -68,10 +70,14 @@ def inventory(directory: Path) -> dict:
     obligations = []
     for path in sorted(changed):
         authors = sorted(writers[path])
-        if path not in last_writer:
-            raise ReviewError("cannot identify latest author for changed path")
-        writer = last_writer[path]
         name = os.fsdecode(path)
+        # Default path-history simplification follows a TREESAME parent through
+        # ordinary merges. A merger who merely imported a peer's content must not
+        # replace that content's author and let its actual author self-sign.
+        writer = git(origin, "log", "-1", "--format=%ae", "--no-renames",
+                     f"{base}..{head}", "--", name).decode().strip()
+        if not writer:
+            raise ReviewError("cannot identify latest author for changed path")
         content = tree.get(path, "deleted")
         fingerprint = hashlib.sha256(json.dumps([base, name, content, writer], ensure_ascii=True).encode()).hexdigest()
         obligations.append({"path": name, "writer": writer, "authors": authors, "content": content, "fingerprint": fingerprint})
@@ -135,7 +141,7 @@ def install(ws: Path, agents: list[dict], base: str) -> str:
         "origin": str(ws / "work" / "origin.git"), "base": base,
         "agents": [dict(agent, email=f"{agent['id']}@murmur.local") for agent in agents],
     }, indent=2) + "\n")
-    with connect(directory) as db:
+    with connect(directory, create=True) as db:
         db.execute("INSERT INTO events VALUES (?, ?, ?)", (time.time(), "installed", "{}"))
     for agent in agents:
         helper = Path(agent["clone"]) / ".murmur" / "review"
@@ -160,7 +166,7 @@ another peer review the resulting content before finishing. Wake a finished peer
 def inspect(ws: Path) -> dict:
     try:
         return status(ws / "work" / ".murmur-review")
-    except (ReviewError, OSError, ValueError, sqlite3.Error) as error:
+    except (ReviewError, OSError, ValueError, TypeError, KeyError, sqlite3.Error) as error:
         return {"complete": False, "error": str(error)}
 
 
@@ -182,7 +188,7 @@ def main() -> int:
             result = status(args.directory)
         print(json.dumps(result, ensure_ascii=True))
         return int(args.action == "check" and not result["complete"])
-    except (ReviewError, OSError, ValueError, sqlite3.Error) as error:
+    except (ReviewError, OSError, ValueError, TypeError, KeyError, sqlite3.Error) as error:
         print(json.dumps({"error": str(error)}), file=sys.stderr)
         return 1
 
