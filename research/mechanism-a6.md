@@ -26,7 +26,8 @@ unverified and reserved for the operator's preregistered evaluation.
 
 ## Enable and use
 
-Enable: `MURMUR_ALTERNATIVES=1 murmur setup BRIEF [existing setup options]`.
+First check out `proto/a6-alternatives` (the implementation is intentionally kept
+on that standalone branch). Enable: `MURMUR_ALTERNATIVES=1 murmur setup BRIEF [existing setup options]`.
 Disabled: omit the environment variable or set it to `0`; the same build runs baseline.
 The setting is frozen into `murmur.json`. Solo setup does not install the mechanism.
 No public CLI flags/subcommands or model settings are added. All roles are claimable.
@@ -37,6 +38,9 @@ Peers use the generated `.murmur/alternatives` helper:
 2. Independently implement from its returned base, commit and push `draft/<peer>`.
 3. `submit unit draft/<peer>` from each peer's clone.
 4. `evaluate unit`; `status` shows durable outcomes.
+5. A rejected/stale/failed trial can use `retry unit` once. It preserves the checks,
+   timeout and prior events, refreshes the base to current main, and resets two slots.
+   Both peers submit candidates descending from the refreshed base, then evaluate again.
 
 `work/alternatives/trials.sqlite3` contains `trials`, `candidates`, and append-only
 `events`. The run's `logs/run.json` carries the summary. An opened trial without a
@@ -74,7 +78,8 @@ Fresh clones do not contain ignored setup dependencies; checks must be self-cont
 or prepare their own dependencies. Every check has a timeout of at most 300 seconds,
 at most eight checks run per candidate, and output tails are capped at 4,000 bytes.
 Concurrent ordinary main pushes can make a trial stale; no rebase/retry is guessed.
-A failed/stale trial is retained as failed run evidence rather than silently erased.
+A failed/stale trial is retained in events. One explicit retry can recover final
+completion; a second retry is rejected to bound speculative work.
 There is no automatic waking of finished peers or guarantee of unbiased independent
 solutions. Screen success establishes firing and lifecycle compatibility only.
 
@@ -83,7 +88,8 @@ solutions. Screen success establishes firing and lifecycle compatibility only.
 The scripted real-Git screen passed in **0.6435 s including setup**, emitted seven
 ledger events, rejected the intentionally defective span implementation, promoted
 the passing candidate, and finished `murmur run` with exit 0. Model calls/tokens: zero.
-Reproduce with `.venv/bin/python scripts/screen_alternatives.py NEW_OUTPUT_DIRECTORY`.
+On `proto/a6-alternatives`, reproduce with
+`.venv/bin/python scripts/screen_alternatives.py NEW_OUTPUT_DIRECTORY`.
 This substitutes deterministic peer actions for Codex and is explicitly a mechanics
 screen, not real-agent adoption evidence. The underlying fake run's usage is unknown
 (no provider records); zero inference is established by the fixture implementation.
@@ -103,3 +109,13 @@ The prototype remains available but is **not a live-screen survivor**; its expec
 extra implementation cost also makes it lower priority than mechanisms directly
 checking integrated work. The operator must obtain a successful real screen before
 including it in a performance claim.
+
+## Independent review correction
+
+a3 found that initial retry guidance conflicted with a permanently failed completion
+gate. The prototype now provides one explicit recorded retry at current main, preserving
+acceptance checks/timeouts and all prior candidate events. A regression test verifies
+failed→retry→promoted recovery, unchanged checks, old evidence retention, and rejection
+of a second retry. This is a lifecycle correction, not new performance evidence.
+
+After the recovery correction, the full suite passed **61 tests in 13.27 s**.
