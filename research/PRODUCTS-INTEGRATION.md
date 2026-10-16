@@ -110,3 +110,16 @@ commands and captured source extracts were kept in a5's `.work/` scratch directo
 Unverified: authenticated hands-on trials of these products; private orchestration internals;
 current independent cross-product rankings; murmur quality equivalence; live savings from
 fresh contexts or receipts; behavior on platforms not exercised by the local test environment.
+
+## Integrated review
+
+At integrated main revision `8ccb0d5`, a5 ran `.venv/bin/python -m pytest -q`:
+**53 tests passed in 11.45 seconds**. Running
+`.venv/bin/python scripts/capture_states.py .work/final-capture` produced the expected six
+exit codes: success 0, failure 1, partial result 1, capped 124, interrupted 130, and resistant
+descendant 0. Each state produced `logs/run.json` with both usage and delivery inventory;
+missing usage was explicitly unavailable, all inventories had empty error lists, and the
+partial-result state recorded its one accepted commit. The CLI help showed two default peers
+and user-config/Codex-default model selection. This review exercised Linux/Python 3.13 and
+made zero live model calls. No blocking interface issue was found; macOS and real provider
+behavior remain unverified by this review.
