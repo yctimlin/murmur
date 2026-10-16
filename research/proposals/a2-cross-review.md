@@ -33,6 +33,9 @@ Operator-held-out evaluation must decide whether fewer P0s justify the cost.
 
 ## Enable and inspect
 
+Check out `proto/a2-cross-review` to run the prototype and screen commands below;
+the aggregate branch retains this evidence without combining candidate code.
+
 Put `independent_review = true` in the existing TOML supplied through
 `murmur setup --config CONFIG`; omit it or set false for base in the same build.
 At least two peers are required. The helper and ledger live under workspace
