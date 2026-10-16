@@ -123,6 +123,12 @@ def run_probe(state: Path, origin: Path, revision: str, contract: dict) -> dict:
                     proc.wait()
             output.seek(0)
             detail = output.read(4096).decode(errors="replace")
+        snapshot_env = {**os.environ, "GIT_INDEX_FILE": str(temporary / "index"),
+                        "GIT_WORK_TREE": str(tree)}
+        unchanged = subprocess.run(["git", "--git-dir", str(origin), "update-index", "--really-refresh"],
+                                   env=snapshot_env, capture_output=True).returncode
+        if unchanged:
+            reason = "probe changed tracked candidate inputs" if unchanged == 1 else "could not verify candidate inputs"
         return {"name": contract["name"], "revision": revision,
                 "passed": code == 0 and reason is None, "exit_code": code,
                 "reason": reason, "output": detail,
@@ -225,6 +231,11 @@ def main(argv=None) -> int:
         offset = raw.index("--")
         raw, command = raw[:offset], raw[offset + 1:]
     args = parser.parse_args(raw)
+    # A capped/interrupted launcher must not leave the probe's separate session alive.
+    def interrupted(signum, frame):
+        raise InterruptedError(f"signal {signum}")
+    handlers = {sig: signal.signal(sig, interrupted)
+                for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)}
     try:
         if args.action == "hook":
             return check_transaction(args.state, args.phase, sys.stdin.read())
@@ -239,6 +250,9 @@ def main(argv=None) -> int:
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         print(f"murmur contract: {error}", file=sys.stderr)
         return 1
+    finally:
+        for sig, handler in handlers.items():
+            signal.signal(sig, handler)
 
 
 if __name__ == "__main__":

@@ -7,14 +7,14 @@ with `MURMUR_CONTRACTS=1`; baseline leaves the origin and prompts unchanged exce
 No user-facing command or flag, root integration role, model or reasoning constant is introduced.
 
 The real-Git scripted screen rejects a deliberate `payload` -> `body` incompatibility, then
-accepts repair and an optional label. It passes in 0.6277s with zero model calls. The live
+accepts repair and an optional label. It passes in 0.6238s with zero model calls. The live
 2-peer screen was blocked before either peer read its brief by nested shell socket permissions;
 its exit 0 is explicitly not a success. See [design, limitations, and evidence](research/mechanism-a5.md)
 and the machine-readable [scripted](research/screens/a5-contracts-scripted.json) and
 [live](research/screens/a5-contracts-live.json) screen records. No quality/token improvement is claimed.
 
 How to see it: `.venv/bin/python scripts/screen_contracts.py /tmp/contracts-new` and
-`.venv/bin/python -m pytest -q tests/test_contracts.py`. The full suite passed 58 tests.
+`.venv/bin/python -m pytest -q tests/test_contracts.py`. The final full suite passed 63 tests; snapshot mutation and interruption regressions pass.
 Round-2 prototype/screen rules take precedence over the generic draft-vote footer: no winner
 vote, no real-repo main push, no PR. Final candidate selection remains operator evaluation;
 the shared round-2 output will aggregate every proposal and screen, including dropped candidates.

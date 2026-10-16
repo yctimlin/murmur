@@ -90,3 +90,52 @@ def test_non_main_push_remains_available_for_drafts(tmp_path):
     git(clone, "commit", "-qm", "draft")
     git(clone, "push", "origin", "HEAD:draft/a1")
     assert len((state / "events.jsonl").read_text().splitlines()) == 1
+
+
+def test_interrupted_activation_kills_probe_and_releases_main(tmp_path):
+    import signal
+    import time
+
+    ws, clone, state = fixture(tmp_path)
+    marker = tmp_path / "probe.pid"
+    probe = clone / ".murmur" / "slow.py"
+    probe.write_text(f"import os,time\nfrom pathlib import Path\nPath({str(marker)!r}).write_text(str(os.getpid()))\ntime.sleep(60)\n")
+    proc = subprocess.Popen([str(clone / ".murmur" / "contract"), "add", "slow", "--probe",
+                             str(probe), "--timeout", "30", "--", sys.executable, "{probe}"],
+                            cwd=clone, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    try:
+        deadline = time.monotonic() + 5
+        while not marker.exists() and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert marker.exists()
+        pid = int(marker.read_text())
+        proc.send_signal(signal.SIGTERM)
+        proc.communicate(timeout=5)
+        assert proc.returncode == 1
+        with pytest.raises(ProcessLookupError):
+            os.kill(pid, 0)
+        assert json.loads((state / "contracts.json").read_text()) == []
+        assert freeze(clone).returncode == 0
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+            proc.communicate()
+
+
+def test_probe_cannot_repair_broken_candidate_and_claim_success(tmp_path):
+    ws, clone, state = fixture(tmp_path)
+    repair = 'from pathlib import Path\np=Path("README.md")\np.write_text("hello\\n")\nassert p.read_text()=="hello\\n"\n'
+    assert freeze(clone, content=repair).returncode == 0
+    result = push(clone, "broken\n")
+    assert result.returncode != 0
+    assert "probe changed tracked candidate inputs" in result.stderr
+    assert git(state.parent / "origin.git", "show", "main:README.md") == "hello"
+
+
+@pytest.mark.parametrize("mutation", ['p.write_text("changed")', 'p.unlink()', 'p.chmod(0o755)'])
+def test_activation_rejects_content_deletion_and_mode_mutation(tmp_path, mutation):
+    ws, clone, state = fixture(tmp_path)
+    result = freeze(clone, content='from pathlib import Path\np=Path("README.md")\n' + mutation + '\n')
+    assert result.returncode == 1
+    assert "probe changed tracked candidate inputs" in result.stderr
+    assert json.loads((state / "contracts.json").read_text()) == []
