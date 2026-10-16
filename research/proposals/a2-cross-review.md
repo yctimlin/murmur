@@ -33,9 +33,6 @@ Operator-held-out evaluation must decide whether fewer P0s justify the cost.
 
 ## Enable and inspect
 
-Check out `proto/a2-cross-review` to run the prototype and screen commands below;
-the aggregate branch retains this evidence without combining candidate code.
-
 Put `independent_review = true` in the existing TOML supplied through
 `murmur setup --config CONFIG`; omit it or set false for base in the same build.
 At least two peers are required. The helper and ledger live under workspace
@@ -119,4 +116,7 @@ Final review hardening adds regressions for missing ledgers, malformed config, a
 ordinary merges. Runtime ledger opens never recreate lost state. A6 identified
 merge-attribution risk; Git path-history simplification preserves the imported
 content's actual author, and a normal no-conflict merge regression rejects that
-author's self-review. Final full suite: **65 passed in 14.24 seconds**, including 12 review-specific tests.
+author's self-review. Final full suite: **66 passed in 14.91 seconds**, including 13 review-specific tests.
+A3 also identified Git wildcard/pathspec interpretation in author lookup; the final
+lookup uses literal pathspecs and a colliding-filename regression. A failed review
+gate now prints its diagnostic in the run summary instead of the child's exit 0.
