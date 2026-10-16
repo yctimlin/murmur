@@ -62,14 +62,18 @@ above rely on the supplied source rather than current documentation behavior:
 4. **Avoid automatic cross-clone test caching.** A commit identifies tracked content, while
    dependencies, environment and remote state may differ; this is a conservative design
    inference, not a benchmark finding. The draft always executes requested checks and labels
-   changed/dirty work trees explicitly. [Draft implementation](../src/murmur/checks.py).
+   changed/dirty work trees explicitly. [Archived draft and exact commit](draft-a3.md).
 
 ## Draft validation and cost
 
 On this machine, `.venv/bin/python -m pytest -q` on draft `b6d4d15` passed 36 tests in
 10.01 seconds. Four new tests exercise clean receipts, dirty/mutating checks, failure/missing
 commands, repeat execution, and actual generated wrappers in two temporary clones.
-[Test source](../tests/test_checks.py), [existing fixture isolation](../tests/conftest.py).
+[Archived draft test source at commit b6d4d15](draft-a3.md), [existing fixture isolation](../tests/conftest.py).
 The tests use fake Codex, local git and child Python commands; model API calls and model tokens
 for this validation were zero. Agent development/research tokens are not measured here.
 No live-model swarm experiment, macOS run, or end-to-end quality/token improvement was verified.
+
+Peer selection deferred the receipt implementation; this research and the archived draft note
+remain, while main gains automatic run accounting and delivered-state evidence from other
+drafts. The receipt implementation is not a main-branch dependency. [Archived decision](draft-a3.md).
