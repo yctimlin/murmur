@@ -47,8 +47,8 @@ DURATION_RE = re.compile(r"^(\d+)([smh])$")
 ENV_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 DEFAULTS = {
     "peers": 2,
-    "model": "gpt-6-astra",
-    "effort": "high",
+    "model": None,
+    "effort": None,
     "cap": "3h",
     "port_base": 40000,
     "port_stride": 100,
@@ -140,7 +140,7 @@ def user_codex_home() -> Path:
     return Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")).expanduser()
 
 
-def write_model_catalog(path: Path, model: str, effort: str, solo: bool) -> None:
+def write_model_catalog(path: Path, model: str | None, effort: str | None, solo: bool) -> None:
     """Pin how the model catalog treats sub-agents.
 
     The bundled catalog forces Multi-Agent V2 on for some models regardless of
@@ -158,8 +158,9 @@ def write_model_catalog(path: Path, model: str, effort: str, solo: bool) -> None
     for entry in catalog["models"]:
         if solo:
             entry["multi_agent_version"] = None
-        elif entry.get("slug") == model:
-            entry["multi_agent_reasoning_effort"] = effort
+        elif model is None or entry.get("slug") == model:
+            if effort is not None:
+                entry["multi_agent_reasoning_effort"] = effort
             if entry.get("tool_mode") is None:
                 entry["tool_mode"] = "code_mode_only"
     path.write_text(json.dumps(catalog, indent=2) + "\n")
@@ -275,6 +276,13 @@ def _as_string_list(value, name: str) -> list[str]:
 def resolve_options(args: argparse.Namespace) -> dict:
     """Defaults, then the optional config file, then flags."""
     options = dict(DEFAULTS)
+    # Carry only explicit model preferences into the isolated run. With no preference,
+    # omit the override entirely and let this installed Codex choose its own default.
+    config_file = user_codex_home() / "config.toml"
+    if config_file.exists():
+        user_config = tomllib.loads(config_file.read_text())
+        options["model"] = user_config.get("model")
+        options["effort"] = user_config.get("model_reasoning_effort")
     if args.config:
         config_path = Path(args.config).expanduser().resolve()
         config = tomllib.loads(config_path.read_text())
@@ -295,6 +303,10 @@ def resolve_options(args: argparse.Namespace) -> dict:
         "setup": args.setup or None,
     }
     options |= {key: value for key, value in flags.items() if value is not None}
+    for name in ("model", "effort"):
+        value = options[name]
+        if value is not None and (not isinstance(value, str) or not value.strip()):
+            fail(f"{name} must be a non-empty string")
     if args.solo:
         options["peers"] = 1
     elif not isinstance(options["peers"], int) or isinstance(options["peers"], bool) or options["peers"] < 2:
@@ -725,9 +737,6 @@ def codex_command(ws: Path, meta: dict, injected: dict) -> list[str]:
     # repo's AGENTS.md or .codex hooks; the closing prompt sends each agent to AGENTS.md.
     cmd = [
         "codex", "exec", "--json", "--skip-git-repo-check",
-        "-m", meta["model"],
-        "-c", f"model_reasoning_effort={toml_value(meta['effort'])}",
-        "-c", 'model_reasoning_summary="auto"',
         "--disable", "memories",
         "--sandbox", "workspace-write",
         "-c", 'approval_policy="never"',
@@ -737,6 +746,10 @@ def codex_command(ws: Path, meta: dict, injected: dict) -> list[str]:
         "-C", str(ws / "work"),
         "-o", str(ws / "logs" / "final.md"),
     ]
+    if meta.get("model") is not None:
+        cmd += ["-m", meta["model"]]
+    if meta.get("effort") is not None:
+        cmd += ["-c", f"model_reasoning_effort={toml_value(meta['effort'])}"]
     if meta["mode"] == "solo":
         cmd += ["--disable", "multi_agent", "--disable", "multi_agent_v2"]
     else:
@@ -865,8 +878,8 @@ def main() -> None:
     mode = p_setup.add_mutually_exclusive_group()
     mode.add_argument("--peers", type=int, help="number of peer agents (default: 2)")
     mode.add_argument("--solo", action="store_true", help="one agent, no swarm")
-    p_setup.add_argument("--model", help="Codex model (default: gpt-6-astra)")
-    p_setup.add_argument("--effort", help="reasoning effort (default: high)")
+    p_setup.add_argument("--model", help="Codex model (default: user Codex config, then Codex default)")
+    p_setup.add_argument("--effort", help="reasoning effort (default: user Codex config, then Codex default)")
     p_setup.add_argument("--cap", help="hard time limit, e.g. 90m or 3h (default: 3h)")
     p_setup.add_argument(
         "--setup", action="append", metavar="CMD",

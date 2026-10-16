@@ -51,3 +51,25 @@ def test_solo_leaves_tool_mode_unset(tmp_path: Path, monkeypatch):
     entry = json.loads(dest.read_text())["models"][0]
     assert entry["tool_mode"] is None
     assert entry["multi_agent_version"] is None
+
+
+def test_unspecified_model_prepares_all_without_pinning_effort(tmp_path: Path, monkeypatch):
+    _stub_models(monkeypatch, [
+        {"slug": "first", "multi_agent_reasoning_effort": "low"},
+        {"slug": "second", "multi_agent_reasoning_effort": "high", "tool_mode": "direct"},
+    ])
+    dest = tmp_path / "models.json"
+    write_model_catalog(dest, None, None, solo=False)
+    first, second = json.loads(dest.read_text())["models"]
+    assert first["tool_mode"] == "code_mode_only"
+    assert first["multi_agent_reasoning_effort"] == "low"
+    assert second["tool_mode"] == "direct"
+    assert second["multi_agent_reasoning_effort"] == "high"
+
+
+def test_effort_override_without_model_applies_to_all_candidates(tmp_path: Path, monkeypatch):
+    _stub_models(monkeypatch, [{"slug": "first"}, {"slug": "second"}])
+    dest = tmp_path / "models.json"
+    write_model_catalog(dest, None, "medium", solo=False)
+    assert all(model["multi_agent_reasoning_effort"] == "medium"
+               for model in json.loads(dest.read_text())["models"])

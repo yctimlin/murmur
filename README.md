@@ -89,6 +89,7 @@ murmur run WORKSPACE
 | `--peers` / `--solo` | 2 peers | Start with two; increase explicitly when the task has enough independent work |
 | `--setup` | none | Shell command run once, in the first clone, before the clock starts (repeatable) |
 | `--setup-per-agent` | off | Run `--setup` in every clone. Use this when the install embeds absolute paths |
+| `--model` / `--effort` | user Codex config, then Codex defaults | Explicit flags override murmur TOML, which overrides `model` / `model_reasoning_effort` in `$CODEX_HOME/config.toml` (or `~/.codex/config.toml`). |
 | `--cap` | `3h` | Hard time limit, e.g. `90m` |
 | `--port-base` | `40000` | Each agent gets 100 ports. Shells started in its clone export `PORT_BASE` |
 | `--config` | none | TOML with any of the above, plus `setup_per_agent` and `agent_env` templates (`$agent`, `$index`, `$port_base`, `$run`). Flags override it. |
@@ -169,7 +170,8 @@ Inside the sandbox, pnpm falls back to a store inside the project.
   That is not a network block: `curl https://github.com` can succeed.
 - Agent shells use Codex's core environment. `ZDOTDIR` is `<workspace>/zdot`, so zsh does not read
   your dotfiles. `HOME` stays your home directory.
-- Each run gets its own `CODEX_HOME` with only your model provider and auth: no plugins, memories,
+- Each run gets its own `CODEX_HOME` with only your model provider and auth; explicit model and
+  reasoning preferences are recorded in run metadata and passed as CLI overrides: no plugins, memories,
   personal instructions or past sessions.
 
 This prevents accidents, not a determined agent: the Codex sandbox can still read your disk. For
@@ -180,8 +182,9 @@ strict isolation, run murmur as a separate OS user.
 - **`--disable multi_agent` does not remove `spawn_agent` for models whose catalog entry forces
   Multi-Agent V2** ([openai/codex#50880](https://github.com/openai/codex/issues/50880)). For
   `--solo`, murmur writes a per-run model catalog with `multi_agent_version` cleared.
-- **Sub-agents run at the catalog's `multi_agent_reasoning_effort`** (`xhigh` for `gpt-6-astra`),
-  not at the session's. The per-run catalog pins it to `--effort`.
+- **Sub-agents can use the catalog's `multi_agent_reasoning_effort`**,
+  not at the session's. When an effort is explicitly selected in flags or config, the per-run
+  catalog carries it to peers. Without a selection, catalog defaults are preserved.
 - **A null catalog `tool_mode` makes the message board fail.** Codex then sends
   `collaboration.create_channel` and the other board tools as namespaced functions, and the
   backend rejects them (`Function 'collaboration.create_channel' is not allowed in reserved
