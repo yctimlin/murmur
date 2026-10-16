@@ -117,3 +117,16 @@ def test_malformed_user_config_is_a_launcher_error(tmp_path: Path, monkeypatch, 
         resolve_options(_args(brief="brief.md"))
     assert error.value.code == 3
     assert "cannot read Codex config" in capsys.readouterr().err
+
+
+def test_ultra_effort_does_not_overwrite_catalog_alias(tmp_path: Path):
+    import json
+    from murmur.cli import codex_command
+    from support import setup_workspace
+
+    ws = setup_workspace(tmp_path, "--peers", "2", "--effort", "ultra")
+    meta = json.loads((ws / "murmur.json").read_text())
+    cmd = codex_command(ws, meta, {})
+    assert 'model_reasoning_effort="ultra"' in cmd
+    catalog = json.loads((ws / "codex-home/models.json").read_text())
+    assert catalog["models"][0]["multi_agent_reasoning_effort"] == "xhigh"

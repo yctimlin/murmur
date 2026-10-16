@@ -21,21 +21,21 @@ def _stub_models(monkeypatch, models: list[dict]) -> None:
 
 def test_swarm_sets_code_mode_only_when_tool_mode_is_null(tmp_path: Path, monkeypatch):
     _stub_models(monkeypatch, [
-        {"slug": "gpt-6-astra", "tool_mode": None},
+        {"slug": "gpt-6-astra", "tool_mode": None, "multi_agent_reasoning_effort": "xhigh"},
         {"slug": "other-model"},
     ])
     dest = tmp_path / "models.json"
-    write_model_catalog(dest, "gpt-6-astra", "high", solo=False)
+    write_model_catalog(dest, "gpt-6-astra", solo=False)
     by_slug = {entry["slug"]: entry for entry in json.loads(dest.read_text())["models"]}
     assert by_slug["gpt-6-astra"]["tool_mode"] == "code_mode_only"
-    assert by_slug["gpt-6-astra"]["multi_agent_reasoning_effort"] == "high"
+    assert by_slug["gpt-6-astra"]["multi_agent_reasoning_effort"] == "xhigh"
     assert "tool_mode" not in by_slug["other-model"]
 
 
 def test_explicit_tool_mode_is_preserved(tmp_path: Path, monkeypatch):
     _stub_models(monkeypatch, [{"slug": "gpt-6-astra", "tool_mode": "direct"}])
     dest = tmp_path / "models.json"
-    write_model_catalog(dest, "gpt-6-astra", "high", solo=False)
+    write_model_catalog(dest, "gpt-6-astra", solo=False)
     entry = json.loads(dest.read_text())["models"][0]
     assert entry["tool_mode"] == "direct"
 
@@ -47,7 +47,7 @@ def test_solo_leaves_tool_mode_unset(tmp_path: Path, monkeypatch):
         "multi_agent_version": "v2",
     }])
     dest = tmp_path / "models.json"
-    write_model_catalog(dest, "gpt-6-astra", "high", solo=True)
+    write_model_catalog(dest, "gpt-6-astra", solo=True)
     entry = json.loads(dest.read_text())["models"][0]
     assert entry["tool_mode"] is None
     assert entry["multi_agent_version"] is None
@@ -59,17 +59,9 @@ def test_unspecified_model_prepares_all_without_pinning_effort(tmp_path: Path, m
         {"slug": "second", "multi_agent_reasoning_effort": "high", "tool_mode": "direct"},
     ])
     dest = tmp_path / "models.json"
-    write_model_catalog(dest, None, None, solo=False)
+    write_model_catalog(dest, None, solo=False)
     first, second = json.loads(dest.read_text())["models"]
     assert first["tool_mode"] == "code_mode_only"
     assert first["multi_agent_reasoning_effort"] == "low"
     assert second["tool_mode"] == "direct"
     assert second["multi_agent_reasoning_effort"] == "high"
-
-
-def test_effort_override_without_model_applies_to_all_candidates(tmp_path: Path, monkeypatch):
-    _stub_models(monkeypatch, [{"slug": "first"}, {"slug": "second"}])
-    dest = tmp_path / "models.json"
-    write_model_catalog(dest, None, "medium", solo=False)
-    assert all(model["multi_agent_reasoning_effort"] == "medium"
-               for model in json.loads(dest.read_text())["models"])

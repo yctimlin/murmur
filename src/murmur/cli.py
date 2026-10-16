@@ -151,12 +151,13 @@ def read_codex_config() -> dict:
         fail(f"cannot read Codex config {config_file}: {error}")
 
 
-def write_model_catalog(path: Path, model: str | None, effort: str | None, solo: bool) -> None:
-    """Pin how the model catalog treats sub-agents.
+def write_model_catalog(path: Path, model: str | None, solo: bool) -> None:
+    """Prepare agent tool availability without replacing model-owned effort defaults.
 
     The bundled catalog forces Multi-Agent V2 on for some models regardless of
-    `--disable` flags (openai/codex#50880), and spawns sub-agents at its own reasoning
-    effort. So a solo run gets no agent tools, and swarm peers think at the run's effort.
+    `--disable` flags (openai/codex#50880), so a solo run gets no agent tools.
+    Children inherit the configured effort; catalog effort is an Ultra alias
+    resolution preference, not a general child-effort override in Codex 0.162.1.
 
     A swarm also enables the agent message board. Codex reads `tool_mode` from this
     catalog and, when it is null, falls back to Direct mode, which sends the board
@@ -170,8 +171,6 @@ def write_model_catalog(path: Path, model: str | None, effort: str | None, solo:
         if solo:
             entry["multi_agent_version"] = None
         elif model is None or entry.get("slug") == model:
-            if effort is not None:
-                entry["multi_agent_reasoning_effort"] = effort
             if entry.get("tool_mode") is None:
                 entry["tool_mode"] = "code_mode_only"
     path.write_text(json.dumps(catalog, indent=2) + "\n")
@@ -663,7 +662,7 @@ def setup(args: argparse.Namespace) -> None:
             directory.mkdir(parents=True)
         (ws / "gitconfig").write_text(GITCONFIG)
         write_zshenv(ws)
-        write_model_catalog(home / "models.json", options["model"], options["effort"], solo)
+        write_model_catalog(home / "models.json", options["model"], solo)
         write_codex_home(home, work, home / "models.json")
         isolated = git_env(ws)
         if folder:

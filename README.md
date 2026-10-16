@@ -186,9 +186,9 @@ strict isolation, run murmur as a separate OS user.
 - **`--disable multi_agent` does not remove `spawn_agent` for models whose catalog entry forces
   Multi-Agent V2** ([openai/codex#50880](https://github.com/openai/codex/issues/50880)). For
   `--solo`, murmur writes a per-run model catalog with `multi_agent_version` cleared.
-- **Sub-agents can use the catalog's `multi_agent_reasoning_effort`**,
-  not at the session's. When an effort is explicitly selected in flags or config, the per-run
-  catalog carries it to peers. Without a selection, catalog defaults are preserved.
+- **Sub-agents inherit the selected reasoning effort.** Codex 0.162.1 uses the catalog's
+  `multi_agent_reasoning_effort` to resolve the `ultra` alias. murmur preserves this model-owned
+  value and passes explicit effort preferences through the normal session configuration.
 - **A null catalog `tool_mode` makes the message board fail.** Codex then sends
   `collaboration.create_channel` and the other board tools as namespaced functions, and the
   backend rejects them (`Function 'collaboration.create_channel' is not allowed in reserved
