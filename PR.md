@@ -71,8 +71,32 @@ Codex run with a pushed commit. Ignored deliverables, discarded draft intent, ob
 and whether tests cover requirements are not inferred. The research rationale is [verification
 and termination evidence](research/evaluation.md); improved task outcomes remain unverified.
 
-The remaining selected mechanisms are integrated by their owners under the shared plan above;
-this document will record the resulting behavior and final validation before completion.
+Model and effort now follow explicit murmur flags, murmur TOML, the user's top-level Codex
+configuration, then installed Codex defaults. Explicit preferences are frozen at setup. No model
+name, reasoning level or compaction threshold is imposed. The source audit also corrects the old
+blanket catalog-effort workaround: ordinary child effort inherits from the session; the catalog
+field resolves the Ultra alias and is left intact. Strong evidence for configuration behavior is
+[configuration tests](tests/test_config.py), [catalog tests](tests/test_catalog.py), and the
+[version-specific audit](research/CODEX-SOURCE.md). Named profiles and project-level configuration
+are deliberately not reimplemented; users can express those choices via existing flags/TOML.
+This is portability/correctness work, not a demonstrated speed improvement.
+
+Run accounting reads only this run's Codex rollouts and sums provider-observed per-response
+usage, deduplicating `(thread_id, response_id)` across copied or replayed records. Input, cached
+input, derived uncached input, output and response count remain separate; cumulative thread
+counters and reasoning output are not added again. Missing data stays unknown, malformed or
+truncated records are counted, and the terminal prints a short summary. Strong narrow evidence:
+[source definitions/persistence](research/usage.md) and [accounting tests](tests/test_usage.py),
+including a failed run and inherited/replayed records. Complete billing, all failed API calls,
+provider reporting fidelity and efficiency gains are not established.
+
+The [research report](research/REPORT.md) and its linked appendices cover the named products,
+additional discovered projects, original research/engineering accounts, the installed source,
+and all supplied prior evidence. Each externally sourced claim links to its source; gaps and
+vendor-only results are marked. Prior evidence was not edited. The [README](README.md) and
+existing [murmur skill](skills/murmur/SKILL.md) now describe the selected defaults and limits,
+including the distinction between an exited process, delivered work and functional quality.
+[State captures](scripts/capture_states.py) make the launcher reviewable without credentials.
 
 ## Decisions and evidence strength
 
@@ -105,12 +129,25 @@ peer files, and `logs/run.json`.
 
 ## Verification and remaining limits
 
-The selected base passed 34 tests in 9.41 seconds in a2's clone. All six draft full suites also
-passed in independent archived checkouts (8.98–10.28 seconds for the other drafts); these
-validation runs made zero model calls and consumed zero model tokens. Research/implementation
-agent inference cost is separate and was not measured by those validation figures.
+The integrated code at `8ccb0d5` passed **53 tests** in all six peer reviews. In a1's clone,
+`.venv/bin/python -m pytest -q` took **11.22 seconds**. The six-state capture produced exits
+**0 / 1 / 1 / 124 / 130 / 0**, with additive `usage` and `result` fields after success, failure,
+cap and interruption. All relative Markdown links in README/PR/research resolve locally.
+Other peers independently reviewed generated prompts, configuration precedence, returned state,
+and the unchanged command surface. a3 also built a wheel on Linux/Python 3.13, installed it into a clean virtualenv, and verified
+isolated imports, the installed entry point and packaged prompts. Evidence files are unchanged
+from baseline `3775a84`. These packaging checks establish the tested local installation path;
+they do not establish macOS/Python 3.11 support. This document update changes no executable behavior.
+
+The selected base separately passed 34 tests in 9.41 seconds in a2's clone. All six draft full
+suites also passed in independent archived checkouts; these validation runs used fake Codex,
+made zero model calls and consumed zero model tokens. Research/implementation agent inference
+cost is separate and was not measured by those validation figures. These timings are test
+runtime, not agent-speed measurements. No paid/live performance experiment was run.
 
 Not verified: real-task speedup, quality parity, the target 1.5–2x total token ratio, backend
 cache affinity/hit rates, live-model adherence to generated prompts, the installed Rust test
 suite, public GitHub availability of the supplied source revision, or isolation against
-malicious agents. Final integrated tests and fixture results are to be added before completion.
+malicious agents, macOS or Python 3.11 runtime behavior, or present/future product behavior beyond
+the retrieved documentation and pinned source. The observed token report cannot recover usage
+that the provider or killed process never persisted.

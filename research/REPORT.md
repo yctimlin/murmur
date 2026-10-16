@@ -163,7 +163,8 @@ We used credential-free subprocess and real-Git fixtures, not paid performance r
 interruption and stubborn descendants in about three seconds on this machine. It makes **zero
 model calls**. Six independent draft suites passed in a1's isolated archive review (37/34/36/38/35/38
 tests; roughly 9–10 seconds each). This verifies mechanics only; definitive integrated validation
-and draft selection are recorded in [PR.md](../PR.md). Development-agent tokens are not exposed
+and draft selection are recorded in [PR.md](../PR.md): the integrated code passed 53 tests in
+all six peer reviews, and the six lifecycle captures retained the expected exits. Development-agent tokens are not exposed
 to this peer and are **unverified**; zero model calls applies to these fake validation experiments,
 not to the agents performing this research and implementation.
 
