@@ -1,0 +1,39 @@
+{
+ "job": {
+  "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+  "task": "reserveplan",
+  "peers": 3,
+  "cap": "90m",
+  "murmur_repo": "/workspace/self3/labdata/repos/r3.git",
+  "tag": "C1:6:base3_A"
+ },
+ "started": "2026-10-17T19:30:00.356027",
+ "model": "gpt-6-astra",
+ "effort": "high",
+ "murmur_sha": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+ "setup_exit": 0,
+ "ws": "/workspace/self3/labdata/ws/C1-06-base3A",
+ "run_exit": 0,
+ "wall_min": 26.42,
+ "active_min": 22.75,
+ "input": 11186514,
+ "uncached": 184146,
+ "output": 52749,
+ "sessions": 4,
+ "lines_429": 0,
+ "commits": 8,
+ "delivered": true,
+ "score": {
+  "passed": 74,
+  "rate": 1.0,
+  "total": 74
+ },
+ "mutation": {
+  "mutants": 0,
+  "killed": 0,
+  "score": null,
+  "baseline_green": false
+ },
+ "leak_hits": 0,
+ "finished": "2026-10-17T19:56:30.264723"
+}

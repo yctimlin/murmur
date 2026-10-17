@@ -1,0 +1,39 @@
+{
+ "job": {
+  "task": "ledger_replay",
+  "peers": "exec",
+  "cap": "60m",
+  "murmur_repo": "/workspace/self3/labdata/repos/r3.git",
+  "tag": "C1:1:exec_calibration"
+ },
+ "started": "2026-10-17T16:31:50.594315",
+ "model": "gpt-6-astra",
+ "effort": "high",
+ "base": "5201cfe3a30494907bbdb318112331a97b618ee8",
+ "run_exit": 0,
+ "wall_min": 15.01,
+ "ws": "/workspace/self3/labdata/ws/C1-01-execcalibration",
+ "active_min": 10.78,
+ "input": 432487,
+ "uncached": 61287,
+ "output": 18238,
+ "sessions": 1,
+ "lines_429": 0,
+ "commits": 1,
+ "delivered": true,
+ "score": {
+  "passed": 50,
+  "rate": 1.0,
+  "total": 50
+ },
+ "mutation": {
+  "mutants": 30,
+  "killed": 29,
+  "timeouts": 0,
+  "score": 0.9667,
+  "baseline_green": true,
+  "deselected": 0
+ },
+ "leak_hits": 0,
+ "finished": "2026-10-17T16:50:01.648636"
+}

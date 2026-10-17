@@ -1,0 +1,41 @@
+{
+ "job": {
+  "rev": "eec78f846a8c373f4c351f03f9fd89cbe01cb7a7",
+  "task": "ledger_replay",
+  "peers": 3,
+  "cap": "60m",
+  "murmur_repo": "/workspace/self3/labdata/repos/r3.git",
+  "tag": "C1:4:orig"
+ },
+ "started": "2026-10-17T19:01:43.240802",
+ "model": "gpt-6-astra",
+ "effort": "high",
+ "murmur_sha": "eec78f846a8c373f4c351f03f9fd89cbe01cb7a7",
+ "setup_exit": 0,
+ "ws": "/workspace/self3/labdata/ws/C1-04-orig",
+ "run_exit": 0,
+ "wall_min": 18.64,
+ "active_min": 10.58,
+ "input": 3858303,
+ "uncached": 224895,
+ "output": 40693,
+ "sessions": 4,
+ "lines_429": 0,
+ "commits": 9,
+ "delivered": true,
+ "score": {
+  "passed": 50,
+  "rate": 1.0,
+  "total": 50
+ },
+ "mutation": {
+  "mutants": 30,
+  "killed": 29,
+  "timeouts": 0,
+  "score": 0.9667,
+  "baseline_green": true,
+  "deselected": 0
+ },
+ "leak_hits": 0,
+ "finished": "2026-10-17T19:20:50.370843"
+}
