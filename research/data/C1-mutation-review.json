@@ -1,0 +1,31 @@
+{
+  "analysis": "exploratory secondary endpoint review",
+  "source": "/workspace/self3/labdata/results/C1-06-base3A/delivered",
+  "delivered_file_manifest": [
+    "PR.md",
+    "README.md",
+    "SPEC.md",
+    "build_backend.py",
+    "examples/jobs.json",
+    "pyproject.toml",
+    "reserveplan/__init__.py",
+    "reserveplan/__main__.py",
+    "reserveplan/cli.py",
+    "reserveplan/errors.py",
+    "reserveplan/planning.py",
+    "reserveplan/validation.py"
+  ],
+  "local_pytest_collection": {
+    "command": "python3 -m pytest --collect-only -q -p no:cacheprovider -o addopts=",
+    "exit": 1,
+    "stdout": "",
+    "stderr": "/usr/bin/python3: No module named pytest\n"
+  },
+  "C1-11-denominator": {
+    "killed": 20,
+    "mutants": 30,
+    "timeouts": 1,
+    "score": 0.6897
+  },
+  "caveat": "Local collection is a diagnostic only, not a new lab run or replacement endpoint."
+}
