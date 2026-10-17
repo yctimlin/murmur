@@ -6,6 +6,7 @@ No inference fills missing outcomes, engine revisions, or token telemetry.
 See research/data/METHODS.md for attribution definitions and limitations.
 """
 import argparse
+import ast
 import collections
 import csv
 import datetime as dt
@@ -40,21 +41,52 @@ def git(repo, *args, strip=True):
     p = subprocess.run(['git', '--no-optional-locks', '-C', str(repo), *args], capture_output=True, text=True, errors='replace')
     return (p.stdout.strip() if strip else p.stdout) if p.returncode == 0 else ''
 
-def kind(text):
-    # Priority is explicit: mixed edit/test shells count as edits; all output follows the same category.
-    if re.search(r'apply_patch|write_text\(|write_bytes\(|\bcat\s*>|\btee\s|open\([^\n]+[\'"]w[ab]?[\'"]', text):
+def shell_text(payload):
+    """Extract literal shell commands, excluding board prose in orchestration code."""
+    raw = payload.get('arguments') or payload.get('input') or ''
+    try:
+        args = json.loads(raw) if isinstance(raw, str) else raw
+    except ValueError:
+        args = None
+    if isinstance(args, dict) and isinstance(args.get('cmd'), str):
+        return args['cmd']
+    if isinstance(args, dict) and isinstance(args.get('command'), list):
+        return ' '.join(args['command'])
+    commands = []
+    pattern = r"(?:[\"']?cmd[\"']?\s*:\s*)(?P<q>[\"'`])(?P<body>(?:\\.|(?!(?P=q)).)*)(?P=q)"
+    for m in re.finditer(pattern, str(raw), re.S):
+        q, body = m.group('q'), m.group('body')
+        try:
+            commands.append(ast.literal_eval(q + body + q) if q != '`' else body)
+        except (ValueError, SyntaxError):
+            commands.append(body)
+    return '\n'.join(commands)
+
+
+def kind(text, payload=None):
+    # First isolate shell commands from incidental prose in orchestration/board posts.
+    shell = shell_text(payload) if payload else text
+    name = (payload or {}).get('name', '')
+    if 'apply_patch' in name or ('apply_patch' in text and not shell):
         return 'edit'
-    if re.search(r'pytest|unittest|runtests|npm (?:run )?test|node --test|coverage run|\btest_[\w]+\.py|compileall|py_compile', text):
-        return 'verify'
-    if re.search(r'git (?:-[^\s]+\s+[^\s]+\s+)*(?:pull|push|rebase|fetch|merge|commit|add|cherry-pick)\b|\.murmur/sync', text):
+    if not shell:
+        if re.search(r'wait_agent|list_agents|write_stdin|tools\.wait\(', text): return 'wait'
+        if re.search(r'collaboration.*(?:read|search|list|post|channel|subscribe)|message_board', text): return 'board'
+        return 'other'
+    if re.search(r'apply_patch|write_text\(|write_bytes\(|\bcat\s*>|\btee\s|\bsed\s+-i|open\([^\n]+[\'"]w[ab]?[\'"]', shell):
+        return 'edit'
+    # Executed test commands only: reading test_foo.py or mentioning pytest is not verification.
+    prefix = r'(?:^|[;\n&|])\s*(?:(?:[A-Za-z_]\w*=\S+|env|timeout\s+\d+\w*|uv\s+run)\s+)*'
+    exe = r'(?:[^\s\'"]*/)?'
+    test = (r'(?:pytest\b|python[\d.]*\s+-m\s+(?:pytest|unittest|compileall|py_compile)\b|'
+            r'python[\d.]*\s+(?:\S*/)?(?:runtests|test_\w+)\.py\b|'
+            r'npm\s+(?:run\s+)?test\b|node\s+--test\b|coverage\s+run\b)')
+    if re.search(prefix + exe + test, shell): return 'verify'
+    if re.search(r'git (?:-[^\s]+\s+[^\s]+\s+)*(?:pull|push|rebase|fetch|merge|commit|add|cherry-pick)\b|\.murmur/sync', shell):
         return 'git_sync'
-    if re.search(r'git (?:-[^\s]+\s+[^\s]+\s+)*(?:log|show|diff|status|blame)\b', text):
+    if re.search(r'git (?:-[^\s]+\s+[^\s]+\s+)*(?:log|show|diff|status|blame)\b', shell):
         return 'git_read'
-    if re.search(r'wait_agent|list_agents|wait_for|write_stdin|tools\.wait\(', text):
-        return 'wait'
-    if re.search(r'collaboration.*(?:read|search|list|post|channel|subscribe)|message_board', text):
-        return 'board'
-    if re.search(r'\b(?:cat|sed|head|tail|rg|grep|ls|find|wc|read_file)\b|read_text\(|read_bytes\(', text):
+    if re.search(r'\b(?:cat|sed|head|tail|rg|grep|ls|find|wc|read_file)\b|read_text\(|read_bytes\(', shell):
         return 'file_read'
     return 'other'
 
@@ -84,7 +116,7 @@ def first_meta(path):
     except (OSError, ValueError):
         return {}
 
-def session(path, run_id, last_main, first_main):
+def session(path, run_id, last_main, first_main, is_solo=False):
     ds = list(records(path))
     meta = next((x['payload'] for x in ds if x.get('type') == 'session_meta'), {})
     ts = sorted(set(t for x in ds if (t := stamp(x.get('timestamp'))) is not None))
@@ -118,7 +150,7 @@ def session(path, run_id, last_main, first_main):
         if t is not None: prev_t = t
         if typ in ('function_call', 'custom_tool_call'):
             txt = str(p.get('name', ''))+' '+str(p.get('input') or p.get('arguments') or '')
-            current_kind = kind(txt)
+            current_kind = kind(txt, p)
             current_phase = phase(current_kind, txt, edited, t or 0, last_main)
             if current_kind == 'edit':
                 edited = True
@@ -155,7 +187,7 @@ def session(path, run_id, last_main, first_main):
     sid = meta.get('id') or meta.get('session_id') or path.stem
     cwd = meta.get('cwd', '')
     cwd_agent = re.search(r'/peers/([^/]+)', cwd)
-    agent_path = meta.get('agent_path') or ('/root/'+cwd_agent.group(1) if cwd_agent else ('/root' if cwd.endswith('/work') else '/solo'))
+    agent_path = meta.get('agent_path') or ('/root/'+cwd_agent.group(1) if cwd_agent else ('/root' if cwd.endswith('/work') else ('/solo' if is_solo else '/auxiliary_exec')))
     agent = agent_path.removeprefix('/root/').removeprefix('/')
     observed_usage = response_count > 0
     row = dict(run_id=run_id, session_id=sid, agent=agent, agent_path=agent_path,
@@ -344,7 +376,7 @@ def main():
         main_ts=sorted(t for s in mainlog if (t:=stamp(s)) is not None)
         allts=[];run_sessions=[]
         for f in files:
-            s,ts=session(f,run_id,main_ts[-1] if main_ts else None,main_ts[0] if main_ts else None)
+            s,ts=session(f,run_id,main_ts[-1] if main_ts else None,main_ts[0] if main_ts else None,is_solo)
             sessions.append(s);run_sessions.append(s);allts.extend(ts)
         allts=sorted(set(allts))
         arm,rev,rev_source=arm_info(batch,name)

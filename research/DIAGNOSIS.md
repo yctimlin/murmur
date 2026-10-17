@@ -31,23 +31,23 @@ The following disjoint operational categories rank the full input contexts charg
 
 | Rank | Last tool category | Input tokens | Share of all input | Tool calls |
 |---|---|---|---|---|
-| 1 | edit | 143,330,510 | 21.45% | 1,958 |
-| 2 | verify | 111,699,074 | 16.71% | 1,521 |
-| 3 | other | 82,524,353 | 12.35% | 1,408 |
-| 4 | board | 80,229,427 | 12.00% | 1,254 |
-| 5 | git_read | 76,447,316 | 11.44% | 1,071 |
-| 6 | git_sync | 74,049,369 | 11.08% | 942 |
-| 7 | wait | 73,646,120 | 11.02% | 1,288 |
-| 8 | file_read | 26,431,650 | 3.95% | 569 |
+| 1 | edit | 146,294,191 | 21.89% | 2,023 |
+| 2 | other | 104,635,016 | 15.66% | 1,741 |
+| 3 | git_sync | 88,859,982 | 13.30% | 1,141 |
+| 4 | git_read | 86,625,131 | 12.96% | 1,213 |
+| 5 | wait | 68,747,360 | 10.29% | 1,227 |
+| 6 | file_read | 68,252,970 | 10.21% | 1,284 |
+| 7 | verify | 53,770,361 | 8.05% | 698 |
+| 8 | board | 51,172,808 | 7.66% | 684 |
 
 The source question has a different denominator. Exact per-source tokenization is unavailable; the logs expose these serialized output character counts. These characters must not be added to cached input or model output tokens.
 
 | Tool output source | Characters | Share of tool-output characters |
 |---|---|---|
-| shell_output | 38,756,343 | 41.55% |
-| file_reads | 5,495,689 | 5.89% |
-| board_reads | 17,702,796 | 18.98% |
-| other_tool_output | 31,330,098 | 33.59% |
+| shell_output | 33,749,874 | 36.18% |
+| file_reads | 14,899,883 | 15.97% |
+| board_reads | 12,358,930 | 13.25% |
+| other_tool_output | 32,276,239 | 34.60% |
 
 ## Time decomposition for every run
 
@@ -55,14 +55,14 @@ Each row in index.csv and sessions.csv contains eight additive phase columns. Th
 
 | Phase | Peer minutes | Share of classified peer time |
 |---|---|---|
-| exploration | 281.54 | 5.75% |
-| drafting | 2034.62 | 41.56% |
-| waiting_idle | 763.10 | 15.59% |
-| board_traffic | 515.11 | 10.52% |
-| ranking | 56.13 | 1.15% |
-| merging | 423.42 | 8.65% |
-| verification | 745.01 | 15.22% |
-| polishing | 76.79 | 1.57% |
+| exploration | 447.81 | 9.15% |
+| drafting | 2506.42 | 51.20% |
+| waiting_idle | 734.09 | 14.99% |
+| board_traffic | 254.77 | 5.20% |
+| ranking | 39.45 | 0.81% |
+| merging | 512.60 | 10.47% |
+| verification | 321.35 | 6.56% |
+| polishing | 79.23 | 1.62% |
 
 Exploration is before the first detected edit except explicit coordination/verification operations. Drafting includes later implementation. Polishing is work after final main that is not an explicit wait, board, Git or test action. Waiting includes polling. `excluded_gap_min` retains excess per-session gaps separately.
 
