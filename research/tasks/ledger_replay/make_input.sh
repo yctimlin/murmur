@@ -103,6 +103,7 @@ Run `python -m ledger replay examples.jsonl` from this folder. No dependencies a
 (root/'.gitignore').write_text('__pycache__/\n*.pyc\n')
 PY
 cd input
+export GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null
 git init -q -b main
 git config user.name 'Task Fixture'
 git config user.email 'fixture@example.invalid'

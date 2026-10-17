@@ -1,0 +1,22 @@
+{
+  "active_min_mismatches": [],
+  "index_run_count": 76,
+  "methods": {
+    "final_thread_usage": 240,
+    "missing": 1
+  },
+  "missing_usage_sessions": [
+    {
+      "path": "/workspace/self2/eval/ws/failed-W1-a1-429/codex-home/sessions/2026/10/16/rollout-2026-10-16T13-02-05-01a14316-b9cc-7962-98ad-2b156672466f.jsonl",
+      "run_id": "self2/eval/failed-W1-a1-429",
+      "session_id": "01a14316-b9cc-7962-98ad-2b156672466f"
+    }
+  ],
+  "raw_session_count": 241,
+  "token_mismatches": [],
+  "token_totals": {
+    "input": 668357819,
+    "output": 5016406,
+    "uncached": 22209979
+  }
+}

@@ -263,9 +263,11 @@ class LedgerCases(unittest.TestCase):
 
     def test_47_cli_snapshot_output(self):
         out=self.root/'snapshot.json'; out.write_text('old')
+        before_inode=out.stat().st_ino
         run=self.cli(json.dumps(opened()),'--snapshot',out)
         self.assertEqual(run.returncode,0,run.stderr)
         self.assertEqual(json.loads(out.read_text()),json.loads(run.stdout))
+        self.assertNotEqual(out.stat().st_ino,before_inode,'snapshot must be replaced atomically, not truncated in place')
         self.assertIsInstance(json.loads(run.stdout)['accounts'],list)
 
     def test_48_cli_invalid_keeps_existing(self):
