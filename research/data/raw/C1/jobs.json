@@ -1,0 +1,218 @@
+[
+ {
+  "i": 0,
+  "name": "C1-00-execcalibration",
+  "prereg": {
+   "arm": "exec_calibration",
+   "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+   "task": "document_catalog",
+   "peers": "exec",
+   "cap": "60m",
+   "block": "b00-calibration"
+  }
+ },
+ {
+  "i": 1,
+  "name": "C1-01-execcalibration",
+  "prereg": {
+   "arm": "exec_calibration",
+   "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+   "task": "ledger_replay",
+   "peers": "exec",
+   "cap": "60m",
+   "block": "b00-calibration"
+  }
+ },
+ {
+  "i": 2,
+  "name": "C1-02-execcalibration",
+  "prereg": {
+   "arm": "exec_calibration",
+   "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+   "task": "reserveplan",
+   "peers": "exec",
+   "cap": "90m",
+   "block": "b00-calibration"
+  }
+ },
+ {
+  "i": 3,
+  "name": "C1-03-base3A",
+  "prereg": {
+   "arm": "base3_A",
+   "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+   "task": "ledger_replay",
+   "peers": 3,
+   "cap": "60m",
+   "block": "b01-ledger-r1"
+  }
+ },
+ {
+  "i": 4,
+  "name": "C1-04-orig",
+  "prereg": {
+   "arm": "orig",
+   "rev": "eec78f846a8c373f4c351f03f9fd89cbe01cb7a7",
+   "task": "ledger_replay",
+   "peers": 3,
+   "cap": "60m",
+   "block": "b01-ledger-r1"
+  }
+ },
+ {
+  "i": 5,
+  "name": "C1-05-base3B",
+  "prereg": {
+   "arm": "base3_B",
+   "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+   "task": "ledger_replay",
+   "peers": 3,
+   "cap": "60m",
+   "block": "b01-ledger-r1"
+  }
+ },
+ {
+  "i": 6,
+  "name": "C1-06-base3A",
+  "prereg": {
+   "arm": "base3_A",
+   "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+   "task": "reserveplan",
+   "peers": 3,
+   "cap": "90m",
+   "block": "b02-reserve-r1"
+  }
+ },
+ {
+  "i": 7,
+  "name": "C1-07-base3B",
+  "prereg": {
+   "arm": "base3_B",
+   "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+   "task": "reserveplan",
+   "peers": 3,
+   "cap": "90m",
+   "block": "b02-reserve-r1"
+  }
+ },
+ {
+  "i": 8,
+  "name": "C1-08-orig",
+  "prereg": {
+   "arm": "orig",
+   "rev": "eec78f846a8c373f4c351f03f9fd89cbe01cb7a7",
+   "task": "ledger_replay",
+   "peers": 3,
+   "cap": "60m",
+   "block": "b03-ledger-r2"
+  }
+ },
+ {
+  "i": 9,
+  "name": "C1-09-base3B",
+  "prereg": {
+   "arm": "base3_B",
+   "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+   "task": "ledger_replay",
+   "peers": 3,
+   "cap": "60m",
+   "block": "b03-ledger-r2"
+  }
+ },
+ {
+  "i": 10,
+  "name": "C1-10-base3A",
+  "prereg": {
+   "arm": "base3_A",
+   "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+   "task": "ledger_replay",
+   "peers": 3,
+   "cap": "60m",
+   "block": "b03-ledger-r2"
+  }
+ },
+ {
+  "i": 11,
+  "name": "C1-11-base3B",
+  "prereg": {
+   "arm": "base3_B",
+   "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+   "task": "reserveplan",
+   "peers": 3,
+   "cap": "90m",
+   "block": "b04-reserve-r2"
+  }
+ },
+ {
+  "i": 12,
+  "name": "C1-12-base3A",
+  "prereg": {
+   "arm": "base3_A",
+   "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+   "task": "reserveplan",
+   "peers": 3,
+   "cap": "90m",
+   "block": "b04-reserve-r2"
+  }
+ },
+ {
+  "i": 13,
+  "name": "C1-13-base3B",
+  "prereg": {
+   "arm": "base3_B",
+   "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+   "task": "ledger_replay",
+   "peers": 3,
+   "cap": "60m",
+   "block": "b05-ledger-r3"
+  }
+ },
+ {
+  "i": 14,
+  "name": "C1-14-base3A",
+  "prereg": {
+   "arm": "base3_A",
+   "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+   "task": "ledger_replay",
+   "peers": 3,
+   "cap": "60m",
+   "block": "b05-ledger-r3"
+  }
+ },
+ {
+  "i": 15,
+  "name": "C1-15-orig",
+  "prereg": {
+   "arm": "orig",
+   "rev": "eec78f846a8c373f4c351f03f9fd89cbe01cb7a7",
+   "task": "ledger_replay",
+   "peers": 3,
+   "cap": "60m",
+   "block": "b05-ledger-r3"
+  }
+ },
+ {
+  "i": 16,
+  "name": "C1-16-base3A",
+  "prereg": {
+   "arm": "base3_A",
+   "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+   "task": "reserveplan",
+   "peers": 3,
+   "cap": "90m",
+   "block": "b06-reserve-r3"
+  }
+ },
+ {
+  "i": 17,
+  "name": "C1-17-base3B",
+  "prereg": {
+   "arm": "base3_B",
+   "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+   "task": "reserveplan",
+   "peers": 3,
+   "cap": "90m",
+   "block": "b06-reserve-r3"
+  }
+ }
+]

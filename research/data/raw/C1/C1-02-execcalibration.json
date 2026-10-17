@@ -1,0 +1,39 @@
+{
+ "job": {
+  "task": "reserveplan",
+  "peers": "exec",
+  "cap": "90m",
+  "murmur_repo": "/workspace/self3/labdata/repos/r3.git",
+  "tag": "C1:2:exec_calibration"
+ },
+ "started": "2026-10-17T16:31:53.595089",
+ "model": "gpt-6-astra",
+ "effort": "high",
+ "base": "1f2432d20c6907874a75da68eee0188c66a5f3f3",
+ "run_exit": 0,
+ "wall_min": 21.11,
+ "ws": "/workspace/self3/labdata/ws/C1-02-execcalibration",
+ "active_min": 15.03,
+ "input": 761257,
+ "uncached": 53801,
+ "output": 25684,
+ "sessions": 1,
+ "lines_429": 0,
+ "commits": 1,
+ "delivered": true,
+ "score": {
+  "passed": 74,
+  "rate": 1.0,
+  "total": 74
+ },
+ "mutation": {
+  "mutants": 30,
+  "killed": 28,
+  "timeouts": 0,
+  "score": 0.9333,
+  "baseline_green": true,
+  "deselected": 0
+ },
+ "leak_hits": 0,
+ "finished": "2026-10-17T16:53:54.764681"
+}
