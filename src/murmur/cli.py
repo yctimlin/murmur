@@ -298,7 +298,13 @@ def resolve_options(args: argparse.Namespace) -> dict:
     options |= {key: value for key, value in flags.items() if value is not None}
     if args.solo:
         options["peers"] = 1
-    elif not isinstance(options["peers"], int) or isinstance(options["peers"], bool) or options["peers"] < 2:
+    elif (
+        not isinstance(options["peers"], int)
+        or isinstance(options["peers"], bool)
+        or options["peers"] < 2 and not (
+            options["peers"] == 1 and os.environ.get("MURMUR_ONE_PEER_PROTOCOL") == "1"
+        )
+    ):
         fail("a swarm needs at least 2 peers; use --solo for a single agent")
     if args.setup_per_agent:
         options["setup_per_agent"] = True
@@ -614,7 +620,10 @@ def setup(args: argparse.Namespace) -> None:
     if not shutil.which("codex"):
         fail("the `codex` CLI is not on PATH")
     options = resolve_options(args)
-    solo = options["peers"] == 1
+    # Keep `--solo` as the default single-agent mode. The internal switch enables a
+    # one-peer swarm so protocol overhead can be measured independently of parallelism.
+    one_peer_protocol = os.environ.get("MURMUR_ONE_PEER_PROTOCOL") == "1"
+    solo = options["peers"] == 1 and not one_peer_protocol
     brief_file = Path(options["brief"]).expanduser().resolve()
     start = Path(options.get("repo") or ".").expanduser().resolve()
     folder = None if in_git_repo(start) else start
