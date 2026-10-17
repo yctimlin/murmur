@@ -34,11 +34,11 @@ def readjson(p):
     except (OSError, ValueError):
         return {}
 
-def git(repo, *args):
+def git(repo, *args, strip=True):
     if not repo or not Path(repo).exists():
         return ''
-    p = subprocess.run(['git', '--no-optional-locks', '-C', str(repo), *args], capture_output=True, text=True)
-    return p.stdout.strip() if p.returncode == 0 else ''
+    p = subprocess.run(['git', '--no-optional-locks', '-C', str(repo), *args], capture_output=True, text=True, errors='replace')
+    return (p.stdout.strip() if strip else p.stdout) if p.returncode == 0 else ''
 
 def kind(text):
     # Priority is explicit: mixed edit/test shells count as edits; all output follows the same category.
@@ -251,7 +251,7 @@ def draft_stats(repo, base, main):
             finalblob=git(repo,'rev-parse','main:'+path)
             patch=git(repo,'diff','--no-ext-diff','--unified=0',base,ref,'--',path)
             added_lines=collections.Counter(l[1:] for l in patch.splitlines() if l.startswith('+') and not l.startswith('+++'))
-            final_lines=collections.Counter(git(repo,'show','main:'+path).splitlines())
+            final_lines=collections.Counter(git(repo,'show','main:'+path,strip=False).splitlines())
             absent=sum((added_lines-final_lines).values())
             changes.append(dict(path=path,added=int(add) if add.isdigit() else 0,deleted=int(delete) if delete.isdigit() else 0,
                                 exact_final_blob=bool(blob and blob==finalblob),absent_added=absent))
