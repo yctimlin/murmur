@@ -35,11 +35,11 @@ def main():
             payload=event.get('payload') or {}
             if payload.get('type') in ('function_call','custom_tool_call'):
                 text=str(payload.get('name',''))+' '+str(payload.get('input') or payload.get('arguments') or '')
-                calls.append({'run_id':row['run_id'],'session_id':row['session_id'],'call_id':payload.get('call_id'),'raw_path':row['path'],'text':text})
+                calls.append({'run_id':row['run_id'],'session_id':row['session_id'],'call_id':payload.get('call_id'),'raw_path':row['path'],'text':text,'payload':payload})
     population=len(calls);random.Random(17).shuffle(calls)
     result=[]
     for index,row in enumerate(calls[:40]):
-        text=row.pop('text');assigned=module.kind(text)
+        text=row.pop('text');assigned=module.kind(text,row.pop('payload'))
         expected,status,note=ANNOTATIONS.get(index,(ORIGINAL_LABELS[index],'consistent','No clear disagreement with original documented operational category.'))
         # Avoid copying opaque peer-message payloads into derived artifacts.
         excerpt='send_message [opaque message payload omitted]' if text.startswith('send_message ') else text[:1200]
