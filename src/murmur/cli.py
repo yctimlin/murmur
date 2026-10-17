@@ -153,7 +153,10 @@ def write_model_catalog(path: Path, model: str, effort: str, solo: bool) -> None
     """
     out = subprocess.run(["codex", "debug", "models"], check=True, capture_output=True, text=True)
     catalog = json.loads(out.stdout)
-    for entry in catalog["models"]:
+    models = catalog.get("models")
+    if not isinstance(models, list) or not models:
+        fail("codex model catalog is empty; `codex debug models` returned no models")
+    for entry in models:
         if solo:
             entry["multi_agent_version"] = None
         elif entry.get("slug") == model:
