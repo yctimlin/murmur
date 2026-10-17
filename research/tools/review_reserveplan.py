@@ -58,4 +58,23 @@ with tempfile.TemporaryDirectory(prefix='a2-reserveplan-review-') as tmp:
     proc=subprocess.run([str(scorer/'score.sh'),str(tree)],cwd='/tmp',capture_output=True,text=True,check=True)
     score=json.loads(proc.stdout.splitlines()[-1]); assert score=={'passed':0,'total':74,'rate':0.0}
     assert digest(tree)==before
-print(json.dumps({'task':'reserveplan','verified_schedule_cases':verified,'count':len(verified),'baseline':score,'deterministic_commit':revs[0],'relocated_grader':True,'input_unchanged':True},indent=2,sort_keys=True))
+with tempfile.TemporaryDirectory(prefix='a2-reserveplan-timeout-') as tmp:
+    tree=Path(tmp); package=tree/'reserveplan'; package.mkdir()
+    (package/'__init__.py').write_text("""class PlanError(ValueError):
+    pass
+
+def validate(value):
+    raise NotImplementedError
+
+def plan(value):
+    if value.get('horizon') == 1000000000:
+        while True:
+            pass
+    if not value['jobs'] and not value['resources']:
+        return {'version':1,'order':[],'jobs':[],'makespan':0,'total_tardiness':0,'resources':{}}
+    raise NotImplementedError
+""")
+    proc=subprocess.run([str(base/'score.sh'),str(tree)],capture_output=True,text=True,check=True,timeout=20)
+    timeout_score=json.loads(proc.stdout.splitlines()[-1])
+    assert timeout_score=={'passed':2,'total':74,'rate':2/74},timeout_score
+print(json.dumps({'task':'reserveplan','verified_schedule_cases':verified,'count':len(verified),'baseline':score,'deterministic_commit':revs[0],'relocated_grader':True,'input_unchanged':True,'timeout_partial_credit_control':timeout_score},indent=2,sort_keys=True))

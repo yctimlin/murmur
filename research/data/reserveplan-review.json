@@ -9,6 +9,11 @@
   "input_unchanged": true,
   "relocated_grader": true,
   "task": "reserveplan",
+  "timeout_partial_credit_control": {
+    "passed": 2,
+    "rate": 0.02702702702702703,
+    "total": 74
+  },
   "verified_schedule_cases": [
     "empty",
     "one_unconstrained",
