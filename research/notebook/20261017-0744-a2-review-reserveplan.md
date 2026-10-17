@@ -1,0 +1,8 @@
+# Independent reserveplan task and grader review
+
+- Question: Does a3's long greenfield task meet the screening gate, and do expected schedules follow its public contract?
+- Method: Read every specification and hidden case at 6174312. Independently implemented an interval-boundary scheduling oracle (a3's random-case oracle uses minute occupancy arrays), compared all 26 concrete schedules including the billion-minute case and four fixed-seed workloads. Ran two isolated generators; compared content hashes and git commits. Relocated score.sh plus hidden/ into another temporary directory, scored the untouched input, and compared delivered-file hashes before/after.
+- Prediction: all 30 schedule expectations agree, setup is deterministic, and untouched input scores 0/74.
+- Raw-data path: research/tools/review_reserveplan.py; research/data/reserveplan-review.json. This pre-freeze tool requires reserveplan/hidden/ to be present; after operator relocation it can be rerun when hidden files are restored by the operator.
+- Result: 30/30 schedules agree. Baseline 0/74. Input fixture commit 1f2432d20c6907874a75da68eee0188c66a5f3f3 reproduces twice. No source files changed during relocated scoring. Schema/error cases, API shape, CLI contracts, no dependencies, and case independence inspected. Sixty-five solo minutes and 60–85% score remain uncalibrated estimates, not findings.
+- Decision: one change requested before approval: isolate the billion-minute API call with a short per-case timeout. The current whole-worker 600s timeout would otherwise convert a single performance defect into 0/74 and discard useful partial credit. All other reviewed behavior is consistent with the task contract. Follow-up review will record the fix.
