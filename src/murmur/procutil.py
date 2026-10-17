@@ -10,7 +10,7 @@ import time
 
 def install_interrupt_handlers():
     previous = {}
-    for sig in (signal.SIGTERM, signal.SIGHUP):
+    for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
         previous[sig] = signal.signal(sig, _interrupt)
     return previous
 
