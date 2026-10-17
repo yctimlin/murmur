@@ -1,0 +1,50 @@
+[
+  {
+    "deterministic_content": true,
+    "fixture_commits": [],
+    "generated_files": 340,
+    "has_git": false,
+    "input_unchanged": true,
+    "relocated_grader": true,
+    "score": {
+      "passed": 1,
+      "rate": 0.020833333333333332,
+      "total": 48
+    },
+    "task": "document_catalog"
+  },
+  {
+    "deterministic_content": true,
+    "fixture_commits": [
+      "5201cfe3a30494907bbdb318112331a97b618ee8",
+      "5201cfe3a30494907bbdb318112331a97b618ee8"
+    ],
+    "generated_files": 9,
+    "has_git": true,
+    "input_unchanged": true,
+    "relocated_grader": true,
+    "score": {
+      "passed": 12,
+      "rate": 0.24,
+      "total": 50
+    },
+    "task": "ledger_replay"
+  },
+  {
+    "deterministic_content": true,
+    "fixture_commits": [
+      "1f2432d20c6907874a75da68eee0188c66a5f3f3",
+      "1f2432d20c6907874a75da68eee0188c66a5f3f3"
+    ],
+    "generated_files": 3,
+    "has_git": true,
+    "input_unchanged": true,
+    "relocated_grader": true,
+    "score": {
+      "passed": 0,
+      "rate": 0.0,
+      "total": 74
+    },
+    "task": "reserveplan"
+  }
+]
