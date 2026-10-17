@@ -1,0 +1,42 @@
+{
+  "source": "Independent direct reading of C1 raw JSON; no imports from either peer analysis script.",
+  "total_input": 92629793,
+  "total_uncached": 3390625,
+  "ledger_replay": {
+    "active_runs": [
+      12.47,
+      11.47,
+      15.02,
+      10.14,
+      12.53,
+      15.22
+    ],
+    "active_mean": 12.808333333333334,
+    "active_sd": 1.9905116595153785,
+    "active_cv": 0.15540754661148043,
+    "median_uncached_fraction": 0.03970664240887846
+  },
+  "reserveplan": {
+    "active_runs": [
+      22.75,
+      12.76,
+      20.12,
+      13.6,
+      14.59,
+      16.1
+    ],
+    "active_mean": 16.653333333333332,
+    "active_sd": 3.9555412608980163,
+    "active_cv": 0.23752249364880004,
+    "median_uncached_fraction": 0.036674536383016834
+  },
+  "bugfix_active": {
+    "paired_logs": [
+      0.16436033326179178,
+      -0.3982067456578414,
+      0.13109396758728126
+    ],
+    "geometric_ratio": 0.9663291044672464,
+    "upper95_one_sided": 1.6451995142038698
+  }
+}
