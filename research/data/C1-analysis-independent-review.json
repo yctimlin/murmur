@@ -1,0 +1,8 @@
+{
+  "reviewed_commit": "8b84cbf0d7e8380bf325d2a5030d8c33321d5924",
+  "independent_script": "research/tools/review_c1_model.py",
+  "comparisons_passed": 255,
+  "arithmetic_mismatches": 0,
+  "prose_mismatch": "EXPERIMENTS.md wrongly says swarm input means outside bands; correction requested from a1",
+  "method": "Independent computations first generated without primary imports, compared to serialized primary analysis at relative tolerance 1e-12."
+}
