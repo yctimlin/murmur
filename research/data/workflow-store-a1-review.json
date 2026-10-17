@@ -1,0 +1,39 @@
+{
+  "public_input_files": [
+    ".gitignore",
+    "README.md",
+    "SPEC.md",
+    "examples/batch.json"
+  ],
+  "source_spec_matches_input": true,
+  "empty": {
+    "score": {
+      "passed": 0,
+      "rate": 0.0,
+      "total": 129
+    },
+    "exit": 0,
+    "seconds": 0.161,
+    "diagnostic_tail": "------------------------------\nTraceback (most recent call last):\n  File \"/workspace/self3/labdata/phases/PC1-t1/work/peers/a1/research/tasks/workflow_store/hidden/cases.py\", line 20, in setUp\n    m=importlib.import_module('workflow_store');self.Store=m.Store;self.Error=m.StoreError\n  File \"/usr/lib/python3.13/importlib/__init__.py\", line 88, in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<frozen importlib._bootstrap>\", line 1387, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1324, in _find_and_load_unlocked\nModuleNotFoundError: No module named 'workflow_store'\n\n======================================================================\nERROR: test_wrong_worker (cases.Cases.test_wrong_worker)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/self3/labdata/phases/PC1-t1/work/peers/a1/research/tasks/workflow_store/hidden/cases.py\", line 20, in setUp\n    m=importlib.import_module('workflow_store');self.Store=m.Store;self.Error=m.StoreError\n  File \"/usr/lib/python3.13/importlib/__init__.py\", line 88, in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<frozen importlib._bootstrap>\", line 1387, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1324, in _find_and_load_unlocked\nModuleNotFoundError: No module named 'workflow_store'\n\n----------------------------------------------------------------------\nRan 129 tests in 0.039s\n\nFAILED (errors=129)\n"
+  },
+  "reference": {
+    "score": {
+      "passed": 129,
+      "rate": 1.0,
+      "total": 129
+    },
+    "exit": 0,
+    "seconds": 1.371,
+    "diagnostic_tail": ".................................................................................................................................\n----------------------------------------------------------------------\nRan 129 tests in 1.257s\n\nOK\n"
+  },
+  "wrong_expiry_boundary": {
+    "score": {
+      "passed": 122,
+      "rate": 0.9457364341085271,
+      "total": 129
+    },
+    "exit": 0,
+    "seconds": 1.399,
+    "diagnostic_tail": "=================================================================\nFAIL: test_renew_at_expiry (cases.Cases.test_renew_at_expiry)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/self3/labdata/phases/PC1-t1/work/peers/a1/research/tasks/workflow_store/hidden/cases.py\", line 78, in test_renew_at_expiry\n    self.submit();tok=self.claim()[0]['token'];self.error('stale',lambda:self.do('renew',10,token=tok,lease=5))\n                                               ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/self3/labdata/phases/PC1-t1/work/peers/a1/research/tasks/workflow_store/hidden/cases.py\", line 32, in error\n    with self.assertRaises(self.Error) as cm:fn()\n         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^\nAssertionError: StoreError not raised\n\n======================================================================\nFAIL: test_renew_shortens (cases.Cases.test_renew_shortens)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/self3/labdata/phases/PC1-t1/work/peers/a1/research/tasks/workflow_store/hidden/cases.py\", line 74, in test_renew_shortens\n    self.submit();tok=self.claim()[0]['token'];self.assertEqual(self.do('renew',2,token=tok,lease=1),{'expires':3});self.do('advance',3);self.assertEqual(self.tasks()['a']['state'],'failed')\n                                                                                                                                         ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'running' != 'failed'\n- running\n+ failed\n\n\n----------------------------------------------------------------------\nRan 129 tests in 1.290s\n\nFAILED (failures=5, errors=2)\n"
+  }
+}
