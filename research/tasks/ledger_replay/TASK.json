@@ -1,0 +1,1 @@
+{"class":"existing-repo","setup":"py","expected_solo_min":40,"notes":"Repair an existing Python event ledger: exact arithmetic, idempotency, atomic batches, replay and CLI. Standard-library only. Difficulty target 60–85% solo is a design estimate, not measured."}
