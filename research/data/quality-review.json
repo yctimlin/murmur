@@ -1,0 +1,11 @@
+{
+  "errors": [],
+  "findings": 230,
+  "severity_and_seams": {
+    "P0": 121,
+    "P1": 109,
+    "confirmed_seams": 18
+  },
+  "unique_blame_queries": 375,
+  "unique_snapshot_checks": 164
+}

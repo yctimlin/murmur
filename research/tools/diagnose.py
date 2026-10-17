@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Reproduce diagnosis tables from research/data/index.csv; no model or lab calls."""
 import csv
+import collections
 import json
 import math
 import statistics as st
@@ -89,5 +90,27 @@ lines += [f"**Delivery failure is a separate severe mode:** {len(zero)}/{len(swa
           '3. Treat risk-path quality, PR evidence accuracy, and delivery completion as distinct endpoints. Existing successful tests did not guarantee these outcomes.',
           '4. Retain the protected baseline for controlled comparisons; do not promote a historical prototype or a peer-count change from these single-run comparisons.',
           '5. Run the frozen screening tasks only through the scheduler and preregister the noise/protocol/peer-count batches in their owning later phases. No hypothesis or mechanism is selected in phase A.','']
+if total('quality_findings'):
+    modes=collections.Counter()
+    phase_mentions=collections.Counter()
+    for r in rows:
+        modes.update(json.loads(r.get('quality_failure_modes_json') or '{}'))
+        phase_mentions.update(json.loads(r.get('quality_phase_mentions_json') or '{}'))
+    qn=total('quality_findings')
+    swarm_findings=total('quality_findings',swarms)
+    swarm_p0=total('quality_p0_findings',swarms)
+    quality_lines=[
+        '## Defect localization and ranked finding types','',
+        f"The independently reviewed inventory has **{num(qn)} judge-pass findings: {num(total('quality_p0_findings'))} P0 and {num(total('quality_p1_findings'))} P1 across {num(total('quality_reports'))} reports**. All {num(total('quality_attributed_findings'))} have retained-file attribution; each row supplies report line, file, exact or whole-file citation basis, Git authors/commits and phase evidence. These are observations per judge pass, not unique bugs: round 2 can count the same bug twice. Required-but-absent files are represented by the inherited implementation that remained, without blaming its baseline author for nondelivery.", '',
+        'The following mutually exclusive, title-led descriptive taxonomy ranks findings. It is exploratory and does not assign a causal mechanism.', '',
+        table(['Rank','Finding type','Observations','Share of all judge-pass findings'],[[i+1,k,v,f"{pct(v,qn):.2f}%"] for i,(k,v) in enumerate(modes.most_common())]),'',
+        f"**{num(total('quality_seam_confirmed'))} observations have an explicit judge seam claim plus exact cited lines authored by at least two peers** ({num(total('quality_seam_p0_confirmed'))} P0, {num(total('quality_seam_p1_confirmed'))} P1; {pct(total('quality_seam_confirmed'),swarm_findings):.2f}% of {num(swarm_findings)} swarm findings). Another {num(total('quality_seam_claim_only'))} swarm claims lack this stronger authorship evidence. Old judges often did not label seams, and whole-file authorship cannot establish a seam, so this is not a population seam rate or proof that parallelism caused a defect.", '',
+        f"Among {num(swarm_p0)} swarm P0 observations, {num(total('quality_p0_exact_single_peer',swarms))} ({pct(total('quality_p0_exact_single_peer',swarms),swarm_p0):.2f}%) cite exact lines from one peer and {num(total('quality_p0_exact_multiple_peers',swarms))} cite multiple peers. The remainder has no exact peer-line attribution (for example baseline/absent code or whole-file references). Single cited authorship does not rule out an interface defect.", '',
+        'Phase is the last blamed change of the cited lines, not proof of when a missing check or conceptual defect first arose. One finding can mention multiple phases, so the following shares overlap.', '',
+        table(['Last-change phase mentioned','Findings mentioning phase','Share of all findings (overlapping)'],[[k,v,f"{pct(v,qn):.2f}%"] for k,v in phase_mentions.most_common()]),'',
+        'The full evidence and taxonomy definitions are in `research/data/QUALITY_METHODS.md`; `research/tools/review_quality.py` independently checks raw blame and snapshot bytes. `judge_p1` now includes direct Markdown-count means when the preserved score aggregate omitted P1; its source is explicit. In self2/eval/W3-a5, the direct P1 mean is 1.5 while the risk-formula inference is 0.5, demonstrating why the formula is not authoritative.','']
+    at=lines.index('## Decisions and limits')
+    lines[at:at]=quality_lines
+
 (HERE/'DIAGNOSIS.md').write_text('\n'.join(lines))
 print('wrote',HERE/'DIAGNOSIS.md')

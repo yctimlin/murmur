@@ -129,6 +129,38 @@ Three explicitly retained failed setup/run attempts are included separately: sel
 
 Per-finding file, blame, phase and seam localization is in `research/data/quality_findings.csv`, with the extraction definitions and review notebook. Flags are retained as judge findings; cross-peer authorship alone does not prove causality. Unresolvable references and withdrawn evidence are marked explicitly instead of guessed.
 
+## Defect localization and ranked finding types
+
+The independently reviewed inventory has **230 judge-pass findings: 121 P0 and 109 P1 across 78 reports**. All 230 have retained-file attribution; each row supplies report line, file, exact or whole-file citation basis, Git authors/commits and phase evidence. These are observations per judge pass, not unique bugs: round 2 can count the same bug twice. Required-but-absent files are represented by the inherited implementation that remained, without blaming its baseline author for nondelivery.
+
+The following mutually exclusive, title-led descriptive taxonomy ranks findings. It is exploratory and does not assign a causal mechanism.
+
+| Rank | Finding type | Observations | Share of all judge-pass findings |
+|---|---|---|---|
+| 1 | parsing_query_semantics | 76 | 33.04% |
+| 2 | concurrency_snapshot_identity | 35 | 15.22% |
+| 3 | lifecycle_serialization_time | 34 | 14.78% |
+| 4 | data_integrity_schema | 31 | 13.48% |
+| 5 | other | 22 | 9.57% |
+| 6 | validation_error_handling | 16 | 6.96% |
+| 7 | failure_atomicity_lifecycle | 12 | 5.22% |
+| 8 | delivery_absent | 4 | 1.74% |
+
+**18 observations have an explicit judge seam claim plus exact cited lines authored by at least two peers** (14 P0, 4 P1; 9.73% of 185 swarm findings). Another 21 swarm claims lack this stronger authorship evidence. Old judges often did not label seams, and whole-file authorship cannot establish a seam, so this is not a population seam rate or proof that parallelism caused a defect.
+
+Among 100 swarm P0 observations, 59 (59.00%) cite exact lines from one peer and 23 cite multiple peers. The remainder has no exact peer-line attribution (for example baseline/absent code or whole-file references). Single cited authorship does not rule out an interface defect.
+
+Phase is the last blamed change of the cited lines, not proof of when a missing check or conceptual defect first arose. One finding can mention multiple phases, so the following shares overlap.
+
+| Last-change phase mentioned | Findings mentioning phase | Share of all findings (overlapping) |
+|---|---|---|
+| drafting | 215 | 93.48% |
+| preexisting | 32 | 13.91% |
+| polishing | 9 | 3.91% |
+| verification | 1 | 0.43% |
+
+The full evidence and taxonomy definitions are in `research/data/QUALITY_METHODS.md`; `research/tools/review_quality.py` independently checks raw blame and snapshot bytes. `judge_p1` now includes direct Markdown-count means when the preserved score aggregate omitted P1; its source is explicit. In self2/eval/W3-a5, the direct P1 mean is 1.5 while the risk-formula inference is 0.5, demonstrating why the formula is not authoritative.
+
 ## Decisions and limits
 
 1. Measure repeated context and the number/type of model calls in the next phases; visible board text size alone is not an adequate cost model.

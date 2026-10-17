@@ -324,6 +324,36 @@ def arm_info(batch,name):
     if batch=='self2':return 'r2','658d82a','/workspace/self2/brief.md'
     return arm, 'plain-codex-exec' if arm=='solo' else '', ''
 
+def quality_index(data):
+    """Join committed, independently reviewed finding provenance; no causal inference."""
+    findings_path = data/'quality_findings.csv'
+    coverage_path = data/'quality_coverage.csv'
+    if not findings_path.exists() or not coverage_path.exists(): return {}
+    findings = list(csv.DictReader(findings_path.open()))
+    coverage = list(csv.DictReader(coverage_path.open()))
+    out = {}
+    for run_id in sorted({r['run_id'] for r in coverage}):
+        reports = {r['report'] for r in coverage if r['run_id']==run_id and r['report']}
+        if not reports: continue  # no retained report is not a zero-defect result
+        fs = [r for r in findings if r['run_id']==run_id]
+        phase_counts = collections.Counter(p for r in fs for p in json.loads(r['phases_json']))
+        out[run_id] = dict(
+            quality_reports=len(reports),quality_findings=len(fs),
+            quality_p0_findings=sum(r['severity']=='P0' for r in fs),
+            quality_p1_findings=sum(r['severity']=='P1' for r in fs),
+            quality_attributed_findings=sum(r['attribution_status']=='attributed' for r in fs),
+            quality_seam_confirmed=sum(r['peer_seam']=='confirmed_cross_peer' for r in fs),
+            quality_seam_p0_confirmed=sum(r['peer_seam']=='confirmed_cross_peer' and r['severity']=='P0' for r in fs),
+            quality_seam_p1_confirmed=sum(r['peer_seam']=='confirmed_cross_peer' and r['severity']=='P1' for r in fs),
+            quality_seam_claim_only=sum(r['peer_seam']=='judge_claim_only' for r in fs),
+            quality_seam_unknown=sum(r['peer_seam']=='unknown' for r in fs),
+            quality_p0_exact_single_peer=sum(r['severity']=='P0' and int(r['exact_cited_peer_count'])==1 for r in fs),
+            quality_p0_exact_multiple_peers=sum(r['severity']=='P0' and int(r['exact_cited_peer_count'])>=2 for r in fs),
+            quality_failure_modes_json=js(dict(collections.Counter(r['failure_mode'] for r in fs))),
+            quality_phase_mentions_json=js(dict(phase_counts)),
+            quality_source='research/data/quality_findings.csv')
+    return out
+
 def writecsv(path,rows):
     cols=list(dict.fromkeys(k for r in rows for k in r))
     with path.open('w',newline='') as f:
@@ -334,7 +364,9 @@ def main():
     ap.add_argument('--workspace',type=Path,default=Path('/workspace'))
     ap.add_argument('--solo-sessions',type=Path,default=Path('/home/box/.codex/sessions'))
     ap.add_argument('--output-dir',type=Path,default=Path(__file__).resolve().parents[1]/'data')
+    ap.add_argument('--quality-data-dir',type=Path,default=Path(__file__).resolve().parents[1]/'data')
     args=ap.parse_args();args.output_dir.mkdir(parents=True,exist_ok=True)
+    quality = quality_index(args.quality_data_dir)
     solo_files=collections.defaultdict(list)
     for f in sorted(args.solo_sessions.glob('2026/10/*/*.jsonl')):
         cwd=first_meta(f).get('cwd','')
@@ -411,6 +443,13 @@ def main():
             row['exit_status']='turn_failed' if failed else ('turn_completed' if completed else 'unknown')
             row['exit_source']=str(path/'session.jsonl')
         row.update(judge(root,name))
+        row.update(quality.get(run_id, {}))
+        if row.get('quality_reports'):
+            if row.get('judge_p1', '') == '':
+                row['judge_p1']=row['quality_p1_findings']/row['quality_reports']
+                row['judge_p1_source']='preserved_markdown_counts_averaged_across_passes'
+            else:row['judge_p1_source']='retained_final_judge_summary'
+        else:row['judge_p1_source']='unavailable' if row.get('judge_p1','')=='' else 'retained_final_judge_summary'
         for field in [f'phase_{p}_peer_min' for p in PHASES]+[f'source_{s}_chars' for s in SOURCES]+[f'call_{k}_input' for k in KINDS]+[f'call_{k}_count' for k in KINDS]+['excluded_gap_min','pre_main_input','post_main_input']:
             row[field]=round(sum(s[field] or 0 for s in run_sessions),6) if observed else ''
         ds=draft_stats(repo,base,head)
