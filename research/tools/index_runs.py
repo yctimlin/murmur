@@ -154,22 +154,27 @@ def session(path, run_id, last_main, first_main):
             if last_main and t and t > last_main: after_last_input += inp
     sid = meta.get('id') or meta.get('session_id') or path.stem
     cwd = meta.get('cwd', '')
-    agent = re.search(r'/peers/([^/]+)', cwd)
-    row = dict(run_id=run_id, session_id=sid, agent=agent.group(1) if agent else ('root' if cwd.endswith('/work') else 'solo'), path=str(path), cwd=cwd,
+    cwd_agent = re.search(r'/peers/([^/]+)', cwd)
+    agent_path = meta.get('agent_path') or ('/root/'+cwd_agent.group(1) if cwd_agent else ('/root' if cwd.endswith('/work') else '/solo'))
+    agent = agent_path.removeprefix('/root/').removeprefix('/')
+    observed_usage = response_count > 0
+    row = dict(run_id=run_id, session_id=sid, agent=agent, agent_path=agent_path,
+               usage_status='observed' if observed_usage else 'unknown', path=str(path), cwd=cwd,
                start=dt.datetime.fromtimestamp(ts[0],dt.timezone.utc).isoformat() if ts else '',
                end=dt.datetime.fromtimestamp(ts[-1],dt.timezone.utc).isoformat() if ts else '',
                active_min=round(sum(min(b-a,120) for a,b in zip(ts,ts[1:]))/60,6),
                wall_min=round((ts[-1]-ts[0])/60,6) if ts else '',
-               excluded_gap_min=round(gap_excess/60,6), input=totals['input_tokens'],
-               uncached=totals['input_tokens']-totals['cached_input_tokens'], output=totals['output_tokens'],
-               cached=totals['cached_input_tokens'], responses=response_count,
-               token_method='response_usage_deduplicated' if modern else 'cumulative_snapshot_deltas',
+               excluded_gap_min=round(gap_excess/60,6), input=totals['input_tokens'] if observed_usage else None,
+               uncached=totals['input_tokens']-totals['cached_input_tokens'] if observed_usage else None,
+               output=totals['output_tokens'] if observed_usage else None,
+               cached=totals['cached_input_tokens'] if observed_usage else None, responses=response_count,
+               token_method=('response_usage_deduplicated' if modern else 'cumulative_snapshot_deltas') if observed_usage else 'unavailable',
                cumulative_resets=malformed_cumulative,
                first_edit=dt.datetime.fromtimestamp(first_edit,dt.timezone.utc).isoformat() if first_edit else '',
                pre_main_input=before_first_input, post_main_input=after_last_input)
     row.update({f'phase_{p}_peer_min':round(phase_secs[p]/60,6) for p in PHASES})
     row.update({f'source_{s}_chars':source_chars[s] for s in SOURCES})
-    row.update({f'call_{k}_input':charges[k] for k in KINDS})
+    row.update({f'call_{k}_input':charges[k] if observed_usage else None for k in KINDS})
     row.update({f'call_{k}_count':count_calls[k] for k in KINDS})
     return row, ts
 
@@ -343,7 +348,7 @@ def main():
             sessions.append(s);run_sessions.append(s);allts.extend(ts)
         allts=sorted(set(allts))
         arm,rev,rev_source=arm_info(batch,name)
-        observed=bool(run_sessions)
+        observed=any(s['usage_status']=='observed' for s in run_sessions)
         row=dict(run_id=run_id,batch=batch,task=task,arm=arm,engine_revision=rev,engine_revision_source=rev_source,
                  path=str(path),mode='exec' if is_solo else cfg.get('mode','swarm'),peers=1 if is_solo else cfg.get('peers',''),
                  task_base=base,main_head=head,
@@ -351,9 +356,11 @@ def main():
                  wall_min=round((stamp(runlog['ended_at'])-stamp(runlog['started_at']))/60,6) if runlog.get('ended_at') and runlog.get('started_at') else (round((allts[-1]-allts[0])/60,6) if allts else ''),
                  wall_source='run_log' if runlog.get('ended_at') else ('session_span' if allts else 'missing'),
                  harness_seconds=runlog.get('seconds',''), sessions=len(run_sessions),
-                 input=sum(s['input'] for s in run_sessions) if observed else '',uncached=sum(s['uncached'] for s in run_sessions) if observed else '',
-                 output=sum(s['output'] for s in run_sessions) if observed else '',cached=sum(s['cached'] for s in run_sessions) if observed else '',
+                 input=sum(s['input'] or 0 for s in run_sessions) if observed else '',uncached=sum(s['uncached'] or 0 for s in run_sessions) if observed else '',
+                 output=sum(s['output'] or 0 for s in run_sessions) if observed else '',cached=sum(s['cached'] or 0 for s in run_sessions) if observed else '',
                  responses=sum(s['responses'] for s in run_sessions),
+                 token_coverage=('partial' if any(s['usage_status']=='unknown' for s in run_sessions) else 'observed') if observed else 'missing',
+                 sessions_missing_usage=sum(s['usage_status']=='unknown' for s in run_sessions),
                  commits_on_main=int(git(repo,'rev-list','--count',base+'..'+head) or 0) if base and head else '',
                  merges=int(git(repo,'rev-list','--merges','--count',base+'..'+head) or 0) if base and head else '',
                  first_main=dt.datetime.fromtimestamp(main_ts[0],dt.timezone.utc).isoformat() if main_ts else '',
@@ -362,7 +369,7 @@ def main():
                  reported_delivery=js(runlog.get('result',{})),
                  lines_429=sum('429' in line for f in (path/'logs/session.err',path/'session.err') if f.exists() for line in f.read_text(errors='replace').splitlines()),
                  wall_minus_active_min='',
-                 sessions_json=js([{k:s[k] for k in ('session_id','agent','input','uncached','output','active_min','wall_min','token_method')} for s in run_sessions]))
+                 sessions_json=js([{k:s[k] for k in ('session_id','agent','agent_path','usage_status','input','uncached','output','active_min','wall_min','token_method')} for s in run_sessions]))
         if row['wall_min'] != '' and row['active_min'] != '':
             row['wall_minus_active_min']=round(row['wall_min']-row['active_min'],6)
         if is_solo:
@@ -373,7 +380,7 @@ def main():
             row['exit_source']=str(path/'session.jsonl')
         row.update(judge(root,name))
         for field in [f'phase_{p}_peer_min' for p in PHASES]+[f'source_{s}_chars' for s in SOURCES]+[f'call_{k}_input' for k in KINDS]+[f'call_{k}_count' for k in KINDS]+['excluded_gap_min','pre_main_input','post_main_input']:
-            row[field]=round(sum(s[field] for s in run_sessions),6) if observed else ''
+            row[field]=round(sum(s[field] or 0 for s in run_sessions),6) if observed else ''
         ds=draft_stats(repo,base,head)
         row.update(draft_branches=len(ds),draft_branches_not_ancestors=sum(not d['ancestor_of_main'] for d in ds),
                    draft_added_lines=sum(d['added'] for d in ds),draft_nonfinal_added_lines=sum(d['nonfinal_added'] for d in ds),

@@ -4,7 +4,7 @@ This is descriptive diagnosis, not a mechanism trial. All historical task/arm ce
 
 Reproduce: `python3 research/tools/index_runs.py` then `python3 research/tools/diagnose.py`. Definitions, missingness, classifier rules, raw evidence paths and source limitations are in `research/data/METHODS.md`. The CSV is the numeric source for every table below.
 
-The index covers **76 runs, 241 sessions, 668,357,819 observed input tokens, 22,209,979 uncached input and 5,016,406 output**. One empty-catalog failure has no session telemetry; its cost is unknown, not zero. Research self-improvement runs remain in coverage but are excluded from task-pair comparisons.
+The index covers **76 runs, 241 sessions, 668,357,819 observed input tokens, 22,209,979 uncached input and 5,016,406 output**. One empty-catalog failure has no session telemetry, and one peer in a failed 429 attempt has no provider usage; these missing costs are unknown, not zero. Research self-improvement runs remain in coverage but are excluded from task-pair comparisons.
 
 ## Coverage and timing
 
