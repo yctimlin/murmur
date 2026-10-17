@@ -1,0 +1,316 @@
+{
+  "batch": "C1",
+  "notebook": "research/notebook/20261017-0812-a2-c1-prereg.md",
+  "predictions": {
+    "status": "Frozen before C1 execution; subjective prior forecasts, not estimates from C1 data.",
+    "purpose": "Estimate within-task same-revision noise and screen gross bug-fix regression before protocol/peer-count inference.",
+    "aa": {
+      "comparison": "base3_A - base3_B; labels have identical treatment",
+      "mean_score_difference": 0.0,
+      "geometric_mean_active_ratio": 1.0,
+      "geometric_mean_input_ratio": 1.0,
+      "geometric_mean_uncached_ratio": 1.0,
+      "pairs_per_task": 3,
+      "underlying_base3_replicates_per_task": 6,
+      "dispersion_priors": {
+        "active_cv": {
+          "center": 0.2,
+          "range": [
+            0.1,
+            0.4
+          ]
+        },
+        "input_cv": {
+          "center": 0.35,
+          "range": [
+            0.15,
+            0.7
+          ]
+        },
+        "uncached_cv": {
+          "center": 0.4,
+          "range": [
+            0.15,
+            0.8
+          ]
+        },
+        "score_sd": {
+          "center": 0.1,
+          "range": [
+            0.03,
+            0.2
+          ]
+        }
+      }
+    },
+    "bug_fix": {
+      "comparison": "base3_A - orig within ledger block only",
+      "noninferiority_score_margin": -0.05,
+      "active_input_uncached_ratio_margin": 1.25,
+      "claim": "Gross-regression screen; no assertion of equivalence or reliability from three pairs.",
+      "mean_score_difference": 0.0,
+      "geometric_mean_active_ratio": 1.0,
+      "geometric_mean_input_ratio": 1.0,
+      "geometric_mean_uncached_ratio": 1.0,
+      "subjective_80pct_effect_ratio_range": [
+        0.8,
+        1.2
+      ]
+    },
+    "saturation_rule": "For each task, exclude from confirmatory score/noise/effect inference if first exec calibration score.rate > 0.95; retain and report all jobs. Exactly 0.95 is retained. Missing/invalid/leaked calibration is inconclusive, not evidence of suitability.",
+    "budget": {
+      "jobs": 18,
+      "exec_jobs": 3,
+      "swarm_jobs": 15,
+      "estimated_input_tokens": 189000000,
+      "remaining_jobs_after_C1": 18,
+      "remaining_input_tokens_under_estimate": 261000000,
+      "model_expected_input_tokens": 203779200,
+      "remaining_input_tokens_under_model_forecast": 246220800,
+      "interpretation": "189M is the scheduler fixed-per-job estimate; 203.7792M is model mean forecast. Actual observed spending governs later admission. Neither is an upper bound."
+    },
+    "deferred_C2": "After C1 noise/saturation analysis: preregister at least three reps each of exec, solo, 1, 2, 3 peers on a suitable long task, all murmur arms base3; use MURMUR_ONE_PEER_PROTOCOL=1 for peers=1. Fifteen jobs; three jobs remain contingency. This is a plan, not authorization to execute unregistered C2 jobs.",
+    "model_source": "research/MODEL.md; numeric predictions use the frozen Phase-B model, checked independently in the C1 notebook.",
+    "run_mean_forecasts": {
+      "document_catalog": {
+        "exec_calibration": {
+          "score": 0.75,
+          "active_min": 35,
+          "input": 2100000,
+          "uncached": 84000
+        }
+      },
+      "ledger_replay": {
+        "exec_calibration": {
+          "score": 0.75,
+          "active_min": 40,
+          "input": 2400000,
+          "uncached": 96000
+        },
+        "base3_A": {
+          "score": 0.7,
+          "active_min": 35.9333333333,
+          "input": 10348800,
+          "uncached": 413952
+        },
+        "base3_B": {
+          "score": 0.7,
+          "active_min": 35.9333333333,
+          "input": 10348800,
+          "uncached": 413952
+        },
+        "orig": {
+          "score": 0.7,
+          "active_min": 35.9333333333,
+          "input": 10348800,
+          "uncached": 413952
+        }
+      },
+      "reserveplan": {
+        "exec_calibration": {
+          "score": 0.7,
+          "active_min": 65,
+          "input": 3900000,
+          "uncached": 156000
+        },
+        "base3_A": {
+          "score": 0.65,
+          "active_min": 59.1666666667,
+          "input": 17040000,
+          "uncached": 681600
+        },
+        "base3_B": {
+          "score": 0.65,
+          "active_min": 59.1666666667,
+          "input": 17040000,
+          "uncached": 681600
+        }
+      }
+    },
+    "subjective_80pct_run_intervals": {
+      "active_min": "[0.5 * mean, min(1.45 * mean, task cap)]",
+      "input": "[0.4 * mean, 2.2 * mean]",
+      "uncached": "[0.25 * mean, 3 * mean]",
+      "score": "[max(0, mean - 0.25), min(1, mean + 0.25)]",
+      "interpretation": "Marginal prior predictive ranges for individual runs, not simultaneous coverage, fitted confidence intervals, or guarantees. Cap-clipped time forecast is administrative; capped runs remain censored."
+    },
+    "analysis_plan": {
+      "primary_metrics": [
+        "score.rate",
+        "delivered",
+        "active_min",
+        "input",
+        "uncached"
+      ],
+      "secondary_metrics": [
+        "wall_min",
+        "output",
+        "mutation",
+        "commits",
+        "lines_429",
+        "leak_hits"
+      ],
+      "pooling": "No cross-task pooling of score or noise; report all runs, task/arm mean and sample SD; six base3 runs/task describe common treatment, three A/B paired differences/task describe paired noise.",
+      "aa_contrast": "A minus B for score; log(A/B) for positive time and token measures, summarize geometric mean ratios plus raw arithmetic means/SD; delivery discordances reported individually. No independent-treatment claim from artificial labels.",
+      "bug_pairing": "Exactly three ledger blocks, base3_A versus orig only. Never count base3_B as another independent comparator.",
+      "score_noninferiority": "One-sided 95% paired-t lower bound mean(A-orig)-2.919986*sd/sqrt(3) > -0.05 required for provisional score noninferiority; three complete eligible pairs required; strong normality assumption explicitly retained.",
+      "cost_noninferiority": "For active_min/input/uncached separately, one-sided 95% paired-t upper bound on mean(log(A/orig)) plus 2.919986*sd/sqrt(3) must be < log(1.25); complete positive uncensored eligible pairs required. All three endpoints must pass for provisional cost noninferiority.",
+      "gross_regression": "Any base3_A nondelivery while its orig delivers, confirmed new P0, mean paired score < -0.05, or any geometric mean cost ratio >1.25 flags investigation. Threshold crossing is a practical screen, not proof of causality.",
+      "decision": "If gross-regression trigger occurs, investigate and require preregistered follow-up before promoting further changes. Otherwise noninferiority bounds passing permits provisional no-large-regression statement for measured endpoints only. If bounds fail, state inconclusive. Never claim equivalence or delivery reliability from n=3.",
+      "small_sample_uncertainty": "Show paired values and assumption-dependent two-sided 95% t intervals (df=2, multiplier4.302653); exact two-sided sign-flip minimum p=.25 for n3. No .05 exact significance claim; bootstrap cannot create information.",
+      "calibration": "All first three jobs are exec calibrations. Exclude tasks with calibration rate >.95 from confirmatory score/noise/effect inference, but retain full descriptive rows and costs; do not substitute a task, change tests, or rerun jobs in C1. Invalid/missing/leaked calibration is inconclusive and task is ineligible until fresh preregistered calibration.",
+      "leaks": "Exclude leak_hits>0 runs from confirmatory contrasts, retain and flag in raw/descriptive tables; show full scheduled-set sensitivity. No unregistered replacements.",
+      "missing": "Nondelivery remains delivery=0 and observed valid score (often0); retain time/tokens when available. Missing scorer/telemetry stays missing; never impute zero cost or null mutation. Report reason and scheduled/eligible counts. Missing paired endpoint makes that pair unavailable, with no replacement.",
+      "censoring": "Retain timeout/cap outcomes and delivery/score. Mark time-to-delivery right censored; no cost/speed noninferiority conclusion from complete-case deletion of capped or failed deliveries. Report observed consumption separately.",
+      "rate_limits": "Report lines_429 by block and arm; primary scheduled analysis includes them, sensitivity reports clean complete blocks only. No regression adjustment with n3 and no causal attribution of all stalls to protocol.",
+      "forecast_check": "Compare all eligible run outcomes to frozen marginal ranges, report signed errors (score) and log ratios (positive time/tokens), mean errors and interval coverage separately by task/arm and pooled base3 treatment. Individual misses are diagnostics; a task/treatment mean outside its run range or empirical base3 dispersion outside its prior range falsifies that specific working prediction, without claiming a calibrated hypothesis test.",
+      "C2": "Select or recalibrate suitable long task after C1, preregister protocol/peer curve with >=3 reps/arm and concurrent paired blocks of at most3; preserve actual budgets and describe limits if saturation or budget prevents all comparisons."
+    }
+  },
+  "jobs": [
+    {
+      "arm": "exec_calibration",
+      "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+      "task": "document_catalog",
+      "peers": "exec",
+      "cap": "60m",
+      "block": "b00-calibration"
+    },
+    {
+      "arm": "exec_calibration",
+      "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+      "task": "ledger_replay",
+      "peers": "exec",
+      "cap": "60m",
+      "block": "b00-calibration"
+    },
+    {
+      "arm": "exec_calibration",
+      "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+      "task": "reserveplan",
+      "peers": "exec",
+      "cap": "90m",
+      "block": "b00-calibration"
+    },
+    {
+      "arm": "base3_A",
+      "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+      "task": "ledger_replay",
+      "peers": 3,
+      "cap": "60m",
+      "block": "b01-ledger-r1"
+    },
+    {
+      "arm": "orig",
+      "rev": "eec78f846a8c373f4c351f03f9fd89cbe01cb7a7",
+      "task": "ledger_replay",
+      "peers": 3,
+      "cap": "60m",
+      "block": "b01-ledger-r1"
+    },
+    {
+      "arm": "base3_B",
+      "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+      "task": "ledger_replay",
+      "peers": 3,
+      "cap": "60m",
+      "block": "b01-ledger-r1"
+    },
+    {
+      "arm": "base3_A",
+      "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+      "task": "reserveplan",
+      "peers": 3,
+      "cap": "90m",
+      "block": "b02-reserve-r1"
+    },
+    {
+      "arm": "base3_B",
+      "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+      "task": "reserveplan",
+      "peers": 3,
+      "cap": "90m",
+      "block": "b02-reserve-r1"
+    },
+    {
+      "arm": "orig",
+      "rev": "eec78f846a8c373f4c351f03f9fd89cbe01cb7a7",
+      "task": "ledger_replay",
+      "peers": 3,
+      "cap": "60m",
+      "block": "b03-ledger-r2"
+    },
+    {
+      "arm": "base3_B",
+      "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+      "task": "ledger_replay",
+      "peers": 3,
+      "cap": "60m",
+      "block": "b03-ledger-r2"
+    },
+    {
+      "arm": "base3_A",
+      "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+      "task": "ledger_replay",
+      "peers": 3,
+      "cap": "60m",
+      "block": "b03-ledger-r2"
+    },
+    {
+      "arm": "base3_B",
+      "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+      "task": "reserveplan",
+      "peers": 3,
+      "cap": "90m",
+      "block": "b04-reserve-r2"
+    },
+    {
+      "arm": "base3_A",
+      "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+      "task": "reserveplan",
+      "peers": 3,
+      "cap": "90m",
+      "block": "b04-reserve-r2"
+    },
+    {
+      "arm": "base3_B",
+      "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+      "task": "ledger_replay",
+      "peers": 3,
+      "cap": "60m",
+      "block": "b05-ledger-r3"
+    },
+    {
+      "arm": "base3_A",
+      "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+      "task": "ledger_replay",
+      "peers": 3,
+      "cap": "60m",
+      "block": "b05-ledger-r3"
+    },
+    {
+      "arm": "orig",
+      "rev": "eec78f846a8c373f4c351f03f9fd89cbe01cb7a7",
+      "task": "ledger_replay",
+      "peers": 3,
+      "cap": "60m",
+      "block": "b05-ledger-r3"
+    },
+    {
+      "arm": "base3_A",
+      "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+      "task": "reserveplan",
+      "peers": 3,
+      "cap": "90m",
+      "block": "b06-reserve-r3"
+    },
+    {
+      "arm": "base3_B",
+      "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+      "task": "reserveplan",
+      "peers": 3,
+      "cap": "90m",
+      "block": "b06-reserve-r3"
+    }
+  ]
+}

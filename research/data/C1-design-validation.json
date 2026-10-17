@@ -1,0 +1,41 @@
+{
+  "valid": true,
+  "jobs": 18,
+  "blocks": [
+    {
+      "block": "b00-calibration",
+      "jobs": 3
+    },
+    {
+      "block": "b01-ledger-r1",
+      "jobs": 3
+    },
+    {
+      "block": "b02-reserve-r1",
+      "jobs": 2
+    },
+    {
+      "block": "b03-ledger-r2",
+      "jobs": 3
+    },
+    {
+      "block": "b04-reserve-r2",
+      "jobs": 2
+    },
+    {
+      "block": "b05-ledger-r3",
+      "jobs": 3
+    },
+    {
+      "block": "b06-reserve-r3",
+      "jobs": 2
+    }
+  ],
+  "aa_pairs_per_task": 3,
+  "base3_replicates_per_task": 6,
+  "bug_fix_pairs": 3,
+  "scheduler_estimate_input": 189000000,
+  "model_forecast_input": 203779200,
+  "remaining_jobs": 18,
+  "revisions_verified_in": "/workspace/self3/labdata/repos/r3.git"
+}
