@@ -1,0 +1,9 @@
+[
+  {"run_id":"big3/solo","report_line":95,"locations":["retail/db.py:63-78"],"reason":"Judge describes concurrent initialization without a location. Source inspection identifies connect(), busy_timeout and WAL initialization; no reproducer rerun."},
+  {"run_id":"lean/U1-new","report_line":22,"locations":["playhouse/sqlite_history.py:276-280","playhouse/sqlite_history.py:321-325"],"reason":"Judge names install() and _validate_table(); inspected the two sqlite_master-only application-trigger checks."},
+  {"run_id":"lean/U1-new","report_line":61,"locations":["playhouse/sqlite_history.py:144-151"],"reason":"Judge names _schema(); inspected its exact-name temporary-shadow query."},
+  {"run_id":"lean2/V2-base","report_line":111,"locations":["notedrift/store.py:402-412","notedrift/store.py:451-458","notedrift/store.py:518-525"],"reason":"Judge names _disk, _scan and _apply; source inspection identifies os.walk without onerror and the consuming methods."},
+  {"run_id":"lean2/V2-lean2","report_line":37,"locations":["notedrift/store.py:482-489"],"reason":"Judge names _recover and quotes the error; inspected the nonregular-file rejection that blocks recovery."},
+  {"run_id":"val/W1-lean3","report_line":49,"locations":["src/marshmallow/evolution.py:447-453","src/marshmallow/compatibility.py:436-443"],"reason":"Judge describes unguarded current-schema load and attribute_changed/info approval; inspected both source sites."},
+  {"run_id":"val/W1-lean3","report_line":81,"locations":["src/marshmallow/evolution.py:336-341"],"reason":"Judge names SchemaEvolution._schema and deepcopy(schema); inspected that method."}
+]
