@@ -18,7 +18,7 @@ from support import init_repo, run_cli, setup_workspace
 
 def test_solo_success_is_zero_and_prints_fetch(tmp_path: Path):
     workspace = setup_workspace(tmp_path, "--solo")
-    result = run_cli("run", str(workspace))
+    result = run_cli("run", str(workspace), extra_env={"MURMUR_FAKE_CODEX_MODE": "commit"})
     assert result.returncode == EXIT_OK, result.stderr
     assert "review it:" in result.stdout
     assert "fetch" in result.stdout
@@ -79,7 +79,10 @@ def test_missing_workspace_is_a_launcher_error(tmp_path: Path):
 
 def test_second_run_is_rejected(tmp_path: Path):
     workspace = setup_workspace(tmp_path, "--solo")
-    first = run_cli("run", str(workspace))
+    first = run_cli(
+        "run", str(workspace),
+        extra_env={"MURMUR_FAKE_CODEX_MODE": "commit"},
+    )
     assert first.returncode == EXIT_OK, first.stderr
     again = run_cli("run", str(workspace))
     assert again.returncode == EXIT_LAUNCHER
@@ -93,7 +96,8 @@ def test_normal_exit_kills_resistant_descendant(tmp_path: Path):
         "run", str(workspace),
         extra_env={"MURMUR_FAKE_CODEX_MODE": "resistant", "MURMUR_FAKE_CODEX_PIDFILE": str(pidfile)},
     )
-    assert result.returncode == EXIT_OK, result.stderr
+    assert result.returncode == EXIT_LAUNCHER, result.stderr
+    assert "no work delivered" in result.stderr
     text = pidfile.read_text()
     pid = int(text.split()[0])
     assert "TERM" in text

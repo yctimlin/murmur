@@ -5,6 +5,7 @@ Modes (MURMUR_FAKE_CODEX_MODE):
   ok               exit 0
   fail             exit MURMUR_FAKE_CODEX_EXIT (default 23) after a stderr line
   fail-with-commit push one commit, then exit as fail
+  commit           push one commit, then exit 0
   hang             sleep until SIGTERM
   resistant        exit 0 after forking a SIGTERM-ignoring child
 """
@@ -40,6 +41,10 @@ def main() -> int:
     if mode == "fail-with-commit":
         _commit_and_push(args)
         return _fail()
+    if mode == "commit":
+        _commit_and_push(args)
+        print(json.dumps({"type": "event_msg", "payload": {"type": "task_complete"}}), flush=True)
+        return 0
     print(json.dumps({"type": "event_msg", "payload": {"type": "task_complete"}}), flush=True)
     return 0
 

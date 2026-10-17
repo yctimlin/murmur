@@ -764,13 +764,17 @@ def codex_command(ws: Path, meta: dict, injected: dict) -> list[str]:
     return [*cmd, "-"]
 
 
-def _choose_exit(capped: bool, interrupted: bool, codex_exit: int | None) -> tuple[int, str]:
+def _choose_exit(
+    capped: bool, interrupted: bool, codex_exit: int | None, delivered: bool | None = None
+) -> tuple[int, str]:
     if interrupted:
         return EXIT_INTERRUPTED, "interrupted"
     if capped:
         return EXIT_CAPPED, "capped"
     if codex_exit not in (0, None):
         return EXIT_CODEX_FAILED, f"codex exited {codex_exit}"
+    if delivered is False:
+        return EXIT_LAUNCHER, "no work delivered"
     return EXIT_OK, "exit 0"
 
 
@@ -812,18 +816,6 @@ def run(args: argparse.Namespace) -> None:
                 codex_exit = proc.returncode
                 proc = None
         elapsed = round(time.monotonic() - started, 1)
-        exit_code, diagnostic = _choose_exit(capped, interrupted, codex_exit)
-        record = {
-            "started_at": started_at,
-            "ended_at": now(),
-            "seconds": elapsed,
-            "command": cmd,
-            "exit_code": exit_code,
-            "codex_exit_code": codex_exit,
-            "capped": capped,
-            "interrupted": interrupted,
-        }
-        (ws / "logs" / "run.json").write_text(json.dumps(record, indent=2) + "\n")
         origin = ws / "work" / "origin.git"
         commits = None
         if origin.exists():
@@ -833,6 +825,22 @@ def run(args: argparse.Namespace) -> None:
             )
             if counted.returncode == 0:
                 commits = counted.stdout.strip()
+        delivered = None if commits is None else commits != "0"
+        exit_code, diagnostic = _choose_exit(capped, interrupted, codex_exit, delivered)
+        record = {
+            "started_at": started_at,
+            "ended_at": now(),
+            "seconds": elapsed,
+            "command": cmd,
+            "exit_code": exit_code,
+            "codex_exit_code": codex_exit,
+            "capped": capped,
+            "interrupted": interrupted,
+            "commits": commits,
+            "delivered": delivered,
+            "diagnostic": diagnostic,
+        }
+        (ws / "logs" / "run.json").write_text(json.dumps(record, indent=2) + "\n")
         label = "capped" if capped else "interrupted" if interrupted else f"exit {codex_exit}"
         suffix = f", {commits} new commit(s)" if commits is not None else ""
         print(f"{ws.name}: {meta['mode']} finished in {elapsed / 60:.1f} min ({label}){suffix}")

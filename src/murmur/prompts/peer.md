@@ -29,8 +29,12 @@ at the other drafts until yours is posted with how to see it.
 
 Then choose by looking. Each of you runs or captures every draft, looks at it the way its user
 would, and posts a ranking with reasons. The draft ranked first by the most peers becomes the base,
-and a tie goes to the draft posted first. Its author brings it onto `main`. Record the drafts, the
-rankings and the ideas worth taking from the other drafts in `PR.md`.
+and a tie goes to the draft posted first. Its author must immediately bring it onto `main`, push
+`origin/main`, and post a `DONE` receipt naming the integrated commit before ending the turn. This
+integration step is mandatory: if the winner's author stops or cannot integrate, another peer must
+claim the task and complete the integration. Do not end the swarm after ranking while the winning
+draft remains only on `draft/*`. Record the drafts, the rankings and the ideas worth taking from
+the other drafts in `PR.md`.
 
 Plan the whole before you split it. Parts built separately fit together only if you agree on what
 the user will experience, the shared look and conventions, the interfaces between the parts, and

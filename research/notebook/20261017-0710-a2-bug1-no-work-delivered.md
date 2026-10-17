@@ -1,0 +1,8 @@
+# Bug 1: successful run with no delivered work
+
+- Question: Does `murmur run` reject a Codex session that exits successfully while `origin/main` remains at the setup base, and does the peer protocol require the winning draft to be integrated?
+- Method: The regression test `tests/test_bug1_no_work_delivered.py` runs the fake Codex's default successful no-op mode and checks a non-zero launcher exit, the `no work delivered` diagnostic, and matching `logs/run.json` fields. The launcher now counts commits in `origin.git` before choosing its exit status, records `commits`, `delivered`, and `diagnostic`, and treats zero new commits as a launcher error. `src/murmur/prompts/peer.md` now requires the winning author to push `origin/main` and post a `DONE` receipt before ending; another peer must claim integration if needed.
+- Prediction: The regression fails on `eec78f8` because no-op success returns zero and lacks delivery metadata; it passes after the change. Existing success tests use the fake Codex's new `commit` mode so they continue to exercise successful delivery.
+- Raw-data path: `tests/test_bug1_no_work_delivered.py`; `src/murmur/cli.py`; `src/murmur/prompts/peer.md`.
+- Result: `.venv/bin/python -m pytest -q tests/test_bug1_no_work_delivered.py tests/test_run.py tests/test_setup_git.py` passed (19 tests). A no-op successful session writes `exit_code=3`, `commits="0"`, `delivered=false`, and `diagnostic="no work delivered"` to `logs/run.json` and emits the same diagnostic on stderr.
+- Decision: Keep delivery validation in the launcher and the mandatory integration receipt in the peer protocol. A run with no commit cannot be reported as successful.
