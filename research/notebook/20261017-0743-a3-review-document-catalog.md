@@ -1,0 +1,8 @@
+# Independent review: document_catalog screening task
+
+- Question: Does a2's plain-folder task satisfy the phase gate and grade the documented behavior?
+- Method: Read the complete brief, input generator, 48 hidden cases, and copy-isolating harness. Copied the task to an independent temporary directory, ran `make_input.sh` and then `score.sh <absolute input>` from `/tmp`, and hashed every source file before and after scoring. Checked fixture cardinality and absence of `.git`. No lab/agent trial was run.
+- Prediction: Untouched API stubs should score far below 0.3; scaffold CLI may earn one fatal-error case. Normalization, duplicate winners, link resolution and weighted search should require distinct implementation work.
+- Raw-data paths: `research/tasks/document_catalog/{brief.md,make_input.sh,score.sh,hidden/cases.py,hidden/grade.py}`; task implementation at origin/main `6174312` (includes a2's preceding commit).
+- Result: **1/48 = 0.020833333333333332**, matching a2's reported baseline. Generated input has **340 files**, including **336 archive JSON files**, and no `.git`. All source-file hashes remain unchanged after scoring. The harness locates hidden tests relative to its own file and works outside the task CWD. Schema, winner tie-breaking, Unicode tokenization, scoring weights, date/id order, mutation, and CLI expected values match the public contract. Fixed corpus expectation is 310 winning IDs and 26 second revisions, independently derivable from `i % 310` over 336 records.
+- Decision: Approved for freezing. The target solo score and 35-minute estimate remain uncalibrated; baseline low score proves the task is nontrivial relative to its stub, not that solo performance will lie in 60–85%.

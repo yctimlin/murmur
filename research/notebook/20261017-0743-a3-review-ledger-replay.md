@@ -1,0 +1,9 @@
+# Independent review: ledger_replay screening task
+
+- Question: Does a2's existing-repository task satisfy the phase gate and test its public event/replay contract?
+- Method: Read the complete brief, input generator, 50 hidden cases, and copy-isolating harness. Copied the task into a separate temporary directory, generated input, verified one initial git commit, ran scoring from `/tmp`, and compared hashes of every input file (including git metadata) before/after. No model/murmur lab run was started.
+- Prediction: The happy-path float implementation should pass a minority of cases and fail atomicity, snapshot integrity, exact large arithmetic, malformed input and CLI preservation.
+- Raw-data paths: `research/tasks/ledger_replay/{brief.md,make_input.sh,score.sh,hidden/cases.py,hidden/grade.py}`, origin/main `6174312`.
+- Result: **12/50 = 0.24**, below the required 0.3 baseline ceiling. Input has `.git` and exactly one commit; the complete source hash manifest is unchanged by grading. The documented error types, amount grammar, detached state, strict sequence/history rules, transactional iteration, and canonical snapshots agree with the cases. The large-integer case correctly expects 10^34 after adding one cent to a 34-digit 9 balance ending in .99.
+- Review note: Successful file output initially checked content but did not independently distinguish atomic replacement from an in-place rewrite. Sent a2 a concrete request to add an inode-change assertion to case 47 (deterministic on this Linux environment); failed-output preservation is already covered.
+- Decision: Gate structure and baseline approved. Follow up the atomic-success assertion before freeze. Expected 40-minute duration and 60–85% solo score are estimates requiring later calibration; no empirical solo score is claimed.
