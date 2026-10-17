@@ -21,7 +21,8 @@ def restore_interrupt_handlers(previous) -> None:
 
 
 def _interrupt(signum, frame) -> None:
-    raise KeyboardInterrupt
+    # Preserve the original signal so callers can forward it to the child group.
+    raise KeyboardInterrupt(signum)
 
 
 def pid_alive(pid: int | None) -> bool:
@@ -90,6 +91,7 @@ def stop_process_group(
     *,
     term_grace: float | None = None,
     kill_grace: float | None = None,
+    term_signal: int = signal.SIGTERM,
 ) -> None:
     """SIGTERM the leader's group, then SIGKILL anyone still alive.
 
@@ -100,7 +102,7 @@ def stop_process_group(
     pgid = proc.pid
     term = _grace("MURMUR_TERM_GRACE", 15, term_grace)
     kill = _grace("MURMUR_KILL_GRACE", 5, kill_grace)
-    _signal_group(pgid, signal.SIGTERM)
+    _signal_group(pgid, term_signal)
     if not _wait_until_dead(pgid, proc, term):
         _signal_group(pgid, signal.SIGKILL)
         _wait_until_dead(pgid, proc, kill)

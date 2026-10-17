@@ -15,6 +15,7 @@ import json
 import os
 import re
 import secrets
+import signal
 import shlex
 import shutil
 import subprocess
@@ -800,6 +801,7 @@ def run(args: argparse.Namespace) -> None:
         started_at = now()
         started = time.monotonic()
         capped = interrupted = False
+        interruption_signal: int | None = None
         codex_exit: int | None = None
         with prompt.open() as stdin, (ws / "logs" / "session.jsonl").open("w") as out, log_err.open("w") as err:
             proc = subprocess.Popen(
@@ -809,10 +811,12 @@ def run(args: argparse.Namespace) -> None:
                 proc.wait(timeout=seconds(meta["cap"]))
             except subprocess.TimeoutExpired:
                 capped = True
-            except KeyboardInterrupt:
+            except KeyboardInterrupt as exc:
                 interrupted = True
+                if exc.args and exc.args[0] in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+                    interruption_signal = int(exc.args[0])
             finally:
-                stop_process_group(proc)
+                stop_process_group(proc, term_signal=interruption_signal or signal.SIGTERM)
                 codex_exit = proc.returncode
                 proc = None
         elapsed = round(time.monotonic() - started, 1)
