@@ -155,7 +155,7 @@ def write_model_catalog(path: Path, model: str, effort: str, solo: bool) -> None
     catalog = json.loads(out.stdout)
     models = catalog.get("models") if isinstance(catalog, dict) else None
     if not isinstance(models, list) or not models:
-        fail("codex debug models returned an empty model catalog; refusing to write models.json")
+        fail("codex debug models returned an empty model catalog; model catalog is empty, refusing to write models.json")
     for entry in models:
         if solo:
             entry["multi_agent_version"] = None
