@@ -1,0 +1,202 @@
+.....F...F................F................................F....FFF.FFFFFF....F..............................................F..F
+======================================================================
+FAIL: test_batch_atomic_error (cases.Cases.test_batch_atomic_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 136, in test_batch_atomic_error
+    self.error('missing',lambda:self.s.apply_many([self.cmd('submit',workflow='w',tasks=[]),self.cmd('cancel',4,workflow='absent')]))
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 33, in error
+    self.assertEqual(cm.exception.code,code);self.assertEqual(canon(self.s.export()),canon(before))
+                                             ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '{"commands": [{"id": "c1", "now": 0, "op": "submit", "t[139 chars]: 1}' != '{"commands": [], "state": {"clock": 0, "version": 1, "w[25 chars]: 1}'
+- {"commands": [{"id": "c1", "now": 0, "op": "submit", "tasks": [], "workflow": "w"}], "state": {"clock": 4, "version": 1, "workflows": [{"id": "w", "state": "succeeded", "tasks": []}]}, "version": 1}
++ {"commands": [], "state": {"clock": 0, "version": 1, "workflows": []}, "version": 1}
+
+
+======================================================================
+FAIL: test_batch_iterable_error (cases.Cases.test_batch_iterable_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 146, in test_batch_iterable_error
+    self.assertEqual(self.s.export(),before)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'ver[55 chars]s': [{'id': 'w', 'state': 'succeeded', 'tasks'[87 chars]w'}]} != {'ver[55 chars]s': []}, 'commands': []}
++ {'commands': [],
++  'state': {'clock': 0, 'version': 1, 'workflows': []},
+- {'commands': [{'id': 'c1',
+-                'now': 0,
+-                'op': 'submit',
+-                'tasks': [],
+-                'workflow': 'w'}],
+-  'state': {'clock': 0,
+-            'version': 1,
+-            'workflows': [{'id': 'w', 'state': 'succeeded', 'tasks': []}]},
+   'version': 1}
+
+======================================================================
+FAIL: test_cli_batch_rollback (cases.Cases.test_cli_batch_rollback)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 234, in test_cli_batch_rollback
+    cs=[self.cmd('submit',workflow='w',tasks=[]),self.cmd('cancel',1,workflow='x')];self.badcli('missing','batch','-',stdin=json.dumps(cs));self.assertEqual(self.s.history(),[])
+                                                                                                                                            ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [{'id': 'c1', 'now': 0, 'op': 'submit', 'tasks': [], 'workflow': 'w'}] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+{'id': 'c1', 'now': 0, 'op': 'submit', 'tasks': [], 'workflow': 'w'}
+
+- [{'id': 'c1', 'now': 0, 'op': 'submit', 'tasks': [], 'workflow': 'w'}]
++ []
+
+======================================================================
+FAIL: test_finish_at_expiry_rolls_back (cases.Cases.test_finish_at_expiry_rolls_back)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 72, in test_finish_at_expiry_rolls_back
+    self.submit();tok=self.claim()[0]['token'];self.error('stale',lambda:self.finish(tok,now=10));self.assertEqual(self.tasks()['a']['state'],'running');self.assertEqual(self.s.snapshot()['clock'],0)
+                                               ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 33, in error
+    self.assertEqual(cm.exception.code,code);self.assertEqual(canon(self.s.export()),canon(before))
+                                             ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '{"co[190 chars]ck": 10, "version": 1, "workflows": [{"id": "w[283 chars]: 1}' != '{"co[190 chars]ck": 0, "version": 1, "workflows": [{"id": "w"[264 chars]: 1}'
+Diff is 2043 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_load_tamper_attempt_bool (cases.Cases.test_load_tamper_attempt_bool)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 276, in method
+    self.assertEqual(cm.exception.code,'snapshot');self.assertEqual(other.export(),before)
+                                                   ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'ver[55 chars]s': [{'id': 'w', 'state': 'running', 'tasks': [397 chars]r'}]} != {'ver[55 chars]s': []}, 'commands': []}
+Diff is 1312 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_load_tamper_clock (cases.Cases.test_load_tamper_clock)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 276, in method
+    self.assertEqual(cm.exception.code,'snapshot');self.assertEqual(other.export(),before)
+                                                   ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'ver[55 chars]s': [{'id': 'w', 'state': 'running', 'tasks': [397 chars]r'}]} != {'ver[55 chars]s': []}, 'commands': []}
+Diff is 1312 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_load_tamper_duplicate_history (cases.Cases.test_load_tamper_duplicate_history)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 276, in method
+    self.assertEqual(cm.exception.code,'snapshot');self.assertEqual(other.export(),before)
+                                                   ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'ver[55 chars]s': [{'id': 'w', 'state': 'running', 'tasks': [397 chars]r'}]} != {'ver[55 chars]s': []}, 'commands': []}
+Diff is 1312 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_load_tamper_lease (cases.Cases.test_load_tamper_lease)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 276, in method
+    self.assertEqual(cm.exception.code,'snapshot');self.assertEqual(other.export(),before)
+                                                   ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'ver[55 chars]s': [{'id': 'w', 'state': 'running', 'tasks': [397 chars]r'}]} != {'ver[55 chars]s': []}, 'commands': []}
+Diff is 1312 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_load_tamper_missing_history (cases.Cases.test_load_tamper_missing_history)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 276, in method
+    self.assertEqual(cm.exception.code,'snapshot');self.assertEqual(other.export(),before)
+                                                   ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'ver[55 chars]s': [{'id': 'w', 'state': 'running', 'tasks': [309 chars]w'}]} != {'ver[55 chars]s': []}, 'commands': []}
+Diff is 1123 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_load_tamper_payload (cases.Cases.test_load_tamper_payload)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 276, in method
+    self.assertEqual(cm.exception.code,'snapshot');self.assertEqual(other.export(),before)
+                                                   ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'ver[55 chars]s': [{'id': 'w', 'state': 'running', 'tasks': [397 chars]r'}]} != {'ver[55 chars]s': []}, 'commands': []}
+Diff is 1312 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_load_tamper_state_version_bool (cases.Cases.test_load_tamper_state_version_bool)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 276, in method
+    self.assertEqual(cm.exception.code,'snapshot');self.assertEqual(other.export(),before)
+                                                   ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'ver[55 chars]s': [{'id': 'w', 'state': 'running', 'tasks': [397 chars]r'}]} != {'ver[55 chars]s': []}, 'commands': []}
+Diff is 1312 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_load_tamper_version_bool (cases.Cases.test_load_tamper_version_bool)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 276, in method
+    self.assertEqual(cm.exception.code,'snapshot');self.assertEqual(other.export(),before)
+                                                   ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'ver[55 chars]s': [{'id': 'w', 'state': 'running', 'tasks': [397 chars]r'}]} != {'ver[55 chars]s': []}, 'commands': []}
+Diff is 1312 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_load_tamper_wrong_state (cases.Cases.test_load_tamper_wrong_state)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 276, in method
+    self.assertEqual(cm.exception.code,'snapshot');self.assertEqual(other.export(),before)
+                                                   ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'ver[55 chars]s': [{'id': 'w', 'state': 'running', 'tasks': [397 chars]r'}]} != {'ver[55 chars]s': []}, 'commands': []}
+Diff is 1312 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_renew_at_expiry (cases.Cases.test_renew_at_expiry)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 78, in test_renew_at_expiry
+    self.submit();tok=self.claim()[0]['token'];self.error('stale',lambda:self.do('renew',10,token=tok,lease=5))
+                                               ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 33, in error
+    self.assertEqual(cm.exception.code,code);self.assertEqual(canon(self.s.export()),canon(before))
+                                             ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '{"co[190 chars]ck": 10, "version": 1, "workflows": [{"id": "w[283 chars]: 1}' != '{"co[190 chars]ck": 0, "version": 1, "workflows": [{"id": "w"[264 chars]: 1}'
+Diff is 2043 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_unknown_token (cases.Cases.test_unknown_token)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 83, in test_unknown_token
+    def test_unknown_token(self):self.error('stale',lambda:self.finish({'workflow':'missing','task':'a','worker':'w','attempt':1}))
+                                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 33, in error
+    self.assertEqual(cm.exception.code,code);self.assertEqual(canon(self.s.export()),canon(before))
+                                             ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '{"co[18 chars]e": {"clock": 1, "version": 1, "workflows": []}, "version": 1}' != '{"co[18 chars]e": {"clock": 0, "version": 1, "workflows": []}, "version": 1}'
+- {"commands": [], "state": {"clock": 1, "version": 1, "workflows": []}, "version": 1}
+?                                     ^
++ {"commands": [], "state": {"clock": 0, "version": 1, "workflows": []}, "version": 1}
+?                                     ^
+
+
+======================================================================
+FAIL: test_wrong_worker (cases.Cases.test_wrong_worker)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 82, in test_wrong_worker
+    self.submit();tok=self.claim()[0]['token'];tok['worker']='other';self.error('stale',lambda:self.finish(tok))
+                                                                     ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 33, in error
+    self.assertEqual(cm.exception.code,code);self.assertEqual(canon(self.s.export()),canon(before))
+                                             ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '{"co[190 chars]ck": 1, "version": 1, "workflows": [{"id": "w"[264 chars]: 1}' != '{"co[190 chars]ck": 0, "version": 1, "workflows": [{"id": "w"[264 chars]: 1}'
+Diff is 1431 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 129 tests in 1.303s
+
+FAILED (failures=16)

@@ -1,0 +1,86 @@
+................................................................FFF.FFFFFF.......................................................
+======================================================================
+FAIL: test_load_tamper_attempt_bool (cases.Cases.test_load_tamper_attempt_bool)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 275, in method
+    with self.assertRaises(self.Error) as cm:other.load(bundle)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: StoreError not raised
+
+======================================================================
+FAIL: test_load_tamper_clock (cases.Cases.test_load_tamper_clock)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 275, in method
+    with self.assertRaises(self.Error) as cm:other.load(bundle)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: StoreError not raised
+
+======================================================================
+FAIL: test_load_tamper_duplicate_history (cases.Cases.test_load_tamper_duplicate_history)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 275, in method
+    with self.assertRaises(self.Error) as cm:other.load(bundle)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: StoreError not raised
+
+======================================================================
+FAIL: test_load_tamper_lease (cases.Cases.test_load_tamper_lease)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 275, in method
+    with self.assertRaises(self.Error) as cm:other.load(bundle)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: StoreError not raised
+
+======================================================================
+FAIL: test_load_tamper_missing_history (cases.Cases.test_load_tamper_missing_history)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 275, in method
+    with self.assertRaises(self.Error) as cm:other.load(bundle)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: StoreError not raised
+
+======================================================================
+FAIL: test_load_tamper_payload (cases.Cases.test_load_tamper_payload)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 275, in method
+    with self.assertRaises(self.Error) as cm:other.load(bundle)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: StoreError not raised
+
+======================================================================
+FAIL: test_load_tamper_state_version_bool (cases.Cases.test_load_tamper_state_version_bool)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 275, in method
+    with self.assertRaises(self.Error) as cm:other.load(bundle)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: StoreError not raised
+
+======================================================================
+FAIL: test_load_tamper_version_bool (cases.Cases.test_load_tamper_version_bool)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 275, in method
+    with self.assertRaises(self.Error) as cm:other.load(bundle)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: StoreError not raised
+
+======================================================================
+FAIL: test_load_tamper_wrong_state (cases.Cases.test_load_tamper_wrong_state)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 275, in method
+    with self.assertRaises(self.Error) as cm:other.load(bundle)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: StoreError not raised
+
+----------------------------------------------------------------------
+Ran 129 tests in 1.466s
+
+FAILED (failures=9)

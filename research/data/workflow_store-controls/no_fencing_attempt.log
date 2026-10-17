@@ -1,0 +1,17 @@
+......................................................................................................................F..........
+======================================================================
+FAIL: test_stale_attempt (cases.Cases.test_stale_attempt)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 80, in test_stale_attempt
+    self.submit([{'id':'a','max_attempts':2}]);old=self.claim()[0]['token'];new=self.claim(now=10)[0]['token'];self.error('stale',lambda:self.finish(old,now=10));self.finish(new,now=10)
+                                                                                                               ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 32, in error
+    with self.assertRaises(self.Error) as cm:fn()
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: StoreError not raised
+
+----------------------------------------------------------------------
+Ran 129 tests in 1.419s
+
+FAILED (failures=1)

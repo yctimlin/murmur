@@ -1,0 +1,20 @@
+..................................................................................F..............................................
+======================================================================
+FAIL: test_retry_backoff (cases.Cases.test_retry_backoff)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 66, in test_retry_backoff
+    self.submit([{'id':'a','max_attempts':3,'retry_delay':3}]);tok=self.claim()[0]['token'];self.assertEqual(self.finish(tok,now=2,ok=False,result='one'),{'state':'ready','ready_at':5});self.assertEqual(self.claim(now=4),[]);tok=self.claim(now=5)[0]['token'];self.assertEqual(tok['attempt'],2);self.assertEqual(self.tasks()['a']['result'],'one');self.assertEqual(self.finish(tok,now=6,ok=False),{'state':'ready','ready_at':12});tok=self.claim(now=12)[0]['token'];self.assertEqual(self.finish(tok,now=13,ok=False),{'state':'failed','ready_at':12})
+                                                                                                                                                                                                                                                                                                                                                          ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'state': 'ready', 'ready_at': 9} != {'state': 'ready', 'ready_at': 12}
+- {'ready_at': 9, 'state': 'ready'}
+?              ^
+
++ {'ready_at': 12, 'state': 'ready'}
+?              ^^
+
+
+----------------------------------------------------------------------
+Ran 129 tests in 1.444s
+
+FAILED (failures=1)

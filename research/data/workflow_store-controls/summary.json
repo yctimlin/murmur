@@ -1,0 +1,72 @@
+{
+  "baseline": {
+    "passed": 0,
+    "rate": 0.0,
+    "total": 129
+  },
+  "batch_partial_commit": {
+    "passed": 113,
+    "rate": 0.875968992248062,
+    "total": 129
+  },
+  "control_kind": "deterministic local authored controls; not model calibration or runner mutation score",
+  "expiry_strict": {
+    "passed": 122,
+    "rate": 0.9457364341085271,
+    "total": 129
+  },
+  "load_without_state_check": {
+    "passed": 120,
+    "rate": 0.9302325581395349,
+    "total": 129
+  },
+  "no_fencing_attempt": {
+    "passed": 128,
+    "rate": 0.9922480620155039,
+    "total": 129
+  },
+  "positive": {
+    "passed": 129,
+    "rate": 1.0,
+    "total": 129
+  },
+  "priority_ascending": {
+    "passed": 127,
+    "rate": 0.9844961240310077,
+    "total": 129
+  },
+  "public_input_files": [
+    ".gitignore",
+    "README.md",
+    "SPEC.md",
+    "examples/batch.json"
+  ],
+  "retry_from_observation": {
+    "passed": 128,
+    "rate": 0.9922480620155039,
+    "total": 129
+  },
+  "retry_linear": {
+    "passed": 128,
+    "rate": 0.9922480620155039,
+    "total": 129
+  },
+  "sha256": {
+    "SPEC.md": "adfc9d869d49a7cf5e88c71726224b07161d4427695578f15c18a90b19e0978c",
+    "TASK.json": "77659d12f3fe6b5d1b525866595f470593e6e1e11282c29ebb49b15736f1373e",
+    "brief.md": "908598c687d497d3d48d0d5ea4b84cd3924997416965f1d970645daae2087185",
+    "controls/check.py": "7c817fb8dd618a117b4fe05db5fefdcd77ddbbcb900f75312e23300f5bc8f344",
+    "controls/reference.py": "2bada392b6c63a62d45d994704c0d811bb22ca38a9b198f72e17e5dc367da202",
+    "controls/reference_cli.py": "a35c216e63afc13097439ce679765774e00825b5940e7c31b4cde7712fe3b33d",
+    "hidden/README.md": "8152038fb2b4dd0649f5fe48fbb83e1161ba37c9a268ced9eaaca66ef5d416be",
+    "hidden/cases.py": "5b9f35e702f2b1db5ffaeeadfd627ce78fed9f8c66647d89b10fb1ac28fb6862",
+    "hidden/score.py": "5395807fadc50a00378ef6cc000d1da91acbf871a2fdc48fee8b3b8237850acc",
+    "make_input.sh": "219f28d7aa9d5a5bba7a129f993ee984575bcb44f0d0cd663a68a126bedac815",
+    "score.sh": "fe38f9d4cc1f54ee25a596f470d299ea4990d97b2132abcd253872c82b388b0b"
+  },
+  "weak_typed_equality": {
+    "passed": 124,
+    "rate": 0.9612403100775194,
+    "total": 129
+  }
+}

@@ -1,0 +1,56 @@
+................................................................F......FF.................................................FF.....
+======================================================================
+FAIL: test_load_tamper_attempt_bool (cases.Cases.test_load_tamper_attempt_bool)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 275, in method
+    with self.assertRaises(self.Error) as cm:other.load(bundle)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: StoreError not raised
+
+======================================================================
+FAIL: test_load_tamper_state_version_bool (cases.Cases.test_load_tamper_state_version_bool)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 275, in method
+    with self.assertRaises(self.Error) as cm:other.load(bundle)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: StoreError not raised
+
+======================================================================
+FAIL: test_load_tamper_version_bool (cases.Cases.test_load_tamper_version_bool)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 275, in method
+    with self.assertRaises(self.Error) as cm:other.load(bundle)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: StoreError not raised
+
+======================================================================
+FAIL: test_type_sensitive_conflict_bool (cases.Cases.test_type_sensitive_conflict_bool)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 124, in test_type_sensitive_conflict_bool
+    c=self.cmd('submit',workflow='w',tasks=[{'id':'a','payload':1}]);self.s.apply(c);c['tasks'][0]['payload']=True;self.error('conflict',lambda:self.s.apply(c))
+                                                                                                                   ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 32, in error
+    with self.assertRaises(self.Error) as cm:fn()
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: StoreError not raised
+
+======================================================================
+FAIL: test_type_sensitive_conflict_float (cases.Cases.test_type_sensitive_conflict_float)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 126, in test_type_sensitive_conflict_float
+    c=self.cmd('submit',workflow='w',tasks=[{'id':'a','payload':1}]);self.s.apply(c);c['tasks'][0]['payload']=1.0;self.error('conflict',lambda:self.s.apply(c))
+                                                                                                                  ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 32, in error
+    with self.assertRaises(self.Error) as cm:fn()
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: StoreError not raised
+
+----------------------------------------------------------------------
+Ran 129 tests in 1.275s
+
+FAILED (failures=5)

@@ -1,0 +1,15 @@
+# C2 prospective calibration decision (a3, 2026-10-17)
+
+Question: after C1 saturated every frozen task, can a new task provide an honest long-task measurement before spending the remaining swarm budget?
+
+Method: preregister exactly three exec-only runs of new `workflow_store`, all in one concurrent block, cap100m, in [C2.json](../prereg/C2.json). The scheduler must freeze the task before execution. Existing document_catalog, ledger_replay, reserveplan files are untouched. No mechanism or murmur code/config/default changes. The task adds durable SQLite mutation and batch rollback, explicit lease clocks and fencing, typed idempotency, DAG joins/failure propagation, retry backoff, cross-process claiming, canonical audit replay and CLI. It is broader than C1 tasks; that is a rationale to measure, not evidence that it takes30 minutes.
+
+Prediction: hidden rate.80, active45min, input2.7M, uncached.162M, delivery. Task-author nominal size60min is discounted to45 for the prereg active forecast after C1's size overprediction. Broad per-run bands and all endpoints are in C2. The chance of another easy task is real; no demand that the model spend a minimum time, hidden artificial delays, or changing evaluator thresholds after data.
+
+Decision: require **each** of the three runs score<=.85 and active>=30, valid/leak-free/uncensored and delivered, exceeding the operator's latest-run gate. If all qualify, the remaining15 jobs can pair solo/protocol1 three times (6 jobs), and protocol1/2/3 three times (9 jobs), following a separately frozen next-batch registration. This measures the protocol bundle and curve; exec-to-solo remains unpaired across stages and cannot support causal attribution. No mechanism is selected. If calibration fails, next phase writes C-DONE with honest unresolved questions; do not use a favorable subset or redesign repeatedly within too little budget to retain the paired design.
+
+Budget: GATES18 remaining jobs and raw C1 input92,629,793. Three calibrations reserve9M under scheduler heuristics, leaving15 jobs and348,370,207 estimated input tokens. These are estimates, not spend caps; actual data govern admission. A hypothetical fully paired five-arm chain at three repeats would require at least18 downstream jobs with at most3 concurrent (two disjoint chain edges need endpoint duplication), so do not claim the proposed allocation answers every original question.
+
+Raw-data paths: future `research/data/raw/C2/` and scheduler result/workspace locations; no C2 data exist at registration. Local scorer validation is [workflow_store-controls](../data/workflow_store-controls/) and is not model performance. Source paths: [SPEC](../tasks/workflow_store/SPEC.md), [cases](../tasks/workflow_store/hidden/cases.py), [reference](../tasks/workflow_store/controls/reference.py). No model or lab run was used to author or tune these tests.
+
+Result at registration: positive author control129/129; independent review and negative-control report are recorded separately. C2 is a measurement response to saturation, not a mechanism experiment. A local control score cannot establish difficulty.

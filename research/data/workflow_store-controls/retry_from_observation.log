@@ -1,0 +1,23 @@
+........................................................F........................................................................
+======================================================================
+FAIL: test_expiry_uses_expiry_time (cases.Cases.test_expiry_uses_expiry_time)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 68, in test_expiry_uses_expiry_time
+    self.submit([{'id':'a','max_attempts':2,'retry_delay':3}]);self.claim();self.do('advance',100);t=self.tasks()['a'];self.assertEqual((t['state'],t['ready_at'],t['attempts'],t['result']),('ready',13,1,{'error':'lease_expired'}))
+                                                                                                                       ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Tuples differ: ('ready', 103, 1, {'error': 'lease_expired'}) != ('ready', 13, 1, {'error': 'lease_expired'})
+
+First differing element 1:
+103
+13
+
+- ('ready', 103, 1, {'error': 'lease_expired'})
+?            -
+
++ ('ready', 13, 1, {'error': 'lease_expired'})
+
+----------------------------------------------------------------------
+Ran 129 tests in 1.419s
+
+FAILED (failures=1)

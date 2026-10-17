@@ -1,0 +1,114 @@
+{
+  "batch": "C2",
+  "notebook": "research/notebook/20261017-1345-a3-c2-calibration-prereg.md",
+  "predictions": {
+    "status": "Prospective exec-only calibration; no C2 result exists. Registered after C1 and before scheduler execution.",
+    "purpose": "Determine whether one new broader durable-workflow task is difficult and long enough for the operator gate before spending any more jobs on swarm arms.",
+    "task": "workflow_store",
+    "not_a_mechanism": "No murmur implementation or default changes; new measurement task only. Existing frozen tasks are unchanged.",
+    "rationale": "C1 first exec calibrations all scored1.0 in8.20/10.78/15.03 active minutes; all are ineligible under the new <=.85 and >=30min operator gate. The replacement adds durable transactional concurrency, leased attempts/fencing, dependency joins, retries, typed idempotency, audit replay and CLI integration. Difficulty remains uncalibrated, not guaranteed by specification length.",
+    "point_forecasts": {
+      "score.rate": 0.8,
+      "active_min": 45.0,
+      "input": 2700000,
+      "uncached": 162000,
+      "delivered": true
+    },
+    "subjective_80pct_per_run_bands": {
+      "score.rate": [
+        0.55,
+        1.0
+      ],
+      "active_min": [
+        15,
+        90
+      ],
+      "input": [
+        600000,
+        9000000
+      ],
+      "uncached": [
+        30000,
+        720000
+      ]
+    },
+    "forecast_interpretation": "Elicited new-task forecasts, not a refit of frozen MODEL predictions or a calibrated confidence interval. Broad intervals acknowledge that C1 substantially overestimated task difficulty and duration; this task may also saturate or finish quickly. Expected_solo_min60 in TASK is task-author design size; point active forecast45 discounts that estimate. Report both, do not reinterpret after results.",
+    "eligibility": {
+      "operator_gate": "New swarm jobs may use this task only if the latest exec calibration has score.rate <=0.85 and active_min >=30. Exactly .85 and30 are eligible.",
+      "conservative_design_rule": "Require all three prespecified C2 exec runs individually to have score.rate <=0.85 and active_min >=30, valid score/telemetry, leak_hits=0, delivered=true, run_exit=0, and no cap/timeout. This is stronger than the latest-only operator gate and avoids selecting a fortunate one of three calibrations.",
+      "invalid": "Missing/nonfinite metrics, scoring failures, leak_hits>0, missing delivery, or censoring mean calibration is not established. Retain all records; no unregistered replacement.",
+      "selection": "Only this one new task is registered. No selection among tasks, no test/contract edits after freezing or after results, and no jobs added to C2."
+    },
+    "analysis_plan": {
+      "primary_metrics": [
+        "score.rate",
+        "delivered",
+        "active_min",
+        "input",
+        "uncached"
+      ],
+      "secondary_metrics": [
+        "wall_min",
+        "output",
+        "mutation",
+        "commits",
+        "lines_429",
+        "leak_hits",
+        "run_exit"
+      ],
+      "report": "Report all three runs, arithmetic mean/sample SD and min/max per quantitative endpoint, CV for positive time/token endpoints, delivery count, flags, prediction errors and band coverage. Mutation null is missing, never zero; inspect executable test collection before interpreting any mutation0.",
+      "pairing": "All jobs have identical treatment and share one concurrent block. Differences among run labels are descriptive A/A noise, not treatment effects. Report each of the three unordered differences for score/delivery and log ratios for positive time/input/uncached; these differences are dependent and are not three independent comparisons. No causal comparison to C1 or later arms is licensed.",
+      "uncertainty": "n=3 from one concurrent block is a small calibration sample, not precise population noise. Show descriptive spread and all individual results; no significance test or equivalence claim. Future paired treatment contrasts use new preregistered concurrent blocks.",
+      "censoring": "Retain observed consumption and delivery/score; flag caps/timeouts; do not treat capped active minutes as completed task duration or silently exclude failures.",
+      "rate_limits": "Report all lines_429 and provider/runner failures. Primary scheduled-set summary retains them. A failure does not authorize replacement or retrospective task edits.",
+      "predictions": "Score: signed error and MAE; positive time/tokens: signed log(observed/prediction) and mean log error; per-endpoint band coverage numerator/denominator. Undefined ratios remain missing with reason. Evaluate task eligibility per run, separately from mean forecast accuracy.",
+      "controls": "Local author-written reference passes129/129; untouched input0/129; eight deliberately defective controls must each lose at least one case. These validate selected scorer behaviors, not empirical task difficulty and not complete proof of the specification."
+    },
+    "decision": {
+      "eligible": "If all three pass the conservative gate, next phase may preregister at most15 jobs: [solo,protocol1]x3 concurrent pairs (6 jobs) plus [protocol1,protocol2,protocol3]x3 concurrent triples (9 jobs), all murmur arms base3; protocol1 requires MURMUR_ONE_PEER_PROTOCOL=1. This supplies three paired protocol contrasts and three paired peer-count curves, with protocol1 observed six times in two block families. Specify all numerical hypotheses/decisions prospectively in that future prereg, using C2 noise and preserving MODEL priors.",
+      "exec_limit": "The three C2 exec runs are descriptive calibration only; they are not paired with later solo/protocol runs. No causal exec-to-solo claim can be made from a cross-batch difference. A fully paired five-arm chain with three reps per contrast needs at least18 downstream jobs at max3 concurrent, exceeding15 remaining. Prioritize protocol-bundle and peer-count questions rather than hide the loss of identification.",
+      "ineligible": "If any run fails the conservative eligibility rule, finish experiments with C-DONE in the next phase: no currently qualified task, no evidence that another redesign would meet duration/difficulty, and fewer than15 jobs after another calibration would preclude the planned fully paired protocol plus curve design. Report unanswered questions and unspent budget; do not promote a mechanism or peer-count default.",
+      "mechanism": "No mechanism experiment authorized by C2. C1 saturation and noisy cost screens do not identify a specific mechanism. Existing gross regression screen remains unresolved; later measurements are diagnostic, not promotion of further changes."
+    },
+    "budget": {
+      "jobs": 3,
+      "exec_jobs": 3,
+      "swarm_jobs": 0,
+      "estimated_input_tokens": 9000000,
+      "model_expected_input_tokens": 8100000,
+      "jobs_used_before_C2": 18,
+      "jobs_remaining_after_C2": 15,
+      "input_used_before_C2": 92629793,
+      "input_remaining_before_C2": 357370207,
+      "input_remaining_after_estimate": 348370207,
+      "interpretation": "Scheduler estimate3M per exec job; actual cumulative spending governs next admission. Gate displays92.6M rounded; raw C1 sums92629793. No other post-C1 run is launched by researchers."
+    },
+    "revision": "Exec arm solves task seed; prereg rev base3 retained for schema/traceability, not represented as executing murmur protocol."
+  },
+  "jobs": [
+    {
+      "arm": "exec_calibration_r1",
+      "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+      "task": "workflow_store",
+      "peers": "exec",
+      "cap": "100m",
+      "block": "b00-workflow-calibration"
+    },
+    {
+      "arm": "exec_calibration_r2",
+      "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+      "task": "workflow_store",
+      "peers": "exec",
+      "cap": "100m",
+      "block": "b00-workflow-calibration"
+    },
+    {
+      "arm": "exec_calibration_r3",
+      "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+      "task": "workflow_store",
+      "peers": "exec",
+      "cap": "100m",
+      "block": "b00-workflow-calibration"
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+.............F........................................EF...F..................F.F.....................................E..........
+======================================================================
+ERROR: test_expiration_settles_before_claim (cases.Cases.test_expiration_settles_before_claim)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 101, in test_expiration_settles_before_claim
+    self.submit([{'id':'a'},{'id':'b','after':['a'],'join':'all_done'}]);self.claim();self.assertEqual(self.claim(now=10)[0]['token']['task'],'b')
+                                                                                                       ~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+
+======================================================================
+ERROR: test_stale_attempt (cases.Cases.test_stale_attempt)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 80, in test_stale_attempt
+    self.submit([{'id':'a','max_attempts':2}]);old=self.claim()[0]['token'];new=self.claim(now=10)[0]['token'];self.error('stale',lambda:self.finish(old,now=10));self.finish(new,now=10)
+                                                                                ~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+
+======================================================================
+FAIL: test_cancel_after_expiry (cases.Cases.test_cancel_after_expiry)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 109, in test_cancel_after_expiry
+    self.submit();self.claim();self.assertEqual(self.do('cancel',10,workflow='w'),{'cancelled':0});self.assertEqual(self.s.snapshot()['workflows'][0]['state'],'failed')
+                               ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'cancelled': 1} != {'cancelled': 0}
+- {'cancelled': 1}
+?               ^
+
++ {'cancelled': 0}
+?               ^
+
+
+======================================================================
+FAIL: test_expiry_exhausted (cases.Cases.test_expiry_exhausted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 70, in test_expiry_exhausted
+    self.submit();self.claim();self.do('advance',10);self.assertEqual(self.tasks()['a']['state'],'failed')
+                                                     ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'running' != 'failed'
+- running
++ failed
+
+
+======================================================================
+FAIL: test_finish_at_expiry_rolls_back (cases.Cases.test_finish_at_expiry_rolls_back)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 72, in test_finish_at_expiry_rolls_back
+    self.submit();tok=self.claim()[0]['token'];self.error('stale',lambda:self.finish(tok,now=10));self.assertEqual(self.tasks()['a']['state'],'running');self.assertEqual(self.s.snapshot()['clock'],0)
+                                               ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 32, in error
+    with self.assertRaises(self.Error) as cm:fn()
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: StoreError not raised
+
+======================================================================
+FAIL: test_renew_at_expiry (cases.Cases.test_renew_at_expiry)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 78, in test_renew_at_expiry
+    self.submit();tok=self.claim()[0]['token'];self.error('stale',lambda:self.do('renew',10,token=tok,lease=5))
+                                               ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 32, in error
+    with self.assertRaises(self.Error) as cm:fn()
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: StoreError not raised
+
+======================================================================
+FAIL: test_renew_shortens (cases.Cases.test_renew_shortens)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 74, in test_renew_shortens
+    self.submit();tok=self.claim()[0]['token'];self.assertEqual(self.do('renew',2,token=tok,lease=1),{'expires':3});self.do('advance',3);self.assertEqual(self.tasks()['a']['state'],'failed')
+                                                                                                                                         ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'running' != 'failed'
+- running
++ failed
+
+
+----------------------------------------------------------------------
+Ran 129 tests in 1.513s
+
+FAILED (failures=5, errors=2)

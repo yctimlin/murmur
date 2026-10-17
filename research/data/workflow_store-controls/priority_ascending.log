@@ -1,0 +1,33 @@
+............................................................................FF...................................................
+======================================================================
+FAIL: test_negative_priority (cases.Cases.test_negative_priority)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 58, in test_negative_priority
+    self.submit([{'id':'a','priority':-2},{'id':'z','priority':-1}]);self.assertEqual(self.claim()[0]['token']['task'],'z')
+                                                                     ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'a' != 'z'
+- a
++ z
+
+
+======================================================================
+FAIL: test_priority_global (cases.Cases.test_priority_global)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/self3/labdata/phases/PC1-t1/work/peers/a3/research/tasks/workflow_store/hidden/cases.py", line 56, in test_priority_global
+    toks=[v['token'] for v in self.claim(limit=4)];self.assertEqual([(t['workflow'],t['task']) for t in toks],[('a','b'),('a','c'),('b','z'),('b','a')])
+                                                   ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [('b', 'a'), ('a', 'b'), ('a', 'c'), ('b', 'z')] != [('a', 'b'), ('a', 'c'), ('b', 'z'), ('b', 'a')]
+
+First differing element 0:
+('b', 'a')
+('a', 'b')
+
+- [('b', 'a'), ('a', 'b'), ('a', 'c'), ('b', 'z')]
++ [('a', 'b'), ('a', 'c'), ('b', 'z'), ('b', 'a')]
+
+----------------------------------------------------------------------
+Ran 129 tests in 1.512s
+
+FAILED (failures=2)
