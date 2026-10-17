@@ -1,0 +1,6 @@
+{
+  "class": "greenfield-durable-workflow-integration",
+  "setup": "py",
+  "expected_solo_min": 60,
+  "notes": "Uncalibrated harder replacement, not a modification of frozen tasks. Build a durable SQLite workflow engine with DAG state propagation, retries, leased work, fencing, idempotent transactions/batches, audited export/import, concurrency, and CLI. Target score 0.60-0.85 and 45-90 active minutes is a design forecast only. Exec calibration must precede all swarm use."
+}
