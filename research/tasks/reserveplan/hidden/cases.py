@@ -46,7 +46,15 @@ def expected(rows, order=None, resources=None):
 def plan_case(name, value, result):
     @case(name)
     def run(t):
-        t.assertEqual(api().plan(copy.deepcopy(value)), result)
+        if name == 'billion_minute_horizon':
+            # A slow minute-by-minute implementation loses this case only.
+            proc = subprocess.run([sys.executable, '-c',
+                'import json,sys; from reserveplan import plan; print(json.dumps(plan(json.load(sys.stdin))))'],
+                input=json.dumps(value), text=True, capture_output=True, timeout=5)
+            t.assertEqual(proc.returncode, 0, proc.stderr)
+            t.assertEqual(json.loads(proc.stdout), result)
+        else:
+            t.assertEqual(api().plan(copy.deepcopy(value)), result)
 
 
 plan_case('empty', spec(), expected([]))
