@@ -1,0 +1,6 @@
+{
+  "class": "greenfield-multi-module-long",
+  "setup": "py",
+  "expected_solo_min": 65,
+  "notes": "Build a stdlib Python reservation planner from a specification and example data in a fresh git repository. Long task for protocol/peer-count experiments. Estimated 65 solo minutes, not empirically calibrated; 60-85% solo score is a design target, not a measured claim. Covers validation, DAG scheduling, interval capacities/calendars, reporting, and command-line integration."
+}
