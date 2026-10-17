@@ -1,0 +1,40 @@
+{
+  "valid": true,
+  "jobs": 3,
+  "blocks": 1,
+  "swarm_jobs": 0,
+  "base_revision": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+  "jobs_remaining_after_C2": 15,
+  "input_used_before_C2": 92629793,
+  "input_remaining_after_estimate": 348370207,
+  "old_tasks_prereg_and_raw_unchanged": true,
+  "new_task_manifest": {
+    "SPEC.md": "adfc9d869d49a7cf5e88c71726224b07161d4427695578f15c18a90b19e0978c",
+    "TASK.json": "77659d12f3fe6b5d1b525866595f470593e6e1e11282c29ebb49b15736f1373e",
+    "brief.md": "908598c687d497d3d48d0d5ea4b84cd3924997416965f1d970645daae2087185",
+    "controls/check.py": "7c817fb8dd618a117b4fe05db5fefdcd77ddbbcb900f75312e23300f5bc8f344",
+    "controls/reference.py": "2bada392b6c63a62d45d994704c0d811bb22ca38a9b198f72e17e5dc367da202",
+    "controls/reference_cli.py": "a35c216e63afc13097439ce679765774e00825b5940e7c31b4cde7712fe3b33d",
+    "hidden/README.md": "8152038fb2b4dd0649f5fe48fbb83e1161ba37c9a268ced9eaaca66ef5d416be",
+    "hidden/cases.py": "5b9f35e702f2b1db5ffaeeadfd627ce78fed9f8c66647d89b10fb1ac28fb6862",
+    "hidden/score.py": "5395807fadc50a00378ef6cc000d1da91acbf871a2fdc48fee8b3b8237850acc",
+    "make_input.sh": "219f28d7aa9d5a5bba7a129f993ee984575bcb44f0d0cd663a68a126bedac815",
+    "score.sh": "fe38f9d4cc1f54ee25a596f470d299ea4990d97b2132abcd253872c82b388b0b"
+  },
+  "fixture_deterministic": true,
+  "fixture_has_hidden_or_reference": false,
+  "fixture": {
+    "files": {
+      ".gitignore": "f77e4882fb645751e7562456785a836fc8686fdb8d9c7886c3cccbcb9decdb9e",
+      "README.md": "77a8c868f47cadf53d78afe9d7649be646dcdb107792494e561be35ff068a69a",
+      "SPEC.md": "adfc9d869d49a7cf5e88c71726224b07161d4427695578f15c18a90b19e0978c",
+      "examples/batch.json": "7c8ea26b185f8c695168e9783928a64a3d82691405893ce60ab382f66bee3384"
+    },
+    "rev": "a91d3bbe52ec4e7bd08002b85b8d23a0d6171085"
+  },
+  "notes": [
+    "Manual review confirms all-three-run valid/delivered/leak-free/uncensored eligibility, score<=.85 and active>=30.",
+    "Calibration is one-block same-treatment description; subsequent exec/solo causal comparison is explicitly not licensed.",
+    "Task duration and quality remain unknown until scheduler calibration. No lab experiment launched by this validator."
+  ]
+}
