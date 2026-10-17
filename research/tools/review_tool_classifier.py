@@ -10,6 +10,8 @@ import random
 ROOT=Path(__file__).resolve().parents[1]
 # Manual labels assess the actual operations under documented category precedence.
 # Mixed wrappers/fixture writes are ambiguous rather than silently treated as errors.
+ORIGINAL_LABELS='board edit other file_read edit edit git_read git_sync wait verify other wait verify wait edit other board board verify git_read wait git_read edit other edit verify git_read git_read verify edit verify wait verify edit git_read edit wait other board other'.split()
+
 ANNOTATIONS={
   6:('verify','ambiguous','Inline assertion audit plus git inspection and board post; mechanical git_read priority misses semantic verification.'),
   9:('git_sync','clear','git fetch/log/list/sed plus board post; reading a test filename is not executing tests.'),
@@ -38,11 +40,11 @@ def main():
     result=[]
     for index,row in enumerate(calls[:40]):
         text=row.pop('text');assigned=module.kind(text)
-        expected,status,note=ANNOTATIONS.get(index,(assigned,'consistent','No clear disagreement with documented operational category.'))
+        expected,status,note=ANNOTATIONS.get(index,(ORIGINAL_LABELS[index],'consistent','No clear disagreement with original documented operational category.'))
         # Avoid copying opaque peer-message payloads into derived artifacts.
         excerpt='send_message [opaque message payload omitted]' if text.startswith('send_message ') else text[:1200]
         result.append(dict(sample_index=index,**row,raw_sha256=hashlib.sha256(text.encode()).hexdigest(),automatic_category=assigned,audited_category=expected,audit_type=status,disagrees=expected!=assigned,rationale=note,excerpt=excerpt))
-    summary={'population_calls':population,'sample_calls':40,'seed':17,'clear_disagreements':sum(r['audit_type']=='clear' and r['disagrees'] for r in result),'ambiguous_disagreements':sum(r['audit_type']=='ambiguous' and r['disagrees'] for r in result),'cases':result}
+    summary={'population_calls':population,'sample_calls':40,'seed':17,'clear_disagreements':sum(r['audit_type']=='clear' and r['disagrees'] for r in result),'ambiguous_disagreements':sum(r['audit_type']=='ambiguous' and r['disagrees'] for r in result),'new_disagreements':sum(r['audit_type']=='consistent' and r['disagrees'] for r in result),'cases':result}
     print(json.dumps(summary,indent=2,sort_keys=True))
 
 if __name__=='__main__':main()
