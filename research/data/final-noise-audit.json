@@ -1,0 +1,683 @@
+{
+  "method": "Independent raw-result audit. All results descriptive because no task passed calibration.",
+  "sizing_assumptions": {
+    "alpha_two_sided": 0.05,
+    "power": 0.8,
+    "zsum": 2.801585218112968,
+    "formula": "ceil(((z(.975)+z(.8))*sample_SD(log(A/B))/abs(log(1-reduction)))**2)",
+    "unit": "Independent concurrent blocks, each containing one run per compared arm; 2N runs for N pairs.",
+    "upper_sd_multiplier": 4.4153964427017955,
+    "limits": "Normal approximation with known SD replaced by an n=3 estimate; not exact t-test power, not a minimum guaranteed sample, not validated on long tasks. Upper-SD stress assumes independent normal log contrasts. No multiple-comparison adjustment. Recalibrate on long unsaturated tasks and use task-level replication before choosing final N."
+  },
+  "noise": [
+    {
+      "task": "ledger_replay",
+      "treatment": "base3, peers=3",
+      "runs": [
+        "C1-03-base3A",
+        "C1-05-base3B",
+        "C1-09-base3B",
+        "C1-10-base3A",
+        "C1-13-base3B",
+        "C1-14-base3A"
+      ],
+      "metrics": {
+        "active_min": {
+          "n": 6,
+          "mean": 12.808333333333334,
+          "sd": 1.9905116595153785,
+          "min": 10.14,
+          "max": 15.22,
+          "values": [
+            12.47,
+            11.47,
+            15.02,
+            10.14,
+            12.53,
+            15.22
+          ],
+          "cv": 0.15540754661148043
+        },
+        "input": {
+          "n": 6,
+          "mean": 4796086.333333333,
+          "sd": 773149.5701310753,
+          "min": 3519949,
+          "max": 5541277,
+          "values": [
+            4292640,
+            5091418,
+            5474794,
+            3519949,
+            4856440,
+            5541277
+          ],
+          "cv": 0.16120426455996004
+        },
+        "uncached": {
+          "n": 6,
+          "mean": 195382.33333333334,
+          "sd": 31187.22038698971,
+          "min": 165069,
+          "max": 251354,
+          "values": [
+            167456,
+            251354,
+            192234,
+            165069,
+            196216,
+            199965
+          ],
+          "cv": 0.15962149624747568
+        },
+        "score": {
+          "n": 6,
+          "mean": 1.0,
+          "sd": 0.0,
+          "min": 1.0,
+          "max": 1.0,
+          "values": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "delivered": {
+          "n": 6,
+          "mean": 1,
+          "sd": 0.0,
+          "min": true,
+          "max": true,
+          "values": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "zero_failure_upper95_iid": 0.39303776899708276
+    },
+    {
+      "task": "reserveplan",
+      "treatment": "base3, peers=3",
+      "runs": [
+        "C1-06-base3A",
+        "C1-07-base3B",
+        "C1-11-base3B",
+        "C1-12-base3A",
+        "C1-16-base3A",
+        "C1-17-base3B"
+      ],
+      "metrics": {
+        "active_min": {
+          "n": 6,
+          "mean": 16.653333333333332,
+          "sd": 3.9555412608980163,
+          "min": 12.76,
+          "max": 22.75,
+          "values": [
+            22.75,
+            12.76,
+            20.12,
+            13.6,
+            14.59,
+            16.1
+          ],
+          "cv": 0.23752249364880004
+        },
+        "input": {
+          "n": 6,
+          "mean": 7932950.5,
+          "sd": 2783804.1636826214,
+          "min": 5197542,
+          "max": 11618548,
+          "values": [
+            11186514,
+            5197542,
+            11618548,
+            6113746,
+            7427526,
+            6053827
+          ],
+          "cv": 0.35091661843630834
+        },
+        "uncached": {
+          "n": 6,
+          "mean": 238337.16666666666,
+          "sd": 36195.0622069733,
+          "min": 184146,
+          "max": 285172,
+          "values": [
+            184146,
+            216038,
+            285172,
+            229970,
+            265414,
+            249283
+          ],
+          "cv": 0.15186495129227978
+        },
+        "score": {
+          "n": 6,
+          "mean": 1.0,
+          "sd": 0.0,
+          "min": 1.0,
+          "max": 1.0,
+          "values": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "delivered": {
+          "n": 6,
+          "mean": 1,
+          "sd": 0.0,
+          "min": true,
+          "max": true,
+          "values": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "zero_failure_upper95_iid": 0.39303776899708276
+    },
+    {
+      "task": "workflow_store",
+      "treatment": "plain exec",
+      "runs": [
+        "C2-00-execcalibrationr",
+        "C2-01-execcalibrationr",
+        "C2-02-execcalibrationr"
+      ],
+      "metrics": {
+        "active_min": {
+          "n": 3,
+          "mean": 16.526666666666667,
+          "sd": 2.901005572785638,
+          "min": 14.31,
+          "max": 19.81,
+          "values": [
+            19.81,
+            14.31,
+            15.46
+          ]
+        },
+        "input": {
+          "n": 3,
+          "mean": 1025845,
+          "sd": 177806.31329342612,
+          "min": 921827,
+          "max": 1231152,
+          "values": [
+            1231152,
+            924556,
+            921827
+          ]
+        },
+        "uncached": {
+          "n": 3,
+          "mean": 67893,
+          "sd": 8904.671526788621,
+          "min": 61923,
+          "max": 78128,
+          "values": [
+            78128,
+            63628,
+            61923
+          ]
+        },
+        "score": {
+          "n": 3,
+          "mean": 1.0,
+          "sd": 0.0,
+          "min": 1.0,
+          "max": 1.0,
+          "values": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "delivered": {
+          "n": 3,
+          "mean": 1,
+          "sd": 0.0,
+          "min": true,
+          "max": true,
+          "values": [
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "zero_failure_upper95_iid": 0.6315968501359612
+    }
+  ],
+  "sizing": [
+    {
+      "task": "ledger_replay",
+      "metric": "active_min",
+      "pairs": [
+        {
+          "block": "b01-ledger-r1",
+          "a": "C1-03-base3A",
+          "b": "C1-05-base3B",
+          "difference": 1.0,
+          "log_ratio": 0.08359082855066567
+        },
+        {
+          "block": "b03-ledger-r2",
+          "a": "C1-10-base3A",
+          "b": "C1-09-base3B",
+          "difference": -4.879999999999999,
+          "log_ratio": -0.39289464817295155
+        },
+        {
+          "block": "b05-ledger-r3",
+          "a": "C1-14-base3A",
+          "b": "C1-13-base3B",
+          "difference": 2.6900000000000013,
+          "log_ratio": 0.19448458352556294
+        }
+      ],
+      "log_summary": {
+        "n": 3,
+        "mean": -0.03827307869890765,
+        "sd": 0.3120764319446179,
+        "min": -0.39289464817295155,
+        "max": 0.19448458352556294
+      },
+      "paired_difference_summary": {
+        "n": 3,
+        "mean": -0.3966666666666659,
+        "sd": 3.9735668275912177,
+        "min": -4.879999999999999,
+        "max": 2.6900000000000013
+      },
+      "geometric_ratio": 0.9624500803863152,
+      "normal_approx_pairs": [
+        {
+          "cost_reduction": 0.1,
+          "target_ratio": 0.9,
+          "delta": 0.10536051565782628,
+          "plug_in_pairs": 69,
+          "upper_sd_stress_pairs": 1343
+        },
+        {
+          "cost_reduction": 0.2,
+          "target_ratio": 0.8,
+          "delta": 0.2231435513142097,
+          "plug_in_pairs": 16,
+          "upper_sd_stress_pairs": 300
+        }
+      ]
+    },
+    {
+      "task": "ledger_replay",
+      "metric": "input",
+      "pairs": [
+        {
+          "block": "b01-ledger-r1",
+          "a": "C1-03-base3A",
+          "b": "C1-05-base3B",
+          "difference": -798778,
+          "log_ratio": -0.17065444894255308
+        },
+        {
+          "block": "b03-ledger-r2",
+          "a": "C1-10-base3A",
+          "b": "C1-09-base3B",
+          "difference": -1954845,
+          "log_ratio": -0.44170814855524787
+        },
+        {
+          "block": "b05-ledger-r3",
+          "a": "C1-14-base3A",
+          "b": "C1-13-base3B",
+          "difference": 684837,
+          "log_ratio": 0.1319193204044747
+        }
+      ],
+      "log_summary": {
+        "n": 3,
+        "mean": -0.16014775903110876,
+        "sd": 0.28695803035628015,
+        "min": -0.44170814855524787,
+        "max": 0.1319193204044747
+      },
+      "paired_difference_summary": {
+        "n": 3,
+        "mean": -689595.3333333334,
+        "sd": 1323223.6796197132,
+        "min": -1954845,
+        "max": 684837
+      },
+      "geometric_ratio": 0.8520178863274434,
+      "normal_approx_pairs": [
+        {
+          "cost_reduction": 0.1,
+          "target_ratio": 0.9,
+          "delta": 0.10536051565782628,
+          "plug_in_pairs": 59,
+          "upper_sd_stress_pairs": 1136
+        },
+        {
+          "cost_reduction": 0.2,
+          "target_ratio": 0.8,
+          "delta": 0.2231435513142097,
+          "plug_in_pairs": 13,
+          "upper_sd_stress_pairs": 254
+        }
+      ]
+    },
+    {
+      "task": "ledger_replay",
+      "metric": "uncached",
+      "pairs": [
+        {
+          "block": "b01-ledger-r1",
+          "a": "C1-03-base3A",
+          "b": "C1-05-base3B",
+          "difference": -83898,
+          "log_ratio": -0.40614167388621375
+        },
+        {
+          "block": "b03-ledger-r2",
+          "a": "C1-10-base3A",
+          "b": "C1-09-base3B",
+          "difference": -27165,
+          "log_ratio": -0.15234981164975842
+        },
+        {
+          "block": "b05-ledger-r3",
+          "a": "C1-14-base3A",
+          "b": "C1-13-base3B",
+          "difference": 3749,
+          "log_ratio": 0.01892625798811453
+        }
+      ],
+      "log_summary": {
+        "n": 3,
+        "mean": -0.17985507584928587,
+        "sd": 0.21386465660785095,
+        "min": -0.40614167388621375,
+        "max": 0.01892625798811453
+      },
+      "paired_difference_summary": {
+        "n": 3,
+        "mean": -35771.333333333336,
+        "sd": 44452.79386420311,
+        "min": -83898,
+        "max": 3749
+      },
+      "geometric_ratio": 0.8353912710092954,
+      "normal_approx_pairs": [
+        {
+          "cost_reduction": 0.1,
+          "target_ratio": 0.9,
+          "delta": 0.10536051565782628,
+          "plug_in_pairs": 33,
+          "upper_sd_stress_pairs": 631
+        },
+        {
+          "cost_reduction": 0.2,
+          "target_ratio": 0.8,
+          "delta": 0.2231435513142097,
+          "plug_in_pairs": 8,
+          "upper_sd_stress_pairs": 141
+        }
+      ]
+    },
+    {
+      "task": "reserveplan",
+      "metric": "active_min",
+      "pairs": [
+        {
+          "block": "b02-reserve-r1",
+          "a": "C1-06-base3A",
+          "b": "C1-07-base3B",
+          "difference": 9.99,
+          "log_ratio": 0.5782498674803157
+        },
+        {
+          "block": "b04-reserve-r2",
+          "a": "C1-12-base3A",
+          "b": "C1-11-base3B",
+          "difference": -6.520000000000001,
+          "log_ratio": -0.39164455248953217
+        },
+        {
+          "block": "b06-reserve-r3",
+          "a": "C1-16-base3A",
+          "b": "C1-17-base3B",
+          "difference": -1.5100000000000016,
+          "log_ratio": -0.09848290945572312
+        }
+      ],
+      "log_summary": {
+        "n": 3,
+        "mean": 0.02937413517835347,
+        "sd": 0.4974277478881552,
+        "min": -0.39164455248953217,
+        "max": 0.5782498674803157
+      },
+      "paired_difference_summary": {
+        "n": 3,
+        "mean": 0.6533333333333324,
+        "sd": 8.464929611835727,
+        "min": -6.520000000000001,
+        "max": 9.99
+      },
+      "geometric_ratio": 1.0298098104863234,
+      "normal_approx_pairs": [
+        {
+          "cost_reduction": 0.1,
+          "target_ratio": 0.9,
+          "delta": 0.10536051565782628,
+          "plug_in_pairs": 175,
+          "upper_sd_stress_pairs": 3411
+        },
+        {
+          "cost_reduction": 0.2,
+          "target_ratio": 0.8,
+          "delta": 0.2231435513142097,
+          "plug_in_pairs": 40,
+          "upper_sd_stress_pairs": 761
+        }
+      ]
+    },
+    {
+      "task": "reserveplan",
+      "metric": "input",
+      "pairs": [
+        {
+          "block": "b02-reserve-r1",
+          "a": "C1-06-base3A",
+          "b": "C1-07-base3B",
+          "difference": 5988972,
+          "log_ratio": 0.7665231241132633
+        },
+        {
+          "block": "b04-reserve-r2",
+          "a": "C1-12-base3A",
+          "b": "C1-11-base3B",
+          "difference": -5504802,
+          "log_ratio": -0.6420631080369683
+        },
+        {
+          "block": "b06-reserve-r3",
+          "a": "C1-16-base3A",
+          "b": "C1-17-base3B",
+          "difference": 1373699,
+          "log_ratio": 0.2045021948101598
+        }
+      ],
+      "log_summary": {
+        "n": 3,
+        "mean": 0.10965407029548492,
+        "sd": 0.7090669350588561,
+        "min": -0.6420631080369683,
+        "max": 0.7665231241132633
+      },
+      "paired_difference_summary": {
+        "n": 3,
+        "mean": 619289.6666666666,
+        "sd": 5783905.278653371,
+        "min": -5504802,
+        "max": 5988972
+      },
+      "geometric_ratio": 1.115891983499125,
+      "normal_approx_pairs": [
+        {
+          "cost_reduction": 0.1,
+          "target_ratio": 0.9,
+          "delta": 0.10536051565782628,
+          "plug_in_pairs": 356,
+          "upper_sd_stress_pairs": 6931
+        },
+        {
+          "cost_reduction": 0.2,
+          "target_ratio": 0.8,
+          "delta": 0.2231435513142097,
+          "plug_in_pairs": 80,
+          "upper_sd_stress_pairs": 1546
+        }
+      ]
+    },
+    {
+      "task": "reserveplan",
+      "metric": "uncached",
+      "pairs": [
+        {
+          "block": "b02-reserve-r1",
+          "a": "C1-06-base3A",
+          "b": "C1-07-base3B",
+          "difference": -31892,
+          "log_ratio": -0.1597253969045323
+        },
+        {
+          "block": "b04-reserve-r2",
+          "a": "C1-12-base3A",
+          "b": "C1-11-base3B",
+          "difference": -55202,
+          "log_ratio": -0.21514364136916816
+        },
+        {
+          "block": "b06-reserve-r3",
+          "a": "C1-16-base3A",
+          "b": "C1-17-base3B",
+          "difference": 16131,
+          "log_ratio": 0.06270207380224188
+        }
+      ],
+      "log_summary": {
+        "n": 3,
+        "mean": -0.10405565482381952,
+        "sd": 0.14705067322959758,
+        "min": -0.21514364136916816,
+        "max": 0.06270207380224188
+      },
+      "paired_difference_summary": {
+        "n": 3,
+        "mean": -23654.333333333332,
+        "sd": 36372.97879378775,
+        "min": -55202,
+        "max": 16131
+      },
+      "geometric_ratio": 0.9011751412817836,
+      "normal_approx_pairs": [
+        {
+          "cost_reduction": 0.1,
+          "target_ratio": 0.9,
+          "delta": 0.10536051565782628,
+          "plug_in_pairs": 16,
+          "upper_sd_stress_pairs": 299
+        },
+        {
+          "cost_reduction": 0.2,
+          "target_ratio": 0.8,
+          "delta": 0.2231435513142097,
+          "plug_in_pairs": 4,
+          "upper_sd_stress_pairs": 67
+        }
+      ]
+    }
+  ],
+  "bugfix": [
+    {
+      "metric": "active_min",
+      "log_summary": {
+        "n": 3,
+        "mean": -0.034250814936256126,
+        "sd": 0.3156336522011858,
+        "min": -0.3982067456578414,
+        "max": 0.16436033326179178
+      },
+      "geometric_ratio": 0.9663291044672464,
+      "upper95": 1.6451995142038698,
+      "differences": [
+        1.8900000000000006,
+        -4.959999999999999,
+        1.870000000000001
+      ]
+    },
+    {
+      "metric": "input",
+      "log_summary": {
+        "n": 3,
+        "mean": -0.1047691239470161,
+        "sd": 0.31428762316400527,
+        "min": -0.465922740524183,
+        "max": 0.10667447878161772
+      },
+      "geometric_ratio": 0.9005324099556292,
+      "upper95": 1.5297038333602955,
+      "differences": [
+        434337,
+        -2089033,
+        243517
+      ]
+    },
+    {
+      "metric": "uncached",
+      "log_summary": {
+        "n": 3,
+        "mean": -0.18564779722237887,
+        "sd": 0.1201760504136827,
+        "min": -0.2949129964251788,
+        "max": -0.05693334913289553
+      },
+      "geometric_ratio": 0.8305660711507069,
+      "upper95": 1.0170960556142046,
+      "differences": [
+        -57439,
+        -37577,
+        -11715
+      ]
+    }
+  ],
+  "budget": {
+    "jobs": 21,
+    "input": 95707328,
+    "remaining_jobs": 15,
+    "remaining_input": 354292672
+  },
+  "quality_sizing": "Not identified: all scores are 1.0. Zero observed score SD must not become zero assumed future SD.",
+  "delivery_sizing": "Per-task zero-failure upper bounds shown only under independent Bernoulli runs; concurrent shared-block dependence makes them optimistic."
+}
