@@ -1,0 +1,38 @@
+[
+ {
+  "i": 0,
+  "name": "C2-00-execcalibrationr",
+  "prereg": {
+   "arm": "exec_calibration_r1",
+   "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+   "task": "workflow_store",
+   "peers": "exec",
+   "cap": "100m",
+   "block": "b00-workflow-calibration"
+  }
+ },
+ {
+  "i": 1,
+  "name": "C2-01-execcalibrationr",
+  "prereg": {
+   "arm": "exec_calibration_r2",
+   "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+   "task": "workflow_store",
+   "peers": "exec",
+   "cap": "100m",
+   "block": "b00-workflow-calibration"
+  }
+ },
+ {
+  "i": 2,
+  "name": "C2-02-execcalibrationr",
+  "prereg": {
+   "arm": "exec_calibration_r3",
+   "rev": "f95eaa169f1cd1741d1fbf02d7d939f8e77ba156",
+   "task": "workflow_store",
+   "peers": "exec",
+   "cap": "100m",
+   "block": "b00-workflow-calibration"
+  }
+ }
+]

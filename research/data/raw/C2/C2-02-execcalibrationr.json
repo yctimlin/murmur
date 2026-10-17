@@ -1,0 +1,39 @@
+{
+ "job": {
+  "task": "workflow_store",
+  "peers": "exec",
+  "cap": "100m",
+  "murmur_repo": "/workspace/self3/labdata/repos/r3.git",
+  "tag": "C2:2:exec_calibration_r3"
+ },
+ "started": "2026-10-17T21:48:25.192745",
+ "model": "gpt-6-astra",
+ "effort": "high",
+ "base": "a91d3bbe52ec4e7bd08002b85b8d23a0d6171085",
+ "run_exit": 0,
+ "wall_min": 16.09,
+ "ws": "/workspace/self3/labdata/ws/C2-02-execcalibrationr",
+ "active_min": 15.46,
+ "input": 921827,
+ "uncached": 61923,
+ "output": 33016,
+ "sessions": 1,
+ "lines_429": 0,
+ "commits": 1,
+ "delivered": true,
+ "score": {
+  "passed": 129,
+  "rate": 1.0,
+  "total": 129
+ },
+ "mutation": {
+  "mutants": 30,
+  "killed": 28,
+  "timeouts": 0,
+  "score": 0.9333,
+  "baseline_green": true,
+  "deselected": 0
+ },
+ "leak_hits": 0,
+ "finished": "2026-10-17T22:05:24.475702"
+}
