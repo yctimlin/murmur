@@ -1,0 +1,4 @@
+{
+  "candidate": null,
+  "why": "No mechanism or default change is supported by this round's controlled experiments. C1 and C2 produced 21/21 ceiling scores; all six exec calibrations were below 30 active minutes, leaving zero qualified long, unsaturated tasks. No solo, protocol-one-peer, or two-peer experiment ran, and no mechanism was tested. The three paired bug-fix comparisons are descriptive and do not establish noninferiority. Preserve the reviewed bug-fix base f95eaa169f1cd1741d1fbf02d7d939f8e77ba156 and the existing defaults; descriptive noise/calibration findings are reported in REPORT-r3.md, not promoted as a candidate. This freezes the null decision under C2's preregistered ineligible branch; see research/C-DONE.md and research/notebook/20261017-1427-a2-candidate-and-pr.md."
+}
