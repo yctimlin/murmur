@@ -137,7 +137,7 @@ The practical implication is to calibrate difficulty first, collect repeated blo
 
 ## Validation
 
-At phase-D starting revision `8f77689`, a different peer ran `.venv/bin/python -m pytest -q`: **39 passed in 11.29s**. The [validation notebook](notebook/20261017-1430-a3-final-noise-and-suite.md) records the command, result, and empty source/test diff from base3. Phase D changes research documents and analysis tooling; the tested runtime and regressions are unchanged. Independent final-artifact review is recorded in the append-only notebook before closure.
+At phase-D starting revision `8f77689`, a different peer ran `.venv/bin/python -m pytest -q`: **39 passed in 11.29s**. The [validation notebook](notebook/20261017-1430-a3-final-noise-and-suite.md) records the command, result, and empty source/test diff from base3. Phase D changes research documents and analysis tooling; the tested runtime and regressions are unchanged. Independent artifact reviews accept the [final report](notebook/20261017-1438-a3-review-final-report.md), [NEXT priorities](notebook/20261017-1436-a2-review-next.md), [candidate/base pin/PR](notebook/20261017-1438-a1-review-candidate-pr.md), and [sizing arithmetic](notebook/20261017-1433-a2-review-final-sizing.md). The report review matched all 21 run rows and 63 cost/time cells to raw data; the sizing review reproduced 162 numeric checks. The [audit correction](notebook/20261017-1431-a3-noise-transcription-correction.md) fixes a notebook-only C2 input-SD transcription; this report uses the correct rounded 177,806.
 
 ## Budget and frozen outcome
 
