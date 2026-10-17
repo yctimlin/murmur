@@ -1,0 +1,65 @@
+{
+  "reviewed_commit": "97c3853",
+  "status": "pass_with_notebook_rounding_correction",
+  "numeric_checks": 162,
+  "raw_jobs": 21,
+  "raw_input": 95707328,
+  "sizing": [
+    {
+      "task": "ledger_replay",
+      "metric": "active_min",
+      "sd": 0.31207643194461776,
+      "pairs_10_20": [
+        69,
+        16
+      ]
+    },
+    {
+      "task": "ledger_replay",
+      "metric": "input",
+      "sd": 0.2869580303562802,
+      "pairs_10_20": [
+        59,
+        13
+      ]
+    },
+    {
+      "task": "ledger_replay",
+      "metric": "uncached",
+      "sd": 0.21386465660785137,
+      "pairs_10_20": [
+        33,
+        8
+      ]
+    },
+    {
+      "task": "reserveplan",
+      "metric": "active_min",
+      "sd": 0.49742774788815514,
+      "pairs_10_20": [
+        175,
+        40
+      ]
+    },
+    {
+      "task": "reserveplan",
+      "metric": "input",
+      "sd": 0.7090669350588567,
+      "pairs_10_20": [
+        356,
+        80
+      ]
+    },
+    {
+      "task": "reserveplan",
+      "metric": "uncached",
+      "sd": 0.14705067322959742,
+      "pairs_10_20": [
+        16,
+        4
+      ]
+    }
+  ],
+  "c2_input_sample_sd": 177806.31329342612,
+  "correction": "a3 notebook says C2 input SD177805.8; raw data and machine-readable audit correctly give177806.31329342612. Correct value at one decimal is177806.3; rounded integer177806 in PR/primary C2 notebook is correct."
+}
