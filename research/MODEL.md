@@ -129,3 +129,57 @@ H1–H6, mechanisms, sizes, falsifiers and decision limits are in `research/HYPO
 With reserveplan's frozen `S=65,k=1.25`, protocol n=1/2/3 gives `T=70/57/59.166667` minutes and `I=4.2/8.892/17.04M`. Thus a third peer is predicted 3.8% slower and costs 91.6% more input than two; three is still 15.5% faster than one. These are prospective **weak priors**, not a peer-count finding. Quality model values are .6700/.6582/.6430, so even a faster count needs a score/delivery check. Solo predicts `T=67` and `I=4.02M`, versus protocol-1 `70` and `4.2M`: +4.5% time/input and −.03 score from the protocol bundle. Exec-to-solo differences include wrapper and delivery semantics.
 
 C2 will preregister after C1's noise/saturation review, preserving these original predictions for an honest comparison if the task remains eligible. Every murmur arm must use base3; protocol-1 requires `MURMUR_ONE_PEER_PROTOCOL=1`. Eighteen jobs remain under the count budget, but actual C1 tokens govern feasibility. No protocol-vs-parallelism or peer-count causal claim comes from C1. No mechanism is selected without the round's own controlled signal; a null result or failed prior is a valid research outcome.
+
+## 2026-10-17 C1 outcomes: prior forecasts evaluated before revision
+
+The sections above remain the frozen Phase-B predictions. This dated section evaluates them against all 18 scheduled [raw results](data/raw/C1/jobs.json); it does not revise them retroactively. The primary analysis and every run are in [EXPERIMENTS.md](EXPERIMENTS.md). The separate standard-library calculation [review_c1_model.py](tools/review_c1_model.py) reads only the immutable preregistration and raw results, and writes [C1-model-independent-review.json](data/C1-model-independent-review.json), including every forecast error, prediction interval, arm/task mean and sample SD, A/A and bug-fix log contrasts, and nominal uncertainty bounds.
+
+**Eligibility precedes interpretation.** First exec calibration scores were 1.0 for document_catalog, ledger_replay, and reserveplan, with active times 8.20, 10.78, and 15.03 minutes respectively. Thus all three exceed C1's strict .95 saturation threshold. The authoritative JSON excludes them from confirmatory score/noise/effect inference; the narrower wording about scores in the earlier prose does not override it. Every number below is a descriptive forecast/noise diagnostic. Zero observed score variance cannot estimate unsaturated quality variance, and perfect scores cannot show that fixes preserved quality. The operator's subsequent gate additionally requires the latest exec calibration to score <=.85 and take >=30 active minutes before any new swarm jobs; all existing tasks fail both requirements.
+
+### H1: cost noise remains visible; the quality-noise prediction is not testable here
+
+| Six base3 runs per task | Active mean ± sample SD, min | Active CV | Input CV | Uncached CV | Score SD |
+|---|---:|---:|---:|---:|---:|
+| ledger_replay | 12.8083 ± 1.9905 | .155408 | .161204 | .159621 | 0 |
+| reserveplan | 16.6533 ± 3.9555 | .237522 | .350917 | .151865 | 0 |
+
+All six cost CVs are within the frozen ranges: active [.10,.40], input [.15,.70], uncached [.15,.80]. Thus these dispersion priors survive the descriptive range screen; their point centers are not precisely estimated by six runs. Score SD0 lies below [.03,.20], but saturation makes that a ceiling diagnostic, not a valid falsification of underlying quality noise. All 12 base3 runs delivered, and all A/B delivery contrasts were zero; this is insufficient to establish delivery reliability.
+
+A/B geometric ratios for active/input/uncached were .962450/.852018/.835391 on ledger and 1.029810/1.115892/.901175 on reserve. Their nominal two-sided 95% paired-t intervals all contain the frozen null ratio1. Every score difference was0, but ineligible for confirmatory inference. Artificial A/B labels are the same treatment. The reserve active pair ratios ranged .675944–1.782915 and input ratios .526206–2.152270, so near-unit average A/A ratios do not make a single paired run stable. The anticipated H5 time difference4.5% and H6 third-peer time difference3.8% are smaller than these observed same-condition fluctuations; three repetitions cannot be assumed sufficient to resolve such small effects.
+
+### H2: no gross-regression screen trigger; noninferiority remains inconclusive
+
+Only the three predesignated ledger A-versus-orig pairs count. Score deltas were0 and all six runs delivered. Active/input/uncached geometric ratios were .966329/.900532/.830566, each below the1.25 gross-regression trigger. All are within the prior [.8,1.2] effect-ratio range. No confirmed new P0 is established by these result files. Absence of an observed trigger is not evidence of equivalence.
+
+The nominal one-sided95% upper bounds were1.645200/1.529704/1.017096: active and input fail the1.25 margin, while uncached clears it descriptively. The score lower bound would algebraically be0 from three identical deltas, but the saturation exclusion bars a score noninferiority claim. Consequently joint noninferiority does not pass, even before applying the task-eligibility exclusion. The .97 delivery priors cannot be validated or rejected from the small all-success cells; no rare-failure-safety claim follows.
+
+### H3: task-size and time transfer failed; token bands were only partly informative
+
+Each cell below reports frozen score MAE and coverage, followed by mean log(observed/forecast) and coverage for the three cost metrics. Coverage is the count inside the predeclared marginal per-run band divided by runs. Score signed errors equal MAE in these cells because all scores exceeded their forecast. Combined base3 rows describe the same common treatment and overlap A/B rows; do not sum their denominators. Calibration n=1 has no sample SD and does not support an exec-versus-swarm effect claim.
+
+| Task / arm | Score MAE; coverage | Active log error; coverage | Input log error; coverage | Uncached log error; coverage |
+|---|---:|---:|---:|---:|
+| document / exec | .25; 1/1 | -1.451214; 0/1 | -1.956691; 0/1 | -.904486; 1/1 |
+| ledger / exec | .25; 1/1 | -1.311187; 0/1 | -1.713672; 0/1 | -.448780; 1/1 |
+| reserve / exec | .30; 0/1 | -1.464339; 0/1 | -1.633761; 0/1 | -1.064564; 1/1 |
+| ledger / A | .30; 0/3 | -1.060857; 0/3 | -.861013; 2/3 | -.850675; 3/3 |
+| ledger / B | .30; 0/3 | -1.022584; 0/3 | -.700865; 3/3 | -.670819; 3/3 |
+| ledger / orig | .30; 0/3 | -1.026607; 0/3 | -.756244; 2/3 | -.665027; 3/3 |
+| reserve / A | .35; 0/3 | -1.275368; 0/3 | -.758750; 2/3 | -1.112787; 3/3 |
+| reserve / B | .35; 0/3 | -1.304742; 0/3 | -.868404; 1/3 | -1.008731; 3/3 |
+| ledger / combined base3 | .30; 0/6 | -1.041721; 0/6 | -.780939; 5/6 | -.760747; 6/6 |
+| reserve / combined base3 | .35; 0/6 | -1.290055; 0/6 | -.813577; 3/6 | -1.060759; 6/6 |
+
+All eight distinct task/arm active means are below their frozen run-band lower limit; indeed all18 active measurements miss low. All three exec input means also miss low. Every swarm input mean and every uncached mean remains inside its broad band, despite systematic overprediction and some swarm input run misses. Score means exceed the upper bands for all swarm cells and reserve exec; document and ledger exec scores sit exactly at the upper endpoint1.0. These quality misses establish task-design saturation, not improved comparative quality. H3's broad transfer prediction therefore fails for task size/time and exec input on these tasks; fitting a new mechanism to explain the low times would be unjustified.
+
+The batch consumed92,629,793 input tokens, below the frozen model mean203,779,200 and scheduler estimate189,000,000. The unused token budget is357,370,207, with18 jobs left. Lower consumption follows materially easier tasks than anticipated; it does not establish a cost improvement in murmur. No coefficients (`h`, `alpha`, `beta`, coupling, or context slope) are identified by n=3-peer runs and single exec calibrations. Their mechanistic interpretation remains untested rather than refitted from this failure.
+
+### H4: uncached-fraction prior survives descriptively; no mechanism follows
+
+Median per-run U/I across the six base3 repeats was .0397066 for ledger and .0366745 for reserve, both inside [.02,.12] and near the .04 point prior. These correspond to median cached fractions96.0293% and96.3325%. One reserve run's ratio was .0164614, below the interval, but H4's registered decision is the **task median**, not every run. Cache accounting survives this screen; it does not identify waste, board overhead, or recoverable savings.
+
+### H5/H6 and next-step implications
+
+H5's single-peer protocol penalty and H6's peer-count curve were not tested: C1 contains no solo, protocol1, or protocol2 arm. The frozen reserve predictions (solo67min, protocol1/2/3=70/57/59.1667min; third-peer +3.8% time and +91.6% input) remain historical predictions, but reserve fails the eligibility gate and cannot host the planned confirmatory comparison. No third-peer finding, default peer-count change, or mechanism candidate is justified.
+
+C1 answers a limited question about observed delivery and cost fluctuations on short, easy tasks; it leaves protocol-versus-parallelism, the peer curve on long tasks, unsaturated quality noise, and bug-fix noninferiority unresolved. A new task requires exec-only calibration before any swarm registration; its hoped-for difficulty must not be treated as measured. Any later design must preserve the18-job balance and the gate, explicitly acknowledge the noise and small samples, and pre-register its forecasts before execution. This phase proposes no mechanism.

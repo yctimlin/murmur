@@ -1,0 +1,1693 @@
+{
+  "method": "Independent raw-result model reproduction; all inference descriptive after saturation exclusion.",
+  "input_sum": 92629793,
+  "remaining_input": 357370207,
+  "cells": [
+    {
+      "task": "document_catalog",
+      "arm": "exec_calibration",
+      "n": 1,
+      "metrics": {
+        "score": {
+          "n": 1,
+          "mean": 1.0,
+          "sd": null,
+          "forecast": 0.75,
+          "band": [
+            0.5,
+            1
+          ],
+          "mean_outside_band": false,
+          "coverage": 1,
+          "mean_error": 0.25,
+          "error_kind": "signed_difference",
+          "mae": 0.25,
+          "runs": [
+            {
+              "name": "C1-00-execcalibration",
+              "value": 1.0,
+              "error": 0.25
+            }
+          ]
+        },
+        "active_min": {
+          "n": 1,
+          "mean": 8.2,
+          "sd": null,
+          "forecast": 35,
+          "band": [
+            17.5,
+            50.75
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": -1.4512139072192063,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-00-execcalibration",
+              "value": 8.2,
+              "error": -1.4512139072192063
+            }
+          ]
+        },
+        "input": {
+          "n": 1,
+          "mean": 296783,
+          "sd": null,
+          "forecast": 2100000,
+          "band": [
+            840000.0,
+            4620000.0
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": -1.9566913916867474,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-00-execcalibration",
+              "value": 296783,
+              "error": -1.9566913916867474
+            }
+          ]
+        },
+        "uncached": {
+          "n": 1,
+          "mean": 33999,
+          "sd": null,
+          "forecast": 84000,
+          "band": [
+            21000.0,
+            252000
+          ],
+          "mean_outside_band": false,
+          "coverage": 1,
+          "mean_error": -0.9044856864243925,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-00-execcalibration",
+              "value": 33999,
+              "error": -0.9044856864243925
+            }
+          ]
+        }
+      }
+    },
+    {
+      "task": "ledger_replay",
+      "arm": "base3_A",
+      "n": 3,
+      "metrics": {
+        "score": {
+          "n": 3,
+          "mean": 1.0,
+          "sd": 0.0,
+          "forecast": 0.7,
+          "band": [
+            0.44999999999999996,
+            0.95
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": 0.30000000000000004,
+          "error_kind": "signed_difference",
+          "mae": 0.30000000000000004,
+          "runs": [
+            {
+              "name": "C1-03-base3A",
+              "value": 1.0,
+              "error": 0.30000000000000004
+            },
+            {
+              "name": "C1-10-base3A",
+              "value": 1.0,
+              "error": 0.30000000000000004
+            },
+            {
+              "name": "C1-14-base3A",
+              "value": 1.0,
+              "error": 0.30000000000000004
+            }
+          ]
+        },
+        "active_min": {
+          "n": 3,
+          "mean": 12.610000000000001,
+          "sd": 2.542892054334985,
+          "forecast": 35.9333333333,
+          "band": [
+            17.96666666665,
+            52.10333333328499
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": -1.0608573330430187,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-03-base3A",
+              "value": 12.47,
+              "error": -1.0583396101139142
+            },
+            {
+              "name": "C1-10-base3A",
+              "value": 10.14,
+              "error": -1.2651773716428223
+            },
+            {
+              "name": "C1-14-base3A",
+              "value": 15.22,
+              "error": -0.8590550173723196
+            }
+          ]
+        },
+        "input": {
+          "n": 3,
+          "mean": 4451288.666666667,
+          "sd": 1019960.1808268465,
+          "forecast": 10348800,
+          "band": [
+            4139520.0,
+            22767360.0
+          ],
+          "mean_outside_band": false,
+          "coverage": 2,
+          "mean_error": -0.8610127680390667,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-03-base3A",
+              "value": 4292640,
+              "error": -0.8799686426767523
+            },
+            {
+              "name": "C1-10-base3A",
+              "value": 3519949,
+              "error": -1.0784240700919152
+            },
+            {
+              "name": "C1-14-base3A",
+              "value": 5541277,
+              "error": -0.6246455913485326
+            }
+          ]
+        },
+        "uncached": {
+          "n": 3,
+          "mean": 177496.66666666666,
+          "sd": 19494.715805400534,
+          "forecast": 413952,
+          "band": [
+            103488.0,
+            1241856
+          ],
+          "mean_outside_band": false,
+          "coverage": 3,
+          "mean_error": -0.8506745084983115,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-03-base3A",
+              "value": 167456,
+              "error": -0.905029394884735
+            },
+            {
+              "name": "C1-10-base3A",
+              "value": 165069,
+              "error": -0.9193864567694173
+            },
+            {
+              "name": "C1-14-base3A",
+              "value": 199965,
+              "error": -0.7276076738407823
+            }
+          ]
+        }
+      }
+    },
+    {
+      "task": "ledger_replay",
+      "arm": "base3_B",
+      "n": 3,
+      "metrics": {
+        "score": {
+          "n": 3,
+          "mean": 1.0,
+          "sd": 0.0,
+          "forecast": 0.7,
+          "band": [
+            0.44999999999999996,
+            0.95
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": 0.30000000000000004,
+          "error_kind": "signed_difference",
+          "mae": 0.30000000000000004,
+          "runs": [
+            {
+              "name": "C1-05-base3B",
+              "value": 1.0,
+              "error": 0.30000000000000004
+            },
+            {
+              "name": "C1-09-base3B",
+              "value": 1.0,
+              "error": 0.30000000000000004
+            },
+            {
+              "name": "C1-13-base3B",
+              "value": 1.0,
+              "error": 0.30000000000000004
+            }
+          ]
+        },
+        "active_min": {
+          "n": 3,
+          "mean": 13.006666666666666,
+          "sd": 1.822370251439957,
+          "forecast": 35.9333333333,
+          "band": [
+            17.96666666665,
+            52.10333333328499
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": -1.022584254344111,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-05-base3B",
+              "value": 11.47,
+              "error": -1.1419304386645799
+            },
+            {
+              "name": "C1-09-base3B",
+              "value": 15.02,
+              "error": -0.8722827234698707
+            },
+            {
+              "name": "C1-13-base3B",
+              "value": 12.53,
+              "error": -1.0535396008978826
+            }
+          ]
+        },
+        "input": {
+          "n": 3,
+          "mean": 5140884,
+          "sd": 312130.71171546064,
+          "forecast": 10348800,
+          "band": [
+            4139520.0,
+            22767360.0
+          ],
+          "mean_outside_band": false,
+          "coverage": 3,
+          "mean_error": -0.7008650090079579,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-05-base3B",
+              "value": 5091418,
+              "error": -0.7093141937341992
+            },
+            {
+              "name": "C1-09-base3B",
+              "value": 5474794,
+              "error": -0.6367159215366673
+            },
+            {
+              "name": "C1-13-base3B",
+              "value": 4856440,
+              "error": -0.7565649117530071
+            }
+          ]
+        },
+        "uncached": {
+          "n": 3,
+          "mean": 213268,
+          "sd": 33043.480869908366,
+          "forecast": 413952,
+          "band": [
+            103488.0,
+            1241856
+          ],
+          "mean_outside_band": false,
+          "coverage": 3,
+          "mean_error": -0.6708194326490257,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-05-base3B",
+              "value": 251354,
+              "error": -0.49888772099852124
+            },
+            {
+              "name": "C1-09-base3B",
+              "value": 192234,
+              "error": -0.767036645119659
+            },
+            {
+              "name": "C1-13-base3B",
+              "value": 196216,
+              "error": -0.7465339318288967
+            }
+          ]
+        }
+      }
+    },
+    {
+      "task": "ledger_replay",
+      "arm": "exec_calibration",
+      "n": 1,
+      "metrics": {
+        "score": {
+          "n": 1,
+          "mean": 1.0,
+          "sd": null,
+          "forecast": 0.75,
+          "band": [
+            0.5,
+            1
+          ],
+          "mean_outside_band": false,
+          "coverage": 1,
+          "mean_error": 0.25,
+          "error_kind": "signed_difference",
+          "mae": 0.25,
+          "runs": [
+            {
+              "name": "C1-01-execcalibration",
+              "value": 1.0,
+              "error": 0.25
+            }
+          ]
+        },
+        "active_min": {
+          "n": 1,
+          "mean": 10.78,
+          "sd": null,
+          "forecast": 40,
+          "band": [
+            20.0,
+            58.0
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": -1.3111868886330853,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-01-execcalibration",
+              "value": 10.78,
+              "error": -1.3111868886330853
+            }
+          ]
+        },
+        "input": {
+          "n": 1,
+          "mean": 432487,
+          "sd": null,
+          "forecast": 2400000,
+          "band": [
+            960000.0,
+            5280000.0
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": -1.713671748219316,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-01-execcalibration",
+              "value": 432487,
+              "error": -1.713671748219316
+            }
+          ]
+        },
+        "uncached": {
+          "n": 1,
+          "mean": 61287,
+          "sd": null,
+          "forecast": 96000,
+          "band": [
+            24000.0,
+            288000
+          ],
+          "mean_outside_band": false,
+          "coverage": 1,
+          "mean_error": -0.4487804427942102,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-01-execcalibration",
+              "value": 61287,
+              "error": -0.4487804427942102
+            }
+          ]
+        }
+      }
+    },
+    {
+      "task": "ledger_replay",
+      "arm": "orig",
+      "n": 3,
+      "metrics": {
+        "score": {
+          "n": 3,
+          "mean": 1.0,
+          "sd": 0.0,
+          "forecast": 0.7,
+          "band": [
+            0.44999999999999996,
+            0.95
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": 0.30000000000000004,
+          "error_kind": "signed_difference",
+          "mae": 0.30000000000000004,
+          "runs": [
+            {
+              "name": "C1-04-orig",
+              "value": 1.0,
+              "error": 0.30000000000000004
+            },
+            {
+              "name": "C1-08-orig",
+              "value": 1.0,
+              "error": 0.30000000000000004
+            },
+            {
+              "name": "C1-15-orig",
+              "value": 1.0,
+              "error": 0.30000000000000004
+            }
+          ]
+        },
+        "active_min": {
+          "n": 3,
+          "mean": 13.01,
+          "sd": 2.2791006998375476,
+          "forecast": 35.9333333333,
+          "band": [
+            17.96666666665,
+            52.10333333328499
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": -1.0266065181067625,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-04-orig",
+              "value": 10.58,
+              "error": -1.2226999433757062
+            },
+            {
+              "name": "C1-08-orig",
+              "value": 15.1,
+              "error": -0.8669706259849808
+            },
+            {
+              "name": "C1-15-orig",
+              "value": 13.35,
+              "error": -0.9901489849596009
+            }
+          ]
+        },
+        "input": {
+          "n": 3,
+          "mean": 4921681.666666667,
+          "sd": 933967.5716331555,
+          "forecast": 10348800,
+          "band": [
+            4139520.0,
+            22767360.0
+          ],
+          "mean_outside_band": false,
+          "coverage": 2,
+          "mean_error": -0.7562436440920506,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-04-orig",
+              "value": 3858303,
+              "error": -0.9866431214583701
+            },
+            {
+              "name": "C1-08-orig",
+              "value": 5608982,
+              "error": -0.6125013295677322
+            },
+            {
+              "name": "C1-15-orig",
+              "value": 5297760,
+              "error": -0.6695864812500495
+            }
+          ]
+        },
+        "uncached": {
+          "n": 3,
+          "mean": 213073.66666666666,
+          "sd": 11189.782407774215,
+          "forecast": 413952,
+          "band": [
+            103488.0,
+            1241856
+          ],
+          "mean_outside_band": false,
+          "coverage": 3,
+          "mean_error": -0.6650267112759326,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-04-orig",
+              "value": 224895,
+              "error": -0.610116398459556
+            },
+            {
+              "name": "C1-08-orig",
+              "value": 202646,
+              "error": -0.714289410660355
+            },
+            {
+              "name": "C1-15-orig",
+              "value": 211680,
+              "error": -0.6706743247078867
+            }
+          ]
+        }
+      }
+    },
+    {
+      "task": "ledger_replay",
+      "arm": "base3_combined",
+      "n": 6,
+      "metrics": {
+        "score": {
+          "n": 6,
+          "mean": 1.0,
+          "sd": 0.0,
+          "forecast": 0.7,
+          "band": [
+            0.44999999999999996,
+            0.95
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": 0.30000000000000004,
+          "error_kind": "signed_difference",
+          "mae": 0.30000000000000004,
+          "runs": [
+            {
+              "name": "C1-03-base3A",
+              "value": 1.0,
+              "error": 0.30000000000000004
+            },
+            {
+              "name": "C1-05-base3B",
+              "value": 1.0,
+              "error": 0.30000000000000004
+            },
+            {
+              "name": "C1-09-base3B",
+              "value": 1.0,
+              "error": 0.30000000000000004
+            },
+            {
+              "name": "C1-10-base3A",
+              "value": 1.0,
+              "error": 0.30000000000000004
+            },
+            {
+              "name": "C1-13-base3B",
+              "value": 1.0,
+              "error": 0.30000000000000004
+            },
+            {
+              "name": "C1-14-base3A",
+              "value": 1.0,
+              "error": 0.30000000000000004
+            }
+          ]
+        },
+        "active_min": {
+          "n": 6,
+          "mean": 12.808333333333334,
+          "sd": 1.9905116595153785,
+          "forecast": 35.9333333333,
+          "band": [
+            17.96666666665,
+            52.10333333328499
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": -1.0417207936935649,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-03-base3A",
+              "value": 12.47,
+              "error": -1.0583396101139142
+            },
+            {
+              "name": "C1-05-base3B",
+              "value": 11.47,
+              "error": -1.1419304386645799
+            },
+            {
+              "name": "C1-09-base3B",
+              "value": 15.02,
+              "error": -0.8722827234698707
+            },
+            {
+              "name": "C1-10-base3A",
+              "value": 10.14,
+              "error": -1.2651773716428223
+            },
+            {
+              "name": "C1-13-base3B",
+              "value": 12.53,
+              "error": -1.0535396008978826
+            },
+            {
+              "name": "C1-14-base3A",
+              "value": 15.22,
+              "error": -0.8590550173723196
+            }
+          ]
+        },
+        "input": {
+          "n": 6,
+          "mean": 4796086.333333333,
+          "sd": 773149.5701310753,
+          "forecast": 10348800,
+          "band": [
+            4139520.0,
+            22767360.0
+          ],
+          "mean_outside_band": false,
+          "coverage": 5,
+          "mean_error": -0.7809388885235123,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-03-base3A",
+              "value": 4292640,
+              "error": -0.8799686426767523
+            },
+            {
+              "name": "C1-05-base3B",
+              "value": 5091418,
+              "error": -0.7093141937341992
+            },
+            {
+              "name": "C1-09-base3B",
+              "value": 5474794,
+              "error": -0.6367159215366673
+            },
+            {
+              "name": "C1-10-base3A",
+              "value": 3519949,
+              "error": -1.0784240700919152
+            },
+            {
+              "name": "C1-13-base3B",
+              "value": 4856440,
+              "error": -0.7565649117530071
+            },
+            {
+              "name": "C1-14-base3A",
+              "value": 5541277,
+              "error": -0.6246455913485326
+            }
+          ]
+        },
+        "uncached": {
+          "n": 6,
+          "mean": 195382.33333333334,
+          "sd": 31187.22038698971,
+          "forecast": 413952,
+          "band": [
+            103488.0,
+            1241856
+          ],
+          "mean_outside_band": false,
+          "coverage": 6,
+          "mean_error": -0.7607469705736686,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-03-base3A",
+              "value": 167456,
+              "error": -0.905029394884735
+            },
+            {
+              "name": "C1-05-base3B",
+              "value": 251354,
+              "error": -0.49888772099852124
+            },
+            {
+              "name": "C1-09-base3B",
+              "value": 192234,
+              "error": -0.767036645119659
+            },
+            {
+              "name": "C1-10-base3A",
+              "value": 165069,
+              "error": -0.9193864567694173
+            },
+            {
+              "name": "C1-13-base3B",
+              "value": 196216,
+              "error": -0.7465339318288967
+            },
+            {
+              "name": "C1-14-base3A",
+              "value": 199965,
+              "error": -0.7276076738407823
+            }
+          ]
+        }
+      }
+    },
+    {
+      "task": "reserveplan",
+      "arm": "base3_A",
+      "n": 3,
+      "metrics": {
+        "score": {
+          "n": 3,
+          "mean": 1.0,
+          "sd": 0.0,
+          "forecast": 0.65,
+          "band": [
+            0.4,
+            0.9
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": 0.35,
+          "error_kind": "signed_difference",
+          "mae": 0.35,
+          "runs": [
+            {
+              "name": "C1-06-base3A",
+              "value": 1.0,
+              "error": 0.35
+            },
+            {
+              "name": "C1-12-base3A",
+              "value": 1.0,
+              "error": 0.35
+            },
+            {
+              "name": "C1-16-base3A",
+              "value": 1.0,
+              "error": 0.35
+            }
+          ]
+        },
+        "active_min": {
+          "n": 3,
+          "mean": 16.98,
+          "sd": 5.021424100790532,
+          "forecast": 59.1666666667,
+          "band": [
+            29.58333333335,
+            85.791666666715
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": -1.2753678866900375,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-06-base3A",
+              "value": 22.75,
+              "error": -0.9557931748509647
+            },
+            {
+              "name": "C1-12-base3A",
+              "value": 13.6,
+              "error": -1.4702885275059179
+            },
+            {
+              "name": "C1-16-base3A",
+              "value": 14.59,
+              "error": -1.40002195771323
+            }
+          ]
+        },
+        "input": {
+          "n": 3,
+          "mean": 8242595.333333333,
+          "sd": 2632773.691197429,
+          "forecast": 17040000,
+          "band": [
+            6816000.0,
+            37488000.0
+          ],
+          "mean_outside_band": false,
+          "coverage": 2,
+          "mean_error": -0.75874970370104,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-06-base3A",
+              "value": 11186514,
+              "error": -0.4208545757624442
+            },
+            {
+              "name": "C1-12-base3A",
+              "value": 6113746,
+              "error": -1.0250238427928857
+            },
+            {
+              "name": "C1-16-base3A",
+              "value": 7427526,
+              "error": -0.8303706925477902
+            }
+          ]
+        },
+        "uncached": {
+          "n": 3,
+          "mean": 226510,
+          "sd": 40744.33280837962,
+          "forecast": 681600,
+          "band": [
+            170400.0,
+            2044800
+          ],
+          "mean_outside_band": false,
+          "coverage": 3,
+          "mean_error": -1.11278675620255,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-06-base3A",
+              "value": 184146,
+              "error": -1.3087140542826985
+            },
+            {
+              "name": "C1-12-base3A",
+              "value": 229970,
+              "error": -1.0864941098818752
+            },
+            {
+              "name": "C1-16-base3A",
+              "value": 265414,
+              "error": -0.9431521044430764
+            }
+          ]
+        }
+      }
+    },
+    {
+      "task": "reserveplan",
+      "arm": "base3_B",
+      "n": 3,
+      "metrics": {
+        "score": {
+          "n": 3,
+          "mean": 1.0,
+          "sd": 0.0,
+          "forecast": 0.65,
+          "band": [
+            0.4,
+            0.9
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": 0.35,
+          "error_kind": "signed_difference",
+          "mae": 0.35,
+          "runs": [
+            {
+              "name": "C1-07-base3B",
+              "value": 1.0,
+              "error": 0.35
+            },
+            {
+              "name": "C1-11-base3B",
+              "value": 1.0,
+              "error": 0.35
+            },
+            {
+              "name": "C1-17-base3B",
+              "value": 1.0,
+              "error": 0.35
+            }
+          ]
+        },
+        "active_min": {
+          "n": 3,
+          "mean": 16.326666666666668,
+          "sd": 3.68523178827782,
+          "forecast": 59.1666666667,
+          "band": [
+            29.58333333335,
+            85.791666666715
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": -1.304742021868391,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-07-base3B",
+              "value": 12.76,
+              "error": -1.5340430423312803
+            },
+            {
+              "name": "C1-11-base3B",
+              "value": 20.12,
+              "error": -1.0786439750163859
+            },
+            {
+              "name": "C1-17-base3B",
+              "value": 16.1,
+              "error": -1.3015390482575069
+            }
+          ]
+        },
+        "input": {
+          "n": 3,
+          "mean": 7623305.666666667,
+          "sd": 3486370.172091646,
+          "forecast": 17040000,
+          "band": [
+            6816000.0,
+            37488000.0
+          ],
+          "mean_outside_band": false,
+          "coverage": 1,
+          "mean_error": -0.8684037739965249,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-07-base3B",
+              "value": 5197542,
+              "error": -1.1873776998757075
+            },
+            {
+              "name": "C1-11-base3B",
+              "value": 11618548,
+              "error": -0.3829607347559173
+            },
+            {
+              "name": "C1-17-base3B",
+              "value": 6053827,
+              "error": -1.03487288735795
+            }
+          ]
+        },
+        "uncached": {
+          "n": 3,
+          "mean": 250164.33333333334,
+          "sd": 34575.425526424595,
+          "forecast": 681600,
+          "band": [
+            170400.0,
+            2044800
+          ],
+          "mean_outside_band": false,
+          "coverage": 3,
+          "mean_error": -1.0087311013787306,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-07-base3B",
+              "value": 216038,
+              "error": -1.148988657378166
+            },
+            {
+              "name": "C1-11-base3B",
+              "value": 285172,
+              "error": -0.8713504685127071
+            },
+            {
+              "name": "C1-17-base3B",
+              "value": 249283,
+              "error": -1.0058541782453183
+            }
+          ]
+        }
+      }
+    },
+    {
+      "task": "reserveplan",
+      "arm": "exec_calibration",
+      "n": 1,
+      "metrics": {
+        "score": {
+          "n": 1,
+          "mean": 1.0,
+          "sd": null,
+          "forecast": 0.7,
+          "band": [
+            0.44999999999999996,
+            0.95
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": 0.30000000000000004,
+          "error_kind": "signed_difference",
+          "mae": 0.30000000000000004,
+          "runs": [
+            {
+              "name": "C1-02-execcalibration",
+              "value": 1.0,
+              "error": 0.30000000000000004
+            }
+          ]
+        },
+        "active_min": {
+          "n": 1,
+          "mean": 15.03,
+          "sd": null,
+          "forecast": 65,
+          "band": [
+            32.5,
+            90
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": -1.464339066130754,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-02-execcalibration",
+              "value": 15.03,
+              "error": -1.464339066130754
+            }
+          ]
+        },
+        "input": {
+          "n": 1,
+          "mean": 761257,
+          "sd": null,
+          "forecast": 3900000,
+          "band": [
+            1560000.0,
+            8580000.0
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": -1.6337608177336096,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-02-execcalibration",
+              "value": 761257,
+              "error": -1.6337608177336096
+            }
+          ]
+        },
+        "uncached": {
+          "n": 1,
+          "mean": 53801,
+          "sd": null,
+          "forecast": 156000,
+          "band": [
+            39000.0,
+            468000
+          ],
+          "mean_outside_band": false,
+          "coverage": 1,
+          "mean_error": -1.0645639528939463,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-02-execcalibration",
+              "value": 53801,
+              "error": -1.0645639528939463
+            }
+          ]
+        }
+      }
+    },
+    {
+      "task": "reserveplan",
+      "arm": "base3_combined",
+      "n": 6,
+      "metrics": {
+        "score": {
+          "n": 6,
+          "mean": 1.0,
+          "sd": 0.0,
+          "forecast": 0.65,
+          "band": [
+            0.4,
+            0.9
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": 0.35,
+          "error_kind": "signed_difference",
+          "mae": 0.35,
+          "runs": [
+            {
+              "name": "C1-06-base3A",
+              "value": 1.0,
+              "error": 0.35
+            },
+            {
+              "name": "C1-07-base3B",
+              "value": 1.0,
+              "error": 0.35
+            },
+            {
+              "name": "C1-11-base3B",
+              "value": 1.0,
+              "error": 0.35
+            },
+            {
+              "name": "C1-12-base3A",
+              "value": 1.0,
+              "error": 0.35
+            },
+            {
+              "name": "C1-16-base3A",
+              "value": 1.0,
+              "error": 0.35
+            },
+            {
+              "name": "C1-17-base3B",
+              "value": 1.0,
+              "error": 0.35
+            }
+          ]
+        },
+        "active_min": {
+          "n": 6,
+          "mean": 16.653333333333332,
+          "sd": 3.9555412608980163,
+          "forecast": 59.1666666667,
+          "band": [
+            29.58333333335,
+            85.791666666715
+          ],
+          "mean_outside_band": true,
+          "coverage": 0,
+          "mean_error": -1.2900549542792143,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-06-base3A",
+              "value": 22.75,
+              "error": -0.9557931748509647
+            },
+            {
+              "name": "C1-07-base3B",
+              "value": 12.76,
+              "error": -1.5340430423312803
+            },
+            {
+              "name": "C1-11-base3B",
+              "value": 20.12,
+              "error": -1.0786439750163859
+            },
+            {
+              "name": "C1-12-base3A",
+              "value": 13.6,
+              "error": -1.4702885275059179
+            },
+            {
+              "name": "C1-16-base3A",
+              "value": 14.59,
+              "error": -1.40002195771323
+            },
+            {
+              "name": "C1-17-base3B",
+              "value": 16.1,
+              "error": -1.3015390482575069
+            }
+          ]
+        },
+        "input": {
+          "n": 6,
+          "mean": 7932950.5,
+          "sd": 2783804.1636826214,
+          "forecast": 17040000,
+          "band": [
+            6816000.0,
+            37488000.0
+          ],
+          "mean_outside_band": false,
+          "coverage": 3,
+          "mean_error": -0.8135767388487825,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-06-base3A",
+              "value": 11186514,
+              "error": -0.4208545757624442
+            },
+            {
+              "name": "C1-07-base3B",
+              "value": 5197542,
+              "error": -1.1873776998757075
+            },
+            {
+              "name": "C1-11-base3B",
+              "value": 11618548,
+              "error": -0.3829607347559173
+            },
+            {
+              "name": "C1-12-base3A",
+              "value": 6113746,
+              "error": -1.0250238427928857
+            },
+            {
+              "name": "C1-16-base3A",
+              "value": 7427526,
+              "error": -0.8303706925477902
+            },
+            {
+              "name": "C1-17-base3B",
+              "value": 6053827,
+              "error": -1.03487288735795
+            }
+          ]
+        },
+        "uncached": {
+          "n": 6,
+          "mean": 238337.16666666666,
+          "sd": 36195.0622069733,
+          "forecast": 681600,
+          "band": [
+            170400.0,
+            2044800
+          ],
+          "mean_outside_band": false,
+          "coverage": 6,
+          "mean_error": -1.0607589287906403,
+          "error_kind": "log_ratio",
+          "mae": null,
+          "runs": [
+            {
+              "name": "C1-06-base3A",
+              "value": 184146,
+              "error": -1.3087140542826985
+            },
+            {
+              "name": "C1-07-base3B",
+              "value": 216038,
+              "error": -1.148988657378166
+            },
+            {
+              "name": "C1-11-base3B",
+              "value": 285172,
+              "error": -0.8713504685127071
+            },
+            {
+              "name": "C1-12-base3A",
+              "value": 229970,
+              "error": -1.0864941098818752
+            },
+            {
+              "name": "C1-16-base3A",
+              "value": 265414,
+              "error": -0.9431521044430764
+            },
+            {
+              "name": "C1-17-base3B",
+              "value": 249283,
+              "error": -1.0058541782453183
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "noise": {
+    "ledger_replay": {
+      "active_min": {
+        "n": 6,
+        "mean": 12.808333333333334,
+        "sd": 1.9905116595153785,
+        "cv": 0.15540754661148043
+      },
+      "input": {
+        "n": 6,
+        "mean": 4796086.333333333,
+        "sd": 773149.5701310753,
+        "cv": 0.16120426455996004
+      },
+      "uncached": {
+        "n": 6,
+        "mean": 195382.33333333334,
+        "sd": 31187.22038698971,
+        "cv": 0.15962149624747568
+      },
+      "median_uncached_fraction": 0.03970664240887846,
+      "score_sd": 0.0
+    },
+    "reserveplan": {
+      "active_min": {
+        "n": 6,
+        "mean": 16.653333333333332,
+        "sd": 3.9555412608980163,
+        "cv": 0.23752249364880004
+      },
+      "input": {
+        "n": 6,
+        "mean": 7932950.5,
+        "sd": 2783804.1636826214,
+        "cv": 0.35091661843630834
+      },
+      "uncached": {
+        "n": 6,
+        "mean": 238337.16666666666,
+        "sd": 36195.0622069733,
+        "cv": 0.15186495129227978
+      },
+      "median_uncached_fraction": 0.036674536383016834,
+      "score_sd": 0.0
+    }
+  },
+  "contrasts": [
+    {
+      "task": "ledger_replay",
+      "contrast": "base3_A/base3_B",
+      "metrics": {
+        "active_min": {
+          "geom_ratio": 0.9624500803863152,
+          "log_mean": -0.03827307869890765,
+          "log_sd": 0.3120764319446179,
+          "nominal_upper95": 1.6287981992923457,
+          "nominal_two_sided95": [
+            0.4432975956790105,
+            2.0895898517490745
+          ],
+          "pairs": [
+            {
+              "block": "b01-ledger-r1",
+              "a": 12.47,
+              "b": 11.47,
+              "log_ratio": 0.08359082855066567
+            },
+            {
+              "block": "b03-ledger-r2",
+              "a": 10.14,
+              "b": 15.02,
+              "log_ratio": -0.39289464817295155
+            },
+            {
+              "block": "b05-ledger-r3",
+              "a": 15.22,
+              "b": 12.53,
+              "log_ratio": 0.19448458352556294
+            }
+          ]
+        },
+        "input": {
+          "geom_ratio": 0.8520178863274434,
+          "log_mean": -0.16014775903110876,
+          "log_sd": 0.28695803035628015,
+          "nominal_upper95": 1.382124469492845,
+          "nominal_two_sided95": [
+            0.41770030858702845,
+            1.737931391713671
+          ],
+          "pairs": [
+            {
+              "block": "b01-ledger-r1",
+              "a": 4292640,
+              "b": 5091418,
+              "log_ratio": -0.17065444894255308
+            },
+            {
+              "block": "b03-ledger-r2",
+              "a": 3519949,
+              "b": 5474794,
+              "log_ratio": -0.44170814855524787
+            },
+            {
+              "block": "b05-ledger-r3",
+              "a": 5541277,
+              "b": 4856440,
+              "log_ratio": 0.1319193204044747
+            }
+          ]
+        },
+        "uncached": {
+          "geom_ratio": 0.8353912710092954,
+          "log_mean": -0.17985507584928587,
+          "log_sd": 0.21386465660785095,
+          "nominal_upper95": 1.1980433224197196,
+          "nominal_two_sided95": [
+            0.4910917191555727,
+            1.4210758366655447
+          ],
+          "pairs": [
+            {
+              "block": "b01-ledger-r1",
+              "a": 167456,
+              "b": 251354,
+              "log_ratio": -0.40614167388621375
+            },
+            {
+              "block": "b03-ledger-r2",
+              "a": 165069,
+              "b": 192234,
+              "log_ratio": -0.15234981164975842
+            },
+            {
+              "block": "b05-ledger-r3",
+              "a": 199965,
+              "b": 196216,
+              "log_ratio": 0.01892625798811453
+            }
+          ]
+        }
+      }
+    },
+    {
+      "task": "reserveplan",
+      "contrast": "base3_A/base3_B",
+      "metrics": {
+        "active_min": {
+          "geom_ratio": 1.0298098104863234,
+          "log_mean": 0.02937413517835347,
+          "log_sd": 0.4974277478881552,
+          "nominal_upper95": 2.3820585323899035,
+          "nominal_two_sided95": [
+            0.2993011655628389,
+            3.543281376066746
+          ],
+          "pairs": [
+            {
+              "block": "b02-reserve-r1",
+              "a": 22.75,
+              "b": 12.76,
+              "log_ratio": 0.5782498674803157
+            },
+            {
+              "block": "b04-reserve-r2",
+              "a": 13.6,
+              "b": 20.12,
+              "log_ratio": -0.39164455248953217
+            },
+            {
+              "block": "b06-reserve-r3",
+              "a": 14.59,
+              "b": 16.1,
+              "log_ratio": -0.09848290945572312
+            }
+          ]
+        },
+        "input": {
+          "geom_ratio": 1.115891983499125,
+          "log_mean": 0.10965407029548492,
+          "log_sd": 0.7090669350588561,
+          "nominal_upper95": 3.687828850913486,
+          "nominal_two_sided95": [
+            0.19171105662706542,
+            6.495269186585944
+          ],
+          "pairs": [
+            {
+              "block": "b02-reserve-r1",
+              "a": 11186514,
+              "b": 5197542,
+              "log_ratio": 0.7665231241132633
+            },
+            {
+              "block": "b04-reserve-r2",
+              "a": 6113746,
+              "b": 11618548,
+              "log_ratio": -0.6420631080369683
+            },
+            {
+              "block": "b06-reserve-r3",
+              "a": 7427526,
+              "b": 6053827,
+              "log_ratio": 0.2045021948101598
+            }
+          ]
+        },
+        "uncached": {
+          "geom_ratio": 0.9011751412817836,
+          "log_mean": -0.10405565482381952,
+          "log_sd": 0.14705067322959758,
+          "nominal_upper95": 1.1547113672264928,
+          "nominal_two_sided95": [
+            0.6254087764764296,
+            1.2985373180078001
+          ],
+          "pairs": [
+            {
+              "block": "b02-reserve-r1",
+              "a": 184146,
+              "b": 216038,
+              "log_ratio": -0.1597253969045323
+            },
+            {
+              "block": "b04-reserve-r2",
+              "a": 229970,
+              "b": 285172,
+              "log_ratio": -0.21514364136916816
+            },
+            {
+              "block": "b06-reserve-r3",
+              "a": 265414,
+              "b": 249283,
+              "log_ratio": 0.06270207380224188
+            }
+          ]
+        }
+      }
+    },
+    {
+      "task": "ledger_replay",
+      "contrast": "base3_A/orig",
+      "metrics": {
+        "active_min": {
+          "geom_ratio": 0.9663291044672464,
+          "log_mean": -0.034250814936256126,
+          "log_sd": 0.3156336522011858,
+          "nominal_upper95": 1.6451995142038698,
+          "nominal_two_sided95": [
+            0.4411685298358031,
+            2.1166331571474846
+          ],
+          "pairs": [
+            {
+              "block": "b01-ledger-r1",
+              "a": 12.47,
+              "b": 10.58,
+              "log_ratio": 0.16436033326179178
+            },
+            {
+              "block": "b03-ledger-r2",
+              "a": 10.14,
+              "b": 15.1,
+              "log_ratio": -0.3982067456578414
+            },
+            {
+              "block": "b05-ledger-r3",
+              "a": 15.22,
+              "b": 13.35,
+              "log_ratio": 0.13109396758728126
+            }
+          ]
+        },
+        "input": {
+          "geom_ratio": 0.9005324099556292,
+          "log_mean": -0.1047691239470161,
+          "log_sd": 0.31428762316400527,
+          "nominal_upper95": 1.5297038333602955,
+          "nominal_two_sided95": [
+            0.41250666736738595,
+            1.9659285183340778
+          ],
+          "pairs": [
+            {
+              "block": "b01-ledger-r1",
+              "a": 4292640,
+              "b": 3858303,
+              "log_ratio": 0.10667447878161772
+            },
+            {
+              "block": "b03-ledger-r2",
+              "a": 3519949,
+              "b": 5608982,
+              "log_ratio": -0.465922740524183
+            },
+            {
+              "block": "b05-ledger-r3",
+              "a": 5541277,
+              "b": 5297760,
+              "log_ratio": 0.04494088990151698
+            }
+          ]
+        },
+        "uncached": {
+          "geom_ratio": 0.8305660711507069,
+          "log_mean": -0.18564779722237887,
+          "log_sd": 0.1201760504136827,
+          "nominal_upper95": 1.0170960556142046,
+          "nominal_two_sided95": [
+            0.6162012434709038,
+            1.119504392203153
+          ],
+          "pairs": [
+            {
+              "block": "b01-ledger-r1",
+              "a": 167456,
+              "b": 224895,
+              "log_ratio": -0.2949129964251788
+            },
+            {
+              "block": "b03-ledger-r2",
+              "a": 165069,
+              "b": 202646,
+              "log_ratio": -0.2050970461090623
+            },
+            {
+              "block": "b05-ledger-r3",
+              "a": 199965,
+              "b": 211680,
+              "log_ratio": -0.05693334913289553
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
