@@ -14,6 +14,7 @@ import argparse
 import json
 import os
 import re
+import random
 import secrets
 import signal
 import shlex
@@ -779,6 +780,23 @@ def _choose_exit(
     return EXIT_OK, "exit 0"
 
 
+def _rate_limit_retry_delay(attempt: int) -> float:
+    """Return bounded exponential backoff with jitter for a transient 429."""
+    try:
+        base_ms = max(0, int(os.environ.get("MURMUR_RATE_LIMIT_BASE_MS", "200")))
+    except ValueError:
+        base_ms = 200
+    raw = base_ms * (2 ** max(0, attempt - 1))
+    return raw / 1000.0 * random.uniform(0.9, 1.1)
+
+
+def _rate_limit_retry_limit() -> int:
+    try:
+        return max(0, int(os.environ.get("MURMUR_RATE_LIMIT_RETRIES", "3")))
+    except ValueError:
+        return 3
+
+
 def run(args: argparse.Namespace) -> None:
     previous = install_interrupt_handlers()
     proc: subprocess.Popen | None = None
@@ -800,25 +818,51 @@ def run(args: argparse.Namespace) -> None:
         log_err = ws / "logs" / "session.err"
         started_at = now()
         started = time.monotonic()
+        deadline = started + seconds(meta["cap"])
         capped = interrupted = False
         interruption_signal: int | None = None
         codex_exit: int | None = None
-        with prompt.open() as stdin, (ws / "logs" / "session.jsonl").open("w") as out, log_err.open("w") as err:
-            proc = subprocess.Popen(
-                cmd, stdin=stdin, stdout=out, stderr=err, env=env, start_new_session=True
-            )
-            try:
-                proc.wait(timeout=seconds(meta["cap"]))
-            except subprocess.TimeoutExpired:
-                capped = True
-            except KeyboardInterrupt as exc:
-                interrupted = True
-                if exc.args and exc.args[0] in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
-                    interruption_signal = int(exc.args[0])
-            finally:
-                stop_process_group(proc, term_signal=interruption_signal or signal.SIGTERM)
-                codex_exit = proc.returncode
-                proc = None
+        attempts = 0
+        retries = _rate_limit_retry_limit()
+        with prompt.open() as stdin, (ws / "logs" / "session.jsonl").open("a") as out, log_err.open("a") as err:
+            while True:
+                attempts += 1
+                err.seek(0, 2)
+                err_start = err.tell()
+                proc = subprocess.Popen(
+                    cmd, stdin=stdin, stdout=out, stderr=err, env=env, start_new_session=True
+                )
+                try:
+                    remaining = max(0.0, deadline - time.monotonic())
+                    proc.wait(timeout=remaining)
+                except subprocess.TimeoutExpired:
+                    capped = True
+                except KeyboardInterrupt as exc:
+                    interrupted = True
+                    if exc.args and exc.args[0] in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+                        interruption_signal = int(exc.args[0])
+                finally:
+                    stop_process_group(proc, term_signal=interruption_signal or signal.SIGTERM)
+                    codex_exit = proc.returncode
+                    proc = None
+                if capped or interrupted or codex_exit == 0:
+                    break
+                err.flush()
+                with log_err.open("r") as previous_errors:
+                    previous_errors.seek(err_start)
+                    attempt_error = previous_errors.read()
+                err.seek(0, 2)
+                rate_limited = "429" in attempt_error or "rate limit" in attempt_error.lower()
+                if not rate_limited or attempts > retries or time.monotonic() >= deadline:
+                    break
+                delay = min(_rate_limit_retry_delay(attempts), max(0.0, deadline - time.monotonic()))
+                try:
+                    time.sleep(delay)
+                except KeyboardInterrupt as exc:
+                    interrupted = True
+                    if exc.args and exc.args[0] in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+                        interruption_signal = int(exc.args[0])
+                    break
         elapsed = round(time.monotonic() - started, 1)
         origin = ws / "work" / "origin.git"
         commits = None
@@ -840,6 +884,7 @@ def run(args: argparse.Namespace) -> None:
             "codex_exit_code": codex_exit,
             "capped": capped,
             "interrupted": interrupted,
+            "attempts": attempts,
             "commits": commits,
             "delivered": delivered,
             "diagnostic": diagnostic,
@@ -863,7 +908,6 @@ def run(args: argparse.Namespace) -> None:
         if proc is not None:
             stop_process_group(proc)
         restore_interrupt_handlers(previous)
-
 
 def main() -> None:
     parser = argparse.ArgumentParser(prog="murmur", description=__doc__.split("\n\n")[0])

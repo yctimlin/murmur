@@ -8,6 +8,7 @@ Modes (MURMUR_FAKE_CODEX_MODE):
   commit           push one commit, then exit 0
   hang             sleep until SIGTERM
   resistant        exit 0 after forking a SIGTERM-ignoring child
+  429-first        emit a transient 429 once, then commit successfully
 """
 
 from __future__ import annotations
@@ -36,6 +37,15 @@ def main() -> int:
         return _hang()
     if mode == "resistant":
         return _resistant()
+    if mode == "429-first":
+        marker = Path(os.environ.get("MURMUR_FAKE_CODEX_429_MARKER", ".fake-429-seen"))
+        if not marker.exists():
+            marker.write_text("seen\n")
+            print("HTTP 429: simulated transient rate limit", file=sys.stderr, flush=True)
+            return 1
+        _commit_and_push(args)
+        print(json.dumps({"type": "event_msg", "payload": {"type": "task_complete"}}), flush=True)
+        return 0
     if mode == "fail":
         return _fail()
     if mode == "fail-with-commit":
