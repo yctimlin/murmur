@@ -1,0 +1,404 @@
+[
+ {
+  "task": "T1b",
+  "arm": "solo",
+  "rep": 1,
+  "delivered": true,
+  "overall": 8.05,
+  "active_min": 53.3,
+  "active_raw": 53.3,
+  "wall_min": 57.56,
+  "input": 6174482,
+  "uncached": 167570,
+  "mutation": 0.5333,
+  "guesses": [
+   "single",
+   "single"
+  ]
+ },
+ {
+  "task": "T1b",
+  "arm": "solo",
+  "rep": 2,
+  "delivered": true,
+  "overall": 7.8,
+  "active_min": 36.92,
+  "active_raw": 47.38,
+  "wall_min": 180.68,
+  "input": 3748853,
+  "uncached": 214773,
+  "mutation": 0.6,
+  "guesses": [
+   "single",
+   "single"
+  ]
+ },
+ {
+  "task": "T1b",
+  "arm": "orig",
+  "rep": 1,
+  "delivered": true,
+  "overall": 7.85,
+  "active_min": 21.49,
+  "active_raw": 29.06,
+  "wall_min": 115.73,
+  "input": 12957070,
+  "uncached": 341390,
+  "mutation": 0.5333,
+  "guesses": [
+   "team",
+   "team"
+  ]
+ },
+ {
+  "task": "T1b",
+  "arm": "orig",
+  "rep": 2,
+  "delivered": false,
+  "overall": 0.0,
+  "active_min": 16.51,
+  "active_raw": 18.49,
+  "wall_min": 24.17,
+  "input": 10755745,
+  "uncached": 199073,
+  "mutation": null,
+  "guesses": []
+ },
+ {
+  "task": "T1b",
+  "arm": "base3",
+  "rep": 1,
+  "delivered": true,
+  "overall": 7.635,
+  "active_min": 28.55,
+  "active_raw": 30.55,
+  "wall_min": 54.46,
+  "input": 26444821,
+  "uncached": 441109,
+  "mutation": 0.5333,
+  "guesses": [
+   "team",
+   "team"
+  ]
+ },
+ {
+  "task": "T1b",
+  "arm": "base3",
+  "rep": 2,
+  "delivered": true,
+  "overall": 7.800000000000001,
+  "active_min": 24.41,
+  "active_raw": 30.41,
+  "wall_min": 98.19,
+  "input": 15892825,
+  "uncached": 705497,
+  "mutation": 0.4667,
+  "guesses": [
+   "team",
+   "team"
+  ]
+ },
+ {
+  "task": "T2",
+  "arm": "solo",
+  "rep": 1,
+  "delivered": true,
+  "overall": 8.8,
+  "active_min": 51.32,
+  "active_raw": 51.32,
+  "wall_min": 53.77,
+  "input": 5553710,
+  "uncached": 139950,
+  "mutation": 0.3667,
+  "guesses": [
+   "single",
+   "team"
+  ]
+ },
+ {
+  "task": "T2",
+  "arm": "solo",
+  "rep": 2,
+  "delivered": true,
+  "overall": 4.4,
+  "active_min": 4.53,
+  "active_raw": 4.53,
+  "wall_min": 4.57,
+  "input": 940851,
+  "uncached": 73779,
+  "mutation": 0.4333,
+  "guesses": [
+   "single",
+   "single"
+  ]
+ },
+ {
+  "task": "T2",
+  "arm": "orig",
+  "rep": 1,
+  "delivered": true,
+  "overall": 7.199999999999999,
+  "active_min": 22.89,
+  "active_raw": 30.48,
+  "wall_min": 117.13,
+  "input": 17044469,
+  "uncached": 409333,
+  "mutation": 0.5333,
+  "guesses": [
+   "single",
+   "team"
+  ]
+ },
+ {
+  "task": "T2",
+  "arm": "orig",
+  "rep": 2,
+  "delivered": true,
+  "overall": 8.05,
+  "active_min": 23.08,
+  "active_raw": 24.92,
+  "wall_min": 30.73,
+  "input": 13692585,
+  "uncached": 417961,
+  "mutation": 0.7667,
+  "guesses": [
+   "team",
+   "team"
+  ]
+ },
+ {
+  "task": "T2",
+  "arm": "base3",
+  "rep": 1,
+  "delivered": true,
+  "overall": 2.55,
+  "active_min": 15.55,
+  "active_raw": 21.44,
+  "wall_min": 83.92,
+  "input": 11582532,
+  "uncached": 199364,
+  "mutation": 0.0333,
+  "guesses": [
+   "single",
+   "single"
+  ]
+ },
+ {
+  "task": "T2",
+  "arm": "base3",
+  "rep": 2,
+  "delivered": true,
+  "overall": 8.149999999999999,
+  "active_min": 25.84,
+  "active_raw": 29.5,
+  "wall_min": 60.2,
+  "input": 17678252,
+  "uncached": 539436,
+  "mutation": 0.4667,
+  "guesses": [
+   "single",
+   "single"
+  ]
+ },
+ {
+  "task": "T3b",
+  "arm": "solo",
+  "rep": 1,
+  "delivered": true,
+  "overall": 7.9,
+  "active_min": 55.58,
+  "active_raw": 57.48,
+  "wall_min": 67.43,
+  "input": 5014458,
+  "uncached": 155322,
+  "mutation": null,
+  "guesses": [
+   "single",
+   "single"
+  ]
+ },
+ {
+  "task": "T3b",
+  "arm": "solo",
+  "rep": 2,
+  "delivered": true,
+  "overall": 1.9,
+  "active_min": 12.48,
+  "active_raw": 16.37,
+  "wall_min": 54.84,
+  "input": 2790062,
+  "uncached": 72750,
+  "mutation": null,
+  "guesses": [
+   "single",
+   "single"
+  ]
+ },
+ {
+  "task": "T3b",
+  "arm": "orig",
+  "rep": 1,
+  "delivered": false,
+  "overall": 0.0,
+  "active_min": 17.54,
+  "active_raw": 17.54,
+  "wall_min": 17.58,
+  "input": 10579075,
+  "uncached": 282627,
+  "mutation": null,
+  "guesses": []
+ },
+ {
+  "task": "T3b",
+  "arm": "orig",
+  "rep": 2,
+  "delivered": true,
+  "overall": 7.25,
+  "active_min": 28.69,
+  "active_raw": 38.39,
+  "wall_min": 150.5,
+  "input": 19085930,
+  "uncached": 441962,
+  "mutation": null,
+  "guesses": [
+   "team",
+   "team"
+  ]
+ },
+ {
+  "task": "T3b",
+  "arm": "base3",
+  "rep": 1,
+  "delivered": true,
+  "overall": 6.9,
+  "active_min": 30.84,
+  "active_raw": 30.84,
+  "wall_min": 30.85,
+  "input": 25478213,
+  "uncached": 531653,
+  "mutation": null,
+  "guesses": [
+   "team",
+   "team"
+  ]
+ },
+ {
+  "task": "T3b",
+  "arm": "base3",
+  "rep": 2,
+  "delivered": true,
+  "overall": 1.35,
+  "active_min": 19.95,
+  "active_raw": 27.75,
+  "wall_min": 118.52,
+  "input": 13077371,
+  "uncached": 245243,
+  "mutation": null,
+  "guesses": [
+   "team",
+   "team"
+  ]
+ },
+ {
+  "task": "T4b",
+  "arm": "solo",
+  "rep": 1,
+  "delivered": true,
+  "overall": 7.5,
+  "active_min": 62.59,
+  "active_raw": 68.11,
+  "wall_min": 125.78,
+  "input": 8435171,
+  "uncached": 203619,
+  "mutation": 0.8667,
+  "guesses": [
+   "single",
+   "single"
+  ]
+ },
+ {
+  "task": "T4b",
+  "arm": "solo",
+  "rep": 2,
+  "delivered": true,
+  "overall": 6.8,
+  "active_min": 28.14,
+  "active_raw": 37.5,
+  "wall_min": 154.66,
+  "input": 2385763,
+  "uncached": 94307,
+  "mutation": 0.5667,
+  "guesses": [
+   "single",
+   "single"
+  ]
+ },
+ {
+  "task": "T4b",
+  "arm": "orig",
+  "rep": 1,
+  "delivered": true,
+  "overall": 7.25,
+  "active_min": 34.19,
+  "active_raw": 34.19,
+  "wall_min": 34.23,
+  "input": 32755665,
+  "uncached": 649681,
+  "mutation": 0.6667,
+  "guesses": [
+   "team",
+   "team"
+  ]
+ },
+ {
+  "task": "T4b",
+  "arm": "orig",
+  "rep": 2,
+  "delivered": true,
+  "overall": 1.85,
+  "active_min": 19.08,
+  "active_raw": 26.97,
+  "wall_min": 119.37,
+  "input": 15825438,
+  "uncached": 365214,
+  "mutation": 0.4,
+  "guesses": [
+   "team",
+   "team"
+  ]
+ },
+ {
+  "task": "T4b",
+  "arm": "base3",
+  "rep": 1,
+  "delivered": true,
+  "overall": 1.4,
+  "active_min": 17.9,
+  "active_raw": 17.9,
+  "wall_min": 17.91,
+  "input": 13713329,
+  "uncached": 268721,
+  "mutation": 0.6,
+  "guesses": [
+   "single",
+   "single"
+  ]
+ },
+ {
+  "task": "T4b",
+  "arm": "base3",
+  "rep": 2,
+  "delivered": true,
+  "overall": 7.1,
+  "active_min": 21.6,
+  "active_raw": 29.54,
+  "wall_min": 130.03,
+  "input": 12684805,
+  "uncached": 379909,
+  "mutation": 0.4667,
+  "guesses": [
+   "team",
+   "team"
+  ]
+ }
+]
