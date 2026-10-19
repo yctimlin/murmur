@@ -1,5 +1,5 @@
 {
- "phase": "2-E1 running",
+ "phase": "2-E1+E2 running (E1 base4 vs C1, E2 C2 interleaved, same lab)",
  "completed": [
   "read BRIEF/CONTEXT/noam-brown",
   "session1 read r3/murmur/codex (died on Claude 403 daily limit)",
@@ -12,7 +12,10 @@
   "E1 queued (20 jobs)",
   "tools/r4eval.py (judge/agg)",
   "judge loop E1 started (tools/judge_loop.sh, pid file judge/E1.loop.pid)",
-  "AMENDMENT-1 anonymizer fix"
+  "AMENDMENT-1 anonymizer fix",
+  "C2 implemented experiment/r4-c2 1c0364e",
+  "E2 prereg committed 2be5fcc",
+  "C2 jobs queued (8)"
  ],
  "running_jobs": [
   {
@@ -41,14 +44,15 @@
   }
  ],
  "next_actions": [
-  "poll E1 (results in lab/results); judge loop scores automatically",
-  "when author done: verify sealed dir root-owned; restart runner with PAR 3 (pkill -f r4-lab-runner main loop only; children survive)",
-  "after E1: agg (python3 tools/r4eval.py agg E1) + decision per prereg/E1.md",
-  "design C2 (context rotation / asymmetric verify) - see DIAGNOSIS D4"
+  "poll; judge loop E1 (28 runs incl C2) automatic",
+  "when author done: verify sealed root-owned; restart runner PAR 3",
+  "after all: python3 tools/r4eval.py agg E1 C1,base4 ; and agg for C2 vs C1 (use agg with arms C2,C1 -> modify cand/base)",
+  "apply E1 + E2 decision rules",
+  "then write FINAL prereg + final_eval script"
  ],
  "budget": {
-  "runs_done": 1,
-  "runs_queued": 20,
+  "runs_done": 3,
+  "runs_queued": 28,
   "tokens_input_M": 0,
   "start": "2026-10-19 22:35",
   "claude_403_events": 1
