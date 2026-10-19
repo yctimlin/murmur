@@ -5,8 +5,10 @@ Modes (MURMUR_FAKE_CODEX_MODE):
   ok               exit 0
   fail             exit MURMUR_FAKE_CODEX_EXIT (default 23) after a stderr line
   fail-with-commit push one commit, then exit as fail
-  hang             sleep until SIGTERM
+  commit           push one commit, then exit 0
+  hang             sleep until SIGTERM/SIGINT (records it in MURMUR_FAKE_CODEX_SIGNAL_FILE)
   resistant        exit 0 after forking a SIGTERM-ignoring child
+  429-first        emit a transient 429 once, then commit successfully
 """
 
 from __future__ import annotations
@@ -35,11 +37,27 @@ def main() -> int:
         return _hang()
     if mode == "resistant":
         return _resistant()
+    if mode == "429-first":
+        if not sys.stdin.read().strip():
+            print("fake codex: empty prompt on stdin", file=sys.stderr, flush=True)
+            return 3
+        marker = Path(os.environ.get("MURMUR_FAKE_CODEX_429_MARKER", ".fake-429-seen"))
+        if not marker.exists():
+            marker.write_text("seen\n")
+            print("HTTP 429: simulated transient rate limit", file=sys.stderr, flush=True)
+            return 1
+        _commit_and_push(args)
+        print(json.dumps({"type": "event_msg", "payload": {"type": "task_complete"}}), flush=True)
+        return 0
     if mode == "fail":
         return _fail()
     if mode == "fail-with-commit":
         _commit_and_push(args)
         return _fail()
+    if mode == "commit":
+        _commit_and_push(args)
+        print(json.dumps({"type": "event_msg", "payload": {"type": "task_complete"}}), flush=True)
+        return 0
     print(json.dumps({"type": "event_msg", "payload": {"type": "task_complete"}}), flush=True)
     return 0
 
@@ -75,6 +93,9 @@ def _fail() -> int:
 
 def _hang() -> int:
     def _stop(signum, frame) -> None:
+        record = os.environ.get("MURMUR_FAKE_CODEX_SIGNAL_FILE")
+        if record:
+            Path(record).write_text(signal.Signals(signum).name + "\n")
         raise SystemExit(0)
 
     signal.signal(signal.SIGTERM, _stop)

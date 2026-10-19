@@ -14,7 +14,9 @@ import argparse
 import json
 import os
 import re
+import random
 import secrets
+import signal
 import shlex
 import shutil
 import subprocess
@@ -153,7 +155,10 @@ def write_model_catalog(path: Path, model: str, effort: str, solo: bool) -> None
     """
     out = subprocess.run(["codex", "debug", "models"], check=True, capture_output=True, text=True)
     catalog = json.loads(out.stdout)
-    for entry in catalog["models"]:
+    models = catalog.get("models") if isinstance(catalog, dict) else None
+    if not isinstance(models, list) or not models:
+        fail("codex debug models returned an empty model catalog; model catalog is empty, refusing to write models.json")
+    for entry in models:
         if solo:
             entry["multi_agent_version"] = None
         elif entry.get("slug") == model:
@@ -752,14 +757,35 @@ def codex_command(ws: Path, meta: dict, injected: dict) -> list[str]:
     return [*cmd, "-"]
 
 
-def _choose_exit(capped: bool, interrupted: bool, codex_exit: int | None) -> tuple[int, str]:
+def _choose_exit(
+    capped: bool, interrupted: bool, codex_exit: int | None, delivered: bool | None = None
+) -> tuple[int, str]:
     if interrupted:
         return EXIT_INTERRUPTED, "interrupted"
     if capped:
         return EXIT_CAPPED, "capped"
     if codex_exit not in (0, None):
         return EXIT_CODEX_FAILED, f"codex exited {codex_exit}"
+    if delivered is False:
+        return EXIT_LAUNCHER, "no work delivered"
     return EXIT_OK, "exit 0"
+
+
+def _rate_limit_retry_delay(attempt: int) -> float:
+    """Return bounded exponential backoff with jitter for a transient 429."""
+    try:
+        base_ms = max(0, int(os.environ.get("MURMUR_RATE_LIMIT_BASE_MS", "200")))
+    except ValueError:
+        base_ms = 200
+    raw = base_ms * (2 ** max(0, attempt - 1))
+    return raw / 1000.0 * random.uniform(0.9, 1.1)
+
+
+def _rate_limit_retry_limit() -> int:
+    try:
+        return max(0, int(os.environ.get("MURMUR_RATE_LIMIT_RETRIES", "3")))
+    except ValueError:
+        return 3
 
 
 def run(args: argparse.Namespace) -> None:
@@ -783,35 +809,53 @@ def run(args: argparse.Namespace) -> None:
         log_err = ws / "logs" / "session.err"
         started_at = now()
         started = time.monotonic()
+        deadline = started + seconds(meta["cap"])
         capped = interrupted = False
+        interruption_signal: int | None = None
         codex_exit: int | None = None
-        with prompt.open() as stdin, (ws / "logs" / "session.jsonl").open("w") as out, log_err.open("w") as err:
-            proc = subprocess.Popen(
-                cmd, stdin=stdin, stdout=out, stderr=err, env=env, start_new_session=True
-            )
-            try:
-                proc.wait(timeout=seconds(meta["cap"]))
-            except subprocess.TimeoutExpired:
-                capped = True
-            except KeyboardInterrupt:
-                interrupted = True
-            finally:
-                stop_process_group(proc)
-                codex_exit = proc.returncode
-                proc = None
+        attempts = 0
+        retries = _rate_limit_retry_limit()
+        with prompt.open() as stdin, (ws / "logs" / "session.jsonl").open("a") as out, log_err.open("a") as err:
+            while True:
+                attempts += 1
+                err.seek(0, 2)
+                err_start = err.tell()
+                stdin.seek(0)  # a retry must hand Codex the full prompt again
+                proc = subprocess.Popen(
+                    cmd, stdin=stdin, stdout=out, stderr=err, env=env, start_new_session=True
+                )
+                try:
+                    remaining = max(0.0, deadline - time.monotonic())
+                    proc.wait(timeout=remaining)
+                except subprocess.TimeoutExpired:
+                    capped = True
+                except KeyboardInterrupt as exc:
+                    interrupted = True
+                    if exc.args and exc.args[0] in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+                        interruption_signal = int(exc.args[0])
+                finally:
+                    stop_process_group(proc, term_signal=interruption_signal or signal.SIGTERM)
+                    codex_exit = proc.returncode
+                    proc = None
+                if capped or interrupted or codex_exit == 0:
+                    break
+                err.flush()
+                with log_err.open("r") as previous_errors:
+                    previous_errors.seek(err_start)
+                    attempt_error = previous_errors.read()
+                err.seek(0, 2)
+                rate_limited = "429" in attempt_error or "rate limit" in attempt_error.lower()
+                if not rate_limited or attempts > retries or time.monotonic() >= deadline:
+                    break
+                delay = min(_rate_limit_retry_delay(attempts), max(0.0, deadline - time.monotonic()))
+                try:
+                    time.sleep(delay)
+                except KeyboardInterrupt as exc:
+                    interrupted = True
+                    if exc.args and exc.args[0] in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+                        interruption_signal = int(exc.args[0])
+                    break
         elapsed = round(time.monotonic() - started, 1)
-        exit_code, diagnostic = _choose_exit(capped, interrupted, codex_exit)
-        record = {
-            "started_at": started_at,
-            "ended_at": now(),
-            "seconds": elapsed,
-            "command": cmd,
-            "exit_code": exit_code,
-            "codex_exit_code": codex_exit,
-            "capped": capped,
-            "interrupted": interrupted,
-        }
-        (ws / "logs" / "run.json").write_text(json.dumps(record, indent=2) + "\n")
         origin = ws / "work" / "origin.git"
         commits = None
         if origin.exists():
@@ -821,6 +865,23 @@ def run(args: argparse.Namespace) -> None:
             )
             if counted.returncode == 0:
                 commits = counted.stdout.strip()
+        delivered = None if commits is None else commits != "0"
+        exit_code, diagnostic = _choose_exit(capped, interrupted, codex_exit, delivered)
+        record = {
+            "started_at": started_at,
+            "ended_at": now(),
+            "seconds": elapsed,
+            "command": cmd,
+            "exit_code": exit_code,
+            "codex_exit_code": codex_exit,
+            "capped": capped,
+            "interrupted": interrupted,
+            "attempts": attempts,
+            "commits": commits,
+            "delivered": delivered,
+            "diagnostic": diagnostic,
+        }
+        (ws / "logs" / "run.json").write_text(json.dumps(record, indent=2) + "\n")
         label = "capped" if capped else "interrupted" if interrupted else f"exit {codex_exit}"
         suffix = f", {commits} new commit(s)" if commits is not None else ""
         print(f"{ws.name}: {meta['mode']} finished in {elapsed / 60:.1f} min ({label}){suffix}")
