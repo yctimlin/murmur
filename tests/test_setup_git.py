@@ -42,7 +42,7 @@ def test_prompts_render_with_fixes(tmp_path: Path):
     # An empty wait result must not leave the root waiting forever.
     assert "receiver_thread_ids=[]" in root and "list_agents" in root
     # The winning draft has to reach main before the swarm finishes.
-    assert "`draft/*`" in peer and "`origin/main`" in peer
+    assert "git push origin HEAD:main" in peer and "SPINE DONE" in peer and "END <commit>" in peer
 
 
 def test_plain_folder_is_snapshotted_and_left_untouched(tmp_path: Path):

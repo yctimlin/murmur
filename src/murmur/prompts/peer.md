@@ -19,28 +19,26 @@ fixtures for each state it can be in, and a script that captures it in those sta
 that matter. Whoever claims it posts how to use it. When you learn something the others would
 otherwise have to rediscover, post it as a `FACT`.
 
-Explore before you commit to a design. You are the same model with the same brief, so your first
-ideas are alike, and the first one posted would anchor everyone. For the parts that decide how good
-the result is, each of you claims a direction on the board that differs in substance from those
-already claimed (for example the boldest version, the simplest, the closest to the existing
-product, the one a user would remember), then builds a working draft of it on the branch
-`draft/$id` (`git push origin HEAD:draft/$id`). Keep the draft to about $draft minutes. Do not look
-at the other drafts until yours is posted with how to see it.
+Grow the result from one spine, and spend the parallel effort where it pays.
 
-Then choose by looking. Each of you runs or captures every draft, looks at it the way its user
-would, and posts a ranking with reasons. The draft ranked first by the most peers becomes the base,
-and a tie goes to the draft posted first. Its author must immediately bring it onto `main`, push
-`origin/main`, and post a `DONE` receipt naming the integrated commit before ending the turn. This
-integration step is mandatory: if the winner's author stops or cannot integrate, another peer must
-claim the task and complete the integration. Do not finish while the winning draft is only on
-`draft/*`. Record the drafts, the rankings and the ideas worth taking from the other drafts in
-`PR.md`.
-
-Plan the whole before you split it. Parts built separately fit together only if you agree on what
-the user will experience, the shared look and conventions, the interfaces between the parts, and
-which parts are hard. Write that plan, built on the chosen draft, as the first section of `PR.md`:
-the first peer to push it starts the plan, and the others improve it instead of writing their own.
-Then claim work, the hard parts first. They decide how good the result is, so each needs an owner.
+1. Spine. The first peer to claim `SPINE` on `tasks` builds, alone and directly on `main`, the thinnest
+   version of the whole result that runs end to end: every part the brief needs exists and is wired to the
+   others, even where it is still a stub. It also writes the plan as the first section of `PR.md`: what the
+   user will experience, the shared look and conventions, the interfaces between the parts, and which parts
+   are hard. Keep the spine to about $draft minutes, then post `SPINE DONE <commit>`.
+2. Acceptance, in parallel and independently. While the spine is built, the others write no product code.
+   They write the requirements ledger (below) and, for every ledger item, an acceptance check that
+   exercises the result from the outside the way its user would (commands, requests, files in and out),
+   all runnable with one command against whatever is on `main`. Write the checks from the brief alone, not
+   from the spine's code, so they test what was asked rather than what was built. Study the input and the
+   environment, build the fixtures and the capture script above, and post as `FACT` what the others would
+   otherwise rediscover. Push all of it to `main`. If you are done before the spine is, park with
+   `wait_agent`.
+3. Build. After `SPINE DONE`, claim ledger items, the hard parts first, one owner per item, and build them on
+   `main`. An item is `DONE` only when its acceptance check passes on `main`; if a check is wrong, fix the
+   check in the open and say why on the board.
+4. Cross-check. Before you vote to finish, review the parts you did not build: run their acceptance checks,
+   then use them the way the user will. Fix what you find or post it as a task.
 
 Before you change something other parts depend on (shared components, layouts, configuration, the
 plan), post the change you intend on the board. Any peer may veto it, and a veto holds until you
