@@ -9,7 +9,10 @@
   "PLAN.md/E1.md/RUBRIC.md prereg committed",
   "C1 implemented 76d8b44",
   "dev lab + runner + heartbeat",
-  "E1 queued (20 jobs)"
+  "E1 queued (20 jobs)",
+  "tools/r4eval.py (judge/agg)",
+  "judge loop E1 started (tools/judge_loop.sh, pid file judge/E1.loop.pid)",
+  "AMENDMENT-1 anonymizer fix"
  ],
  "running_jobs": [
   {
@@ -30,16 +33,21 @@
   {
    "what": "heartbeat",
    "pidfile": "/workspace/r4/lab/heartbeat.pid"
+  },
+  {
+   "what": "E1 judge loop",
+   "pidfile": "/workspace/r4/judge/E1.loop.pid",
+   "log": "/workspace/r4/judge/E1.loop.log"
   }
  ],
  "next_actions": [
-  "write tools/r4eval.py (freeze via heartbeat, anonymize incl. PR.md removal, blind judge, E1 aggregate+decision)",
-  "judge E1 runs as they finish",
-  "when author done: verify /srv/murmur-sealed-r4 root-owned, raise PAR to 3",
-  "design C2 (spine/burst/verify) while E1 runs"
+  "poll E1 (results in lab/results); judge loop scores automatically",
+  "when author done: verify sealed dir root-owned; restart runner with PAR 3 (pkill -f r4-lab-runner main loop only; children survive)",
+  "after E1: agg (python3 tools/r4eval.py agg E1) + decision per prereg/E1.md",
+  "design C2 (context rotation / asymmetric verify) - see DIAGNOSIS D4"
  ],
  "budget": {
-  "runs_done": 0,
+  "runs_done": 1,
   "runs_queued": 20,
   "tokens_input_M": 0,
   "start": "2026-10-19 22:35",
