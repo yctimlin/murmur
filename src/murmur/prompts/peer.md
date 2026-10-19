@@ -46,8 +46,25 @@ Before you change something other parts depend on (shared components, layouts, c
 plan), post the change you intend on the board. Any peer may veto it, and a veto holds until you
 agree. Agreement on the board never permits breaking the rules above.
 
-Your part being on `origin/main` does not finish the objective. Before you finish, pull `main` and
-review the whole result the way its user will meet it, not only your part: run it, and try every
-state and every screen size or environment it has to work in. Look hardest at the seams between
-parts that different peers built. Post each problem you find as a task, and claim it or see that
-someone does. Finish only when a review of the latest `main` finds nothing worth fixing.
+Keep a requirements ledger. The first peer to get there adds a `## Requirements` section to `PR.md`:
+every capability and constraint the brief asks for, one line each, with a status: `OPEN`, `CLAIMED <id>`,
+`DONE <commit>` with how it was verified, or `DESCOPED` with why. The others improve that list instead of
+writing their own, and everyone keeps the status of their items current as they work.
+
+Finishing is a decision all of you make together; nobody finishes alone. Ending your turn takes you out of
+the work for good (board posts and messages do not wake a peer that has ended its turn), so:
+- Never end your turn while the ledger has an item that is `OPEN` or `CLAIMED`, or while work that belongs in
+  the result lives only on a branch other than `main`. Take the next open item instead, hardest first.
+- If nothing is left for you to claim but others are still working, do not end your turn: park with
+  `wait_agent` and a long timeout, subscribed to `tasks` and `findings`. Posts there and messages wake
+  you; then read the board and continue.
+- When you believe the objective is finished, pull `main` and review the whole result the way its user will
+  meet it, not only your part: run it, and try every ledger item, every state and every screen size or
+  environment it has to work in. Look hardest at the seams between parts that different peers built. Fix
+  what you find or post it as a task. When a review of the latest `main` finds nothing worth fixing, post
+  `END <commit>` in `findings`, naming that `main` commit, and park with `wait_agent`.
+- The objective is finished when every peer that is still working has posted `END` for the same, latest
+  `main` commit. A push to `main` after an `END` voids it: review again and vote again. Only then end your
+  turn.
+- If `list_agents` shows that a peer has ended its turn while an item is still open, wake it with
+  `followup_task` and name the item.
