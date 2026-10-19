@@ -1,11 +1,15 @@
 {
- "phase": "1-diagnosis+plan",
+ "phase": "2-E1 running",
  "completed": [
   "read BRIEF/CONTEXT/noam-brown",
   "session1 read r3/murmur/codex (died on Claude 403 daily limit)",
   "DIAGNOSIS D1-D2 (analysis/DIAGNOSIS.md)",
   "FAIRNESS.md + author prompt committed 107a268",
-  "held-out author launched"
+  "held-out author launched",
+  "PLAN.md/E1.md/RUBRIC.md prereg committed",
+  "C1 implemented 76d8b44",
+  "dev lab + runner + heartbeat",
+  "E1 queued (20 jobs)"
  ],
  "running_jobs": [
   {
@@ -14,17 +18,31 @@
    "pid_claude": 1458555,
    "public": "/workspace/r4/heldout/PUBLIC.json",
    "note": "uses <=2 concurrent solo calibration runs; do NOT read /srv/murmur-sealed-r4"
+  },
+  {
+   "what": "r4 dev lab runner (E1 jobs)",
+   "find": "pgrep -af r4-lab-runner",
+   "lab": "/workspace/r4/lab",
+   "results": "/workspace/r4/lab/results/E1-*/result.json",
+   "par": 1,
+   "note": "raise to PAR 3 (restart runner after current jobs; children survive) when author calibration is done"
+  },
+  {
+   "what": "heartbeat",
+   "pidfile": "/workspace/r4/lab/heartbeat.pid"
   }
  ],
  "next_actions": [
-  "write prereg/PLAN.md (hypotheses, mechanisms, budget)",
-  "set up r4 dev lab (/workspace/r4/lab runner2 instance, MURMUR_LAB_PAR=1 while author calibrates)",
-  "implement mechanism M1 on branch",
-  "prereg dev experiment E1, run"
+  "write tools/r4eval.py (freeze via heartbeat, anonymize incl. PR.md removal, blind judge, E1 aggregate+decision)",
+  "judge E1 runs as they finish",
+  "when author done: verify /srv/murmur-sealed-r4 root-owned, raise PAR to 3",
+  "design C2 (spine/burst/verify) while E1 runs"
  ],
  "budget": {
   "runs_done": 0,
+  "runs_queued": 20,
   "tokens_input_M": 0,
-  "start": "2026-10-19 22:35"
+  "start": "2026-10-19 22:35",
+  "claude_403_events": 1
  }
 }
