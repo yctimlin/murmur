@@ -1,0 +1,7 @@
+{
+  "phase": "0-orientation",
+  "completed": ["read BRIEF/CONTEXT/noam-brown"],
+  "running_jobs": [],
+  "next_actions": ["read r3 report + data", "read murmur source (base4)", "diagnosis", "write prereg/PLAN.md + FAIRNESS.md", "commission sealed held-out tasks"],
+  "budget": {"runs_done": 0, "tokens_input_M": 0, "start": "2026-10-19 22:35"}
+}
