@@ -1,4 +1,4 @@
-Updated: 2026-10-19 23:52 (Asia/Taipei)
+Updated: 2026-10-19 23:07 (Asia/Taipei)
 Phase: 2 — E1 (consensus termination, C1) running on dev tasks.
 Findings so far (analysis/DIAGNOSIS.md):
 - r3 swarm runs are bimodal: 10/16 high-mode (quality ≈7.5, ≥ solo 6.64) vs 6/16 collapsed (quality 0-2.5): peers each
