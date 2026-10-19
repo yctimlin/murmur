@@ -6,7 +6,9 @@ import json
 import subprocess
 from pathlib import Path
 
-from murmur.cli import write_model_catalog
+import pytest
+
+from murmur.cli import EXIT_LAUNCHER, write_model_catalog
 
 
 def _stub_models(monkeypatch, models: list[dict]) -> None:
@@ -51,3 +53,17 @@ def test_solo_leaves_tool_mode_unset(tmp_path: Path, monkeypatch):
     entry = json.loads(dest.read_text())["models"][0]
     assert entry["tool_mode"] is None
     assert entry["multi_agent_version"] is None
+
+
+@pytest.mark.parametrize("payload", [{"models": []}, {}])
+def test_empty_catalog_fails_before_writing(tmp_path: Path, monkeypatch, capsys, payload):
+    def fake_run(argv, **kwargs):
+        return subprocess.CompletedProcess(argv, 0, json.dumps(payload), "")
+
+    monkeypatch.setattr("murmur.cli.subprocess.run", fake_run)
+    dest = tmp_path / "models.json"
+    with pytest.raises(SystemExit) as exc:
+        write_model_catalog(dest, "gpt-6-astra", "high", solo=False)
+    assert exc.value.code == EXIT_LAUNCHER
+    assert "returned no models" in capsys.readouterr().err
+    assert not dest.exists()

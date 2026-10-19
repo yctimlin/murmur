@@ -93,9 +93,10 @@ the root of the result is the agents' summary.
 
 | Code | Meaning |
 |------|---------|
-| 0 | Codex exited 0 |
+| 0 | Codex exited 0 and `main` in `origin.git` has new commits |
 | 1 | Codex exited non-zero |
 | 3 | Launcher error (bad arguments, setup failed, workspace already run or missing) |
+| 4 | No work delivered: Codex exited 0 but `main` did not advance. Any `draft/*` branches are listed with a fetch command |
 | 124 | The time cap was reached |
 | 130 | Interrupted (`SIGINT` / `SIGTERM` / `SIGHUP`) |
 

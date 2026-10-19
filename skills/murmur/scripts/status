@@ -69,6 +69,8 @@ def main() -> None:
     if run_file.exists():
         run = json.loads(run_file.read_text())
         state = f"FINISHED in {run['seconds'] / 60:.1f} min (exit {run['exit_code']}, capped {run['capped']})"
+        if run.get("diagnostic") and run["exit_code"] != 0:
+            state += f" · {run['diagnostic']}"
     elif session_log.exists():
         state = "RUNNING"
     else:

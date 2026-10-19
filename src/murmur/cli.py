@@ -14,10 +14,9 @@ import argparse
 import json
 import os
 import re
-import random
 import secrets
-import signal
 import shlex
+import signal
 import shutil
 import subprocess
 import sys
@@ -41,6 +40,7 @@ EXIT_OK = 0
 EXIT_CODEX_FAILED = 1
 EXIT_CAPPED = 124
 EXIT_LAUNCHER = 3
+EXIT_NO_WORK = 4
 EXIT_INTERRUPTED = 130
 
 DURATION_RE = re.compile(r"^(\d+)([smh])$")
@@ -157,7 +157,7 @@ def write_model_catalog(path: Path, model: str, effort: str, solo: bool) -> None
     catalog = json.loads(out.stdout)
     models = catalog.get("models") if isinstance(catalog, dict) else None
     if not isinstance(models, list) or not models:
-        fail("codex debug models returned an empty model catalog; model catalog is empty, refusing to write models.json")
+        fail("`codex debug models` returned no models; refusing to write an empty model catalog")
     for entry in models:
         if solo:
             entry["multi_agent_version"] = None
@@ -767,25 +767,25 @@ def _choose_exit(
     if codex_exit not in (0, None):
         return EXIT_CODEX_FAILED, f"codex exited {codex_exit}"
     if delivered is False:
-        return EXIT_LAUNCHER, "no work delivered"
+        return EXIT_NO_WORK, "no work delivered: main did not advance"
     return EXIT_OK, "exit 0"
 
 
-def _rate_limit_retry_delay(attempt: int) -> float:
-    """Return bounded exponential backoff with jitter for a transient 429."""
-    try:
-        base_ms = max(0, int(os.environ.get("MURMUR_RATE_LIMIT_BASE_MS", "200")))
-    except ValueError:
-        base_ms = 200
-    raw = base_ms * (2 ** max(0, attempt - 1))
-    return raw / 1000.0 * random.uniform(0.9, 1.1)
-
-
-def _rate_limit_retry_limit() -> int:
-    try:
-        return max(0, int(os.environ.get("MURMUR_RATE_LIMIT_RETRIES", "3")))
-    except ValueError:
-        return 3
+def _delivery(origin: Path, base: str) -> tuple[str | None, list[str]]:
+    """New commits on origin main since base, and the draft branches the peers left."""
+    if not origin.exists():
+        return None, []
+    counted = subprocess.run(
+        ["git", "rev-list", "--count", f"{base}..main"],
+        cwd=origin, capture_output=True, text=True, check=False,
+    )
+    commits = counted.stdout.strip() if counted.returncode == 0 else None
+    listed = subprocess.run(
+        ["git", "for-each-ref", "--format=%(refname:short)", "refs/heads/draft/"],
+        cwd=origin, capture_output=True, text=True, check=False,
+    )
+    drafts = listed.stdout.split() if listed.returncode == 0 else []
+    return commits, drafts
 
 
 def run(args: argparse.Namespace) -> None:
@@ -809,64 +809,33 @@ def run(args: argparse.Namespace) -> None:
         log_err = ws / "logs" / "session.err"
         started_at = now()
         started = time.monotonic()
-        deadline = started + seconds(meta["cap"])
         capped = interrupted = False
         interruption_signal: int | None = None
         codex_exit: int | None = None
-        attempts = 0
-        retries = _rate_limit_retry_limit()
-        with prompt.open() as stdin, (ws / "logs" / "session.jsonl").open("a") as out, log_err.open("a") as err:
-            while True:
-                attempts += 1
-                err.seek(0, 2)
-                err_start = err.tell()
-                stdin.seek(0)  # a retry must hand Codex the full prompt again
-                proc = subprocess.Popen(
-                    cmd, stdin=stdin, stdout=out, stderr=err, env=env, start_new_session=True
-                )
-                try:
-                    remaining = max(0.0, deadline - time.monotonic())
-                    proc.wait(timeout=remaining)
-                except subprocess.TimeoutExpired:
-                    capped = True
-                except KeyboardInterrupt as exc:
-                    interrupted = True
-                    if exc.args and exc.args[0] in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
-                        interruption_signal = int(exc.args[0])
-                finally:
-                    stop_process_group(proc, term_signal=interruption_signal or signal.SIGTERM)
-                    codex_exit = proc.returncode
-                    proc = None
-                if capped or interrupted or codex_exit == 0:
-                    break
-                err.flush()
-                with log_err.open("r") as previous_errors:
-                    previous_errors.seek(err_start)
-                    attempt_error = previous_errors.read()
-                err.seek(0, 2)
-                rate_limited = "429" in attempt_error or "rate limit" in attempt_error.lower()
-                if not rate_limited or attempts > retries or time.monotonic() >= deadline:
-                    break
-                delay = min(_rate_limit_retry_delay(attempts), max(0.0, deadline - time.monotonic()))
-                try:
-                    time.sleep(delay)
-                except KeyboardInterrupt as exc:
-                    interrupted = True
-                    if exc.args and exc.args[0] in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
-                        interruption_signal = int(exc.args[0])
-                    break
+        with prompt.open() as stdin, (ws / "logs" / "session.jsonl").open("w") as out, log_err.open("w") as err:
+            proc = subprocess.Popen(
+                cmd, stdin=stdin, stdout=out, stderr=err, env=env, start_new_session=True
+            )
+            try:
+                proc.wait(timeout=seconds(meta["cap"]))
+            except subprocess.TimeoutExpired:
+                capped = True
+            except KeyboardInterrupt as exc:
+                interrupted = True
+                if exc.args and exc.args[0] in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+                    interruption_signal = int(exc.args[0])
+            finally:
+                # Stop Codex with the signal the launcher got, so a Ctrl-C stays a Ctrl-C.
+                stop_process_group(proc, term_signal=interruption_signal or signal.SIGTERM)
+                codex_exit = proc.returncode
+                proc = None
         elapsed = round(time.monotonic() - started, 1)
         origin = ws / "work" / "origin.git"
-        commits = None
-        if origin.exists():
-            counted = subprocess.run(
-                ["git", "rev-list", "--count", f"{meta['base']}..main"],
-                cwd=origin, capture_output=True, text=True, check=False,
-            )
-            if counted.returncode == 0:
-                commits = counted.stdout.strip()
+        commits, drafts = _delivery(origin, meta["base"])
         delivered = None if commits is None else commits != "0"
         exit_code, diagnostic = _choose_exit(capped, interrupted, codex_exit, delivered)
+        if delivered is False and drafts:
+            diagnostic += f"; unmerged draft branches in {origin}: {', '.join(drafts)}"
         record = {
             "started_at": started_at,
             "ended_at": now(),
@@ -876,9 +845,9 @@ def run(args: argparse.Namespace) -> None:
             "codex_exit_code": codex_exit,
             "capped": capped,
             "interrupted": interrupted,
-            "attempts": attempts,
             "commits": commits,
             "delivered": delivered,
+            "drafts": drafts,
             "diagnostic": diagnostic,
         }
         (ws / "logs" / "run.json").write_text(json.dumps(record, indent=2) + "\n")
@@ -888,6 +857,12 @@ def run(args: argparse.Namespace) -> None:
         if exit_code != EXIT_OK:
             print(f"murmur: {diagnostic}", file=sys.stderr)
             print(f"murmur: log: {log_err}", file=sys.stderr)
+        if delivered is False and drafts:
+            print(
+                f"murmur: recover the drafts: git -C {meta['repo']} fetch {origin} "
+                f"'refs/heads/draft/*:refs/heads/murmur/{ws.name}/draft/*'",
+                file=sys.stderr,
+            )
         if origin.exists() and meta.get("folder"):
             write_result(ws)
         elif origin.exists():

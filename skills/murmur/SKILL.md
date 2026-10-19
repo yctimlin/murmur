@@ -93,9 +93,11 @@ Check progress every few minutes, and give the user a one-line update after each
 It shows elapsed time, `spawned N/N peers`, each agent's last activity and tokens, the latest
 board posts and new commits on `origin/main`.
 
-- `murmur run` exits 0 when Codex exits 0. Exit 1 is a Codex failure, 124 is the time cap, 3 is a
-  launcher error, and 130 means the run was interrupted. Exit 2 is argparse's usage error. A
-  non-zero exit still prints the fetch command and the log path.
+- `murmur run` exits 0 only when Codex exits 0 and `main` in `origin.git` has new commits. Exit 4
+  means no work was delivered: Codex exited 0 but `main` did not advance; murmur lists any
+  unmerged `draft/*` branches and prints a command to fetch them. Exit 1 is a Codex failure, 124 is
+  the time cap, 3 is a launcher error, and 130 means the run was interrupted. Exit 2 is argparse's
+  usage error. A non-zero exit still prints the fetch command and the log path.
 - If `spawned` is below N, stop the run: the peers would be working short-handed.
 - To stop a run, stop the background task. murmur signals the Codex process group and records
   `interrupted`.
@@ -153,7 +155,7 @@ that touch paths outside the workspace, credential files, `~/.codex` or GitHub.
 |---|---|
 | `murmur.json` | Run settings, base commit, agents, ports |
 | `prompts/` | The exact prompt each agent received |
-| `logs/run.json` | Start, end, duration, exit code, capped or interrupted |
+| `logs/run.json` | Start, end, duration, exit code, Codex's exit code, capped or interrupted, `commits` (new on `main`), `delivered`, `drafts` (`draft/*` branches left in `origin.git`), `diagnostic` |
 | `logs/session.jsonl` | The root (or solo) session's event stream |
 | `codex-home/sessions/` | One rollout per agent: commands, edits, tokens |
 | `codex-home/agent_message_board_1.sqlite` | Board posts (`posts` table, plain text) |

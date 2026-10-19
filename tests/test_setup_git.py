@@ -36,6 +36,10 @@ def test_prompts_render_with_fixes(tmp_path: Path):
     assert "$MURMUR_AGENT" in peer
     root = render("root.md", n="2", spawns="-", wait_ms=str(ROOT_WAIT_MS))
     assert str(ROOT_WAIT_MS) in root
+    # An empty wait result must not leave the root waiting forever.
+    assert "receiver_thread_ids=[]" in root and "when no peer" in root
+    # The winning draft has to reach main; ranking alone does not finish the swarm.
+    assert "Do not end the swarm after ranking" in peer
 
 
 def test_plain_folder_is_snapshotted_and_left_untouched(tmp_path: Path):
