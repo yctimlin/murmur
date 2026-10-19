@@ -94,10 +94,13 @@ It shows elapsed time, `spawned N/N peers`, each agent's last activity and token
 board posts and new commits on `origin/main`.
 
 - `murmur run` exits 0 only when Codex exits 0 and `main` in `origin.git` has new commits. Exit 4
-  means no work was delivered: Codex exited 0 but `main` did not advance; murmur lists any
-  unmerged `draft/*` branches and prints a command to fetch them. Exit 1 is a Codex failure, 124 is
-  the time cap, 3 is a launcher error, and 130 means the run was interrupted. Exit 2 is argparse's
-  usage error. A non-zero exit still prints the fetch command and the log path.
+  means no work was delivered: Codex exited 0 but `main` did not advance. Exit 1 is a Codex
+  failure, 124 is the time cap, 3 is a launcher error, and 130 means the run was interrupted. Exit 2
+  is argparse's usage error. A non-zero exit prints a diagnostic and the log path. The fetch command
+  (or, for a plain folder, the result folder) comes only when `main` advanced. When it did not,
+  murmur lists any unmerged `draft/*` branches instead, with
+  `git -C <repo> fetch <workspace>/work/origin.git 'refs/heads/draft/*:refs/heads/murmur/<id>-drafts/*'`
+  (for a plain folder: the `origin.git` path and a `git clone -b draft/<id>` command).
 - If `spawned` is below N, stop the run: the peers would be working short-handed.
 - To stop a run, stop the background task. murmur signals the Codex process group and records
   `interrupted`.

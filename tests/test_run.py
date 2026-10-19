@@ -10,6 +10,8 @@ import sys
 import time
 from pathlib import Path
 
+import pytest
+
 from murmur.cli import (
     EXIT_CAPPED,
     EXIT_CODEX_FAILED,
@@ -20,7 +22,7 @@ from murmur.cli import (
 )
 from murmur.procutil import pid_alive
 
-from support import init_repo, run_cli, setup_workspace
+from support import git, init_repo, run_cli, setup_workspace
 
 
 def test_solo_success_is_zero_and_prints_fetch(tmp_path: Path):
@@ -53,10 +55,40 @@ def test_no_work_lists_unmerged_draft_branches(tmp_path: Path):
     result = run_cli("run", str(workspace), extra_env={"MURMUR_FAKE_CODEX_MODE": "draft-only"})
     assert result.returncode == EXIT_NO_WORK, result.stderr
     assert "draft/a1" in result.stderr
-    assert "refs/heads/draft/*:refs/heads/murmur/run1/draft/*" in result.stderr
+    assert "refs/heads/draft/*:refs/heads/murmur/run1-drafts/*" in result.stderr
+    assert "review it:" not in result.stdout
     record = json.loads((workspace / "logs" / "run.json").read_text())
     assert record["drafts"] == ["draft/a1"]
     assert "draft/a1" in record["diagnostic"]
+
+
+def _printed_command(text: str, prefix: str) -> str:
+    line = next(line for line in text.splitlines() if line.startswith(prefix))
+    return line.removeprefix(prefix).strip()
+
+
+@pytest.mark.parametrize("order", ["drafts-first", "review-first"])
+def test_draft_and_review_fetches_do_not_collide(tmp_path: Path, order: str):
+    from murmur.cli import _review_command
+
+    workspace = setup_workspace(tmp_path, "--solo")
+    result = run_cli("run", str(workspace), extra_env={"MURMUR_FAKE_CODEX_MODE": "draft-only"})
+    assert result.returncode == EXIT_NO_WORK, result.stderr
+    drafts = _printed_command(result.stderr, "murmur: recover the drafts:")
+    # Later someone integrates on main; the review fetch must still work next to the drafts.
+    meta = json.loads((workspace / "murmur.json").read_text())
+    origin = workspace / "work" / "origin.git"
+    clone = Path(meta["agents"][0]["clone"])
+    git(clone, "commit", "-q", "--allow-empty", "-m", "integrated")
+    git(clone, "push", "-q", "origin", "HEAD:main")
+    review = _review_command(workspace, meta, origin)
+    commands = [drafts, review] if order == "drafts-first" else [review, drafts]
+    for command in commands:
+        done = subprocess.run(command, shell=True, capture_output=True, text=True)
+        assert done.returncode == 0, (command, done.stderr)
+    repo = Path(meta["repo"])
+    assert git(repo, "rev-parse", "--verify", "murmur/run1")
+    assert git(repo, "rev-parse", "--verify", "murmur/run1-drafts/a1")
 
 
 def test_codex_failure_prints_diagnostic_log_and_fetch(tmp_path: Path):
@@ -81,7 +113,7 @@ def test_timeout_exits_capped(tmp_path: Path):
     assert result.returncode == 124, result.stderr
     assert "capped" in result.stderr
     assert "session.err" in result.stderr
-    assert "fetch" in result.stdout
+    assert "review it:" not in result.stdout  # nothing reached main
     record = json.loads((workspace / "logs" / "run.json").read_text())
     assert record["started_at"] < record["ended_at"]
 

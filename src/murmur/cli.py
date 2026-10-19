@@ -788,6 +788,26 @@ def _delivery(origin: Path, base: str) -> tuple[str | None, list[str]]:
     return commits, drafts
 
 
+def _review_command(ws: Path, meta: dict, origin: Path) -> str:
+    return f"git -C {meta['repo']} fetch {origin} main:murmur/{ws.name}"
+
+
+def _draft_hint(ws: Path, meta: dict, origin: Path, drafts: list[str]) -> str:
+    """How to get at unmerged drafts. The refs never nest under the review branch murmur/<id>."""
+    if meta.get("folder"):
+        # The run's repo is murmur's internal snapshot, so point at origin.git itself.
+        first = drafts[0]
+        target = f"{meta['folder']}.murmur-{ws.name}-{first.replace('/', '-')}"
+        return (f"murmur: the drafts are branches of {origin}: {', '.join(drafts)}; "
+                f"to look at one: git clone -b {first} {origin} {target}")
+    return f"murmur: recover the drafts: {_drafts_command(ws, meta, origin)}"
+
+
+def _drafts_command(ws: Path, meta: dict, origin: Path) -> str:
+    return (f"git -C {meta['repo']} fetch {origin} "
+            f"'refs/heads/draft/*:refs/heads/murmur/{ws.name}-drafts/*'")
+
+
 def run(args: argparse.Namespace) -> None:
     previous = install_interrupt_handlers()
     proc: subprocess.Popen | None = None
@@ -858,15 +878,13 @@ def run(args: argparse.Namespace) -> None:
             print(f"murmur: {diagnostic}", file=sys.stderr)
             print(f"murmur: log: {log_err}", file=sys.stderr)
         if delivered is False and drafts:
-            print(
-                f"murmur: recover the drafts: git -C {meta['repo']} fetch {origin} "
-                f"'refs/heads/draft/*:refs/heads/murmur/{ws.name}/draft/*'",
-                file=sys.stderr,
-            )
-        if origin.exists() and meta.get("folder"):
-            write_result(ws)
-        elif origin.exists():
-            print(f"review it: git -C {meta['repo']} fetch {origin} main:murmur/{ws.name}")
+            print(_draft_hint(ws, meta, origin, drafts), file=sys.stderr)
+        # With nothing new on main there is nothing to review and no point copying the folder.
+        if delivered is not False and origin.exists():
+            if meta.get("folder"):
+                write_result(ws)
+            else:
+                print(f"review it: {_review_command(ws, meta, origin)}")
         raise SystemExit(exit_code)
     except KeyboardInterrupt:
         print("murmur: interrupted", file=sys.stderr)
