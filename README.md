@@ -93,14 +93,17 @@ the root of the result is the agents' summary.
 
 | Code | Meaning |
 |------|---------|
-| 0 | Codex exited 0 |
+| 0 | Codex exited 0 and `main` in `origin.git` has new commits |
 | 1 | Codex exited non-zero |
 | 3 | Launcher error (bad arguments, setup failed, workspace already run or missing) |
+| 4 | No work delivered: Codex exited 0 but `main` did not advance. Any `draft/*` branches are listed with a fetch command |
 | 124 | The time cap was reached |
 | 130 | Interrupted (`SIGINT` / `SIGTERM` / `SIGHUP`) |
 
 Argparse usage errors still exit 2, so the time cap does not use that code. The fetch command is
-printed whenever `origin.git` exists.
+printed when `main` in `origin.git` has new commits, whatever the exit code. When it has none, murmur
+prints no fetch command and instead lists any unmerged `draft/*` branches with a command that
+fetches them to `murmur/<id>-drafts/*`.
 
 ### Plain-folder input
 
@@ -115,8 +118,10 @@ private repository and never writes to the folder:
 - files over `--max-file-mb` are not committed: each clone gets a read-only link to one shared
   copy, so large data costs no copy time or disk.
 
-When the run ends, `murmur run` writes the result to a new sibling folder,
-`<folder>.murmur-<id>`, and prints its path. It is written under a temporary name and renamed
+When the run ends with new commits on `main`, `murmur run` writes the result to a new sibling
+folder, `<folder>.murmur-<id>`, and prints its path. If nothing reached `main`, no folder is
+written; murmur names the `draft/*` branches in the run's `origin.git` and prints a `git clone -b`
+command for one. It is written under a temporary name and renamed
 when complete, so a failure leaves no partial folder (the result stays in the run's `origin.git`). Large files are filled in there as real files, and
 the agents' `.work/` scratch is left out. The source folder is never changed; compare the two and
 copy over what you want.

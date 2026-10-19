@@ -5,7 +5,10 @@ Modes (MURMUR_FAKE_CODEX_MODE):
   ok               exit 0
   fail             exit MURMUR_FAKE_CODEX_EXIT (default 23) after a stderr line
   fail-with-commit push one commit, then exit as fail
-  hang             sleep until SIGTERM
+  commit           push one commit to main, then exit 0
+  draft-only       push one commit to draft/a1 (not main), then exit 0
+  hang             sleep until SIGTERM or SIGINT; with MURMUR_FAKE_CODEX_SIGNAL_FILE, write
+                   "ready" there once the handlers are installed and the signal name on exit
   resistant        exit 0 after forking a SIGTERM-ignoring child
 """
 
@@ -40,6 +43,10 @@ def main() -> int:
     if mode == "fail-with-commit":
         _commit_and_push(args)
         return _fail()
+    if mode in ("commit", "draft-only"):
+        _commit_and_push(args, "draft/a1" if mode == "draft-only" else "main")
+        print(json.dumps({"type": "event_msg", "payload": {"type": "task_complete"}}), flush=True)
+        return 0
     print(json.dumps({"type": "event_msg", "payload": {"type": "task_complete"}}), flush=True)
     return 0
 
@@ -74,11 +81,17 @@ def _fail() -> int:
 
 
 def _hang() -> int:
+    record = os.environ.get("MURMUR_FAKE_CODEX_SIGNAL_FILE")
+
     def _stop(signum, frame) -> None:
+        if record:
+            Path(record).write_text(signal.Signals(signum).name + "\n")
         raise SystemExit(0)
 
     signal.signal(signal.SIGTERM, _stop)
     signal.signal(signal.SIGINT, _stop)
+    if record:
+        Path(record).write_text("ready\n")
     time.sleep(3600)
     return 0
 
@@ -106,12 +119,12 @@ def _resistant() -> int:
     return 0
 
 
-def _commit_and_push(args: list[str]) -> None:
+def _commit_and_push(args: list[str], branch: str = "main") -> None:
     ws = _workspace(args)
     meta = json.loads((ws / "murmur.json").read_text())
     clone = Path(meta["agents"][0]["clone"])
     _git(["git", "commit", "--allow-empty", "-m", "work"], clone)
-    _git(["git", "push", "origin", "HEAD:main"], clone)
+    _git(["git", "push", "origin", f"HEAD:refs/heads/{branch}"], clone)
 
 
 def _git(args: list[str], cwd: Path) -> None:

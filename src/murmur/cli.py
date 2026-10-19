@@ -16,6 +16,7 @@ import os
 import re
 import secrets
 import shlex
+import signal
 import shutil
 import subprocess
 import sys
@@ -39,6 +40,7 @@ EXIT_OK = 0
 EXIT_CODEX_FAILED = 1
 EXIT_CAPPED = 124
 EXIT_LAUNCHER = 3
+EXIT_NO_WORK = 4
 EXIT_INTERRUPTED = 130
 
 DURATION_RE = re.compile(r"^(\d+)([smh])$")
@@ -153,7 +155,10 @@ def write_model_catalog(path: Path, model: str, effort: str, solo: bool) -> None
     """
     out = subprocess.run(["codex", "debug", "models"], check=True, capture_output=True, text=True)
     catalog = json.loads(out.stdout)
-    for entry in catalog["models"]:
+    models = catalog.get("models") if isinstance(catalog, dict) else None
+    if not isinstance(models, list) or not models:
+        fail("`codex debug models` returned no models; refusing to write an empty model catalog")
+    for entry in models:
         if solo:
             entry["multi_agent_version"] = None
         elif entry.get("slug") == model:
@@ -752,14 +757,55 @@ def codex_command(ws: Path, meta: dict, injected: dict) -> list[str]:
     return [*cmd, "-"]
 
 
-def _choose_exit(capped: bool, interrupted: bool, codex_exit: int | None) -> tuple[int, str]:
+def _choose_exit(
+    capped: bool, interrupted: bool, codex_exit: int | None, delivered: bool | None = None
+) -> tuple[int, str]:
     if interrupted:
         return EXIT_INTERRUPTED, "interrupted"
     if capped:
         return EXIT_CAPPED, "capped"
     if codex_exit not in (0, None):
         return EXIT_CODEX_FAILED, f"codex exited {codex_exit}"
+    if delivered is False:
+        return EXIT_NO_WORK, "no work delivered: main did not advance"
     return EXIT_OK, "exit 0"
+
+
+def _delivery(origin: Path, base: str) -> tuple[str | None, list[str]]:
+    """New commits on origin main since base, and the draft branches the peers left."""
+    if not origin.exists():
+        return None, []
+    counted = subprocess.run(
+        ["git", "rev-list", "--count", f"{base}..main"],
+        cwd=origin, capture_output=True, text=True, check=False,
+    )
+    commits = counted.stdout.strip() if counted.returncode == 0 else None
+    listed = subprocess.run(
+        ["git", "for-each-ref", "--format=%(refname:short)", "refs/heads/draft/"],
+        cwd=origin, capture_output=True, text=True, check=False,
+    )
+    drafts = listed.stdout.split() if listed.returncode == 0 else []
+    return commits, drafts
+
+
+def _review_command(ws: Path, meta: dict, origin: Path) -> str:
+    return f"git -C {meta['repo']} fetch {origin} main:murmur/{ws.name}"
+
+
+def _draft_hint(ws: Path, meta: dict, origin: Path, drafts: list[str]) -> str:
+    """How to get at unmerged drafts. The refs never nest under the review branch murmur/<id>."""
+    if meta.get("folder"):
+        # The run's repo is murmur's internal snapshot, so point at origin.git itself.
+        first = drafts[0]
+        target = f"{meta['folder']}.murmur-{ws.name}-{first.replace('/', '-')}"
+        return (f"murmur: the drafts are branches of {origin}: {', '.join(drafts)}; "
+                f"to look at one: git clone -b {first} {origin} {target}")
+    return f"murmur: recover the drafts: {_drafts_command(ws, meta, origin)}"
+
+
+def _drafts_command(ws: Path, meta: dict, origin: Path) -> str:
+    return (f"git -C {meta['repo']} fetch {origin} "
+            f"'refs/heads/draft/*:refs/heads/murmur/{ws.name}-drafts/*'")
 
 
 def run(args: argparse.Namespace) -> None:
@@ -784,6 +830,7 @@ def run(args: argparse.Namespace) -> None:
         started_at = now()
         started = time.monotonic()
         capped = interrupted = False
+        interruption_signal: int | None = None
         codex_exit: int | None = None
         with prompt.open() as stdin, (ws / "logs" / "session.jsonl").open("w") as out, log_err.open("w") as err:
             proc = subprocess.Popen(
@@ -793,14 +840,22 @@ def run(args: argparse.Namespace) -> None:
                 proc.wait(timeout=seconds(meta["cap"]))
             except subprocess.TimeoutExpired:
                 capped = True
-            except KeyboardInterrupt:
+            except KeyboardInterrupt as exc:
                 interrupted = True
+                if exc.args and exc.args[0] in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+                    interruption_signal = int(exc.args[0])
             finally:
-                stop_process_group(proc)
+                # Stop Codex with the signal the launcher got, so a Ctrl-C stays a Ctrl-C.
+                stop_process_group(proc, term_signal=interruption_signal or signal.SIGTERM)
                 codex_exit = proc.returncode
                 proc = None
         elapsed = round(time.monotonic() - started, 1)
-        exit_code, diagnostic = _choose_exit(capped, interrupted, codex_exit)
+        origin = ws / "work" / "origin.git"
+        commits, drafts = _delivery(origin, meta["base"])
+        delivered = None if commits is None else commits != "0"
+        exit_code, diagnostic = _choose_exit(capped, interrupted, codex_exit, delivered)
+        if delivered is False and drafts:
+            diagnostic += f"; unmerged draft branches in {origin}: {', '.join(drafts)}"
         record = {
             "started_at": started_at,
             "ended_at": now(),
@@ -810,27 +865,26 @@ def run(args: argparse.Namespace) -> None:
             "codex_exit_code": codex_exit,
             "capped": capped,
             "interrupted": interrupted,
+            "commits": commits,
+            "delivered": delivered,
+            "drafts": drafts,
+            "diagnostic": diagnostic,
         }
         (ws / "logs" / "run.json").write_text(json.dumps(record, indent=2) + "\n")
-        origin = ws / "work" / "origin.git"
-        commits = None
-        if origin.exists():
-            counted = subprocess.run(
-                ["git", "rev-list", "--count", f"{meta['base']}..main"],
-                cwd=origin, capture_output=True, text=True, check=False,
-            )
-            if counted.returncode == 0:
-                commits = counted.stdout.strip()
         label = "capped" if capped else "interrupted" if interrupted else f"exit {codex_exit}"
         suffix = f", {commits} new commit(s)" if commits is not None else ""
         print(f"{ws.name}: {meta['mode']} finished in {elapsed / 60:.1f} min ({label}){suffix}")
         if exit_code != EXIT_OK:
             print(f"murmur: {diagnostic}", file=sys.stderr)
             print(f"murmur: log: {log_err}", file=sys.stderr)
-        if origin.exists() and meta.get("folder"):
-            write_result(ws)
-        elif origin.exists():
-            print(f"review it: git -C {meta['repo']} fetch {origin} main:murmur/{ws.name}")
+        if delivered is False and drafts:
+            print(_draft_hint(ws, meta, origin, drafts), file=sys.stderr)
+        # With nothing new on main there is nothing to review and no point copying the folder.
+        if delivered is not False and origin.exists():
+            if meta.get("folder"):
+                write_result(ws)
+            else:
+                print(f"review it: {_review_command(ws, meta, origin)}")
         raise SystemExit(exit_code)
     except KeyboardInterrupt:
         print("murmur: interrupted", file=sys.stderr)

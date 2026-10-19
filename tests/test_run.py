@@ -10,20 +10,85 @@ import sys
 import time
 from pathlib import Path
 
-from murmur.cli import EXIT_CAPPED, EXIT_CODEX_FAILED, EXIT_INTERRUPTED, EXIT_LAUNCHER, EXIT_OK
+import pytest
+
+from murmur.cli import (
+    EXIT_CAPPED,
+    EXIT_CODEX_FAILED,
+    EXIT_INTERRUPTED,
+    EXIT_LAUNCHER,
+    EXIT_NO_WORK,
+    EXIT_OK,
+)
 from murmur.procutil import pid_alive
 
-from support import init_repo, run_cli, setup_workspace
+from support import git, init_repo, run_cli, setup_workspace
 
 
 def test_solo_success_is_zero_and_prints_fetch(tmp_path: Path):
     workspace = setup_workspace(tmp_path, "--solo")
-    result = run_cli("run", str(workspace))
+    result = run_cli("run", str(workspace), extra_env={"MURMUR_FAKE_CODEX_MODE": "commit"})
     assert result.returncode == EXIT_OK, result.stderr
     assert "review it:" in result.stdout
     assert "fetch" in result.stdout
-    assert (workspace / "logs" / "run.json").is_file()
+    record = json.loads((workspace / "logs" / "run.json").read_text())
+    assert record["commits"] == "1" and record["delivered"] is True
+    assert record["diagnostic"] == "exit 0"
     assert not (workspace / "logs" / "state.json").exists()
+
+
+def test_codex_success_with_main_unchanged_is_no_work(tmp_path: Path):
+    workspace = setup_workspace(tmp_path, "--solo")
+    result = run_cli("run", str(workspace))
+    assert EXIT_NO_WORK == 4
+    assert result.returncode == EXIT_NO_WORK, result.stderr
+    assert "no work delivered" in result.stderr
+    record = json.loads((workspace / "logs" / "run.json").read_text())
+    assert record["exit_code"] == EXIT_NO_WORK
+    assert record["codex_exit_code"] == 0
+    assert record["commits"] == "0" and record["delivered"] is False
+    assert record["drafts"] == []
+
+
+def test_no_work_lists_unmerged_draft_branches(tmp_path: Path):
+    workspace = setup_workspace(tmp_path, "--solo")
+    result = run_cli("run", str(workspace), extra_env={"MURMUR_FAKE_CODEX_MODE": "draft-only"})
+    assert result.returncode == EXIT_NO_WORK, result.stderr
+    assert "draft/a1" in result.stderr
+    assert "refs/heads/draft/*:refs/heads/murmur/run1-drafts/*" in result.stderr
+    assert "review it:" not in result.stdout
+    record = json.loads((workspace / "logs" / "run.json").read_text())
+    assert record["drafts"] == ["draft/a1"]
+    assert "draft/a1" in record["diagnostic"]
+
+
+def _printed_command(text: str, prefix: str) -> str:
+    line = next(line for line in text.splitlines() if line.startswith(prefix))
+    return line.removeprefix(prefix).strip()
+
+
+@pytest.mark.parametrize("order", ["drafts-first", "review-first"])
+def test_draft_and_review_fetches_do_not_collide(tmp_path: Path, order: str):
+    from murmur.cli import _review_command
+
+    workspace = setup_workspace(tmp_path, "--solo")
+    result = run_cli("run", str(workspace), extra_env={"MURMUR_FAKE_CODEX_MODE": "draft-only"})
+    assert result.returncode == EXIT_NO_WORK, result.stderr
+    drafts = _printed_command(result.stderr, "murmur: recover the drafts:")
+    # Later someone integrates on main; the review fetch must still work next to the drafts.
+    meta = json.loads((workspace / "murmur.json").read_text())
+    origin = workspace / "work" / "origin.git"
+    clone = Path(meta["agents"][0]["clone"])
+    git(clone, "commit", "-q", "--allow-empty", "-m", "integrated")
+    git(clone, "push", "-q", "origin", "HEAD:main")
+    review = _review_command(workspace, meta, origin)
+    commands = [drafts, review] if order == "drafts-first" else [review, drafts]
+    for command in commands:
+        done = subprocess.run(command, shell=True, capture_output=True, text=True)
+        assert done.returncode == 0, (command, done.stderr)
+    repo = Path(meta["repo"])
+    assert git(repo, "rev-parse", "--verify", "murmur/run1")
+    assert git(repo, "rev-parse", "--verify", "murmur/run1-drafts/a1")
 
 
 def test_codex_failure_prints_diagnostic_log_and_fetch(tmp_path: Path):
@@ -48,7 +113,7 @@ def test_timeout_exits_capped(tmp_path: Path):
     assert result.returncode == 124, result.stderr
     assert "capped" in result.stderr
     assert "session.err" in result.stderr
-    assert "fetch" in result.stdout
+    assert "review it:" not in result.stdout  # nothing reached main
     record = json.loads((workspace / "logs" / "run.json").read_text())
     assert record["started_at"] < record["ended_at"]
 
@@ -71,6 +136,25 @@ def test_interruption_exits_130_and_stops_codex(tmp_path: Path):
     assert proc.returncode == EXIT_INTERRUPTED
 
 
+def test_sigint_to_the_launcher_reaches_codex_as_sigint(tmp_path: Path):
+    workspace = setup_workspace(tmp_path, "--solo", "--cap", "30s")
+    received = tmp_path / "child-signal"
+    proc = subprocess.Popen(
+        [sys.executable, "-m", "murmur", "run", str(workspace)],
+        env={**os.environ, "MURMUR_FAKE_CODEX_MODE": "hang", "MURMUR_FAKE_CODEX_SIGNAL_FILE": str(received)},
+        start_new_session=True,
+    )
+    deadline = time.monotonic() + 10
+    while not (received.exists() and received.read_text() == "ready\n"):
+        assert time.monotonic() < deadline
+        assert proc.poll() is None
+        time.sleep(0.05)
+    os.kill(proc.pid, signal.SIGINT)  # the launcher only, not the Codex process group
+    proc.wait(timeout=10)
+    assert proc.returncode == EXIT_INTERRUPTED
+    assert received.read_text().strip() == "SIGINT"
+
+
 def test_missing_workspace_is_a_launcher_error(tmp_path: Path):
     result = run_cli("run", str(tmp_path / "missing"))
     assert result.returncode == EXIT_LAUNCHER
@@ -79,7 +163,7 @@ def test_missing_workspace_is_a_launcher_error(tmp_path: Path):
 
 def test_second_run_is_rejected(tmp_path: Path):
     workspace = setup_workspace(tmp_path, "--solo")
-    first = run_cli("run", str(workspace))
+    first = run_cli("run", str(workspace), extra_env={"MURMUR_FAKE_CODEX_MODE": "commit"})
     assert first.returncode == EXIT_OK, first.stderr
     again = run_cli("run", str(workspace))
     assert again.returncode == EXIT_LAUNCHER
@@ -93,7 +177,7 @@ def test_normal_exit_kills_resistant_descendant(tmp_path: Path):
         "run", str(workspace),
         extra_env={"MURMUR_FAKE_CODEX_MODE": "resistant", "MURMUR_FAKE_CODEX_PIDFILE": str(pidfile)},
     )
-    assert result.returncode == EXIT_OK, result.stderr
+    assert result.returncode == EXIT_NO_WORK, result.stderr
     text = pidfile.read_text()
     pid = int(text.split()[0])
     assert "TERM" in text

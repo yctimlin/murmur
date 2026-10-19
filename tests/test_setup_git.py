@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
+
+from murmur.cli import EXIT_NO_WORK
 
 from support import git, init_repo, run_cli
 
@@ -36,6 +39,10 @@ def test_prompts_render_with_fixes(tmp_path: Path):
     assert "$MURMUR_AGENT" in peer
     root = render("root.md", n="2", spawns="-", wait_ms=str(ROOT_WAIT_MS))
     assert str(ROOT_WAIT_MS) in root
+    # An empty wait result must not leave the root waiting forever.
+    assert "receiver_thread_ids=[]" in root and "list_agents" in root
+    # The winning draft has to reach main before the swarm finishes.
+    assert "`draft/*`" in peer and "`origin/main`" in peer
 
 
 def test_plain_folder_is_snapshotted_and_left_untouched(tmp_path: Path):
@@ -195,3 +202,31 @@ def test_user_global_gitignore_is_honoured(tmp_path: Path, monkeypatch):
     env = {**os.environ, "GIT_CONFIG_GLOBAL": str(tmp_path / "ws-gitconfig")}
     repo, _ = snapshot_folder(folder, tmp_path / "w" / "input", env, 50)
     assert git(repo, "ls-files").split() == ["keep.md"]
+
+
+def _folder_run_cli(tmp_path: Path, mode: str) -> tuple[Path, Path, subprocess.CompletedProcess]:
+    folder, ws, _ = _folder_run(tmp_path)
+    result = run_cli("run", str(ws), extra_env={"MURMUR_FAKE_CODEX_MODE": mode})
+    return folder, ws, result
+
+
+def test_folder_run_with_no_work_writes_no_copy(tmp_path: Path):
+    folder, ws, result = _folder_run_cli(tmp_path, "ok")
+    assert result.returncode == EXIT_NO_WORK, result.stderr
+    assert "wrote" not in result.stdout + result.stderr
+    assert not (tmp_path / "docs.murmur-run1").exists()
+
+
+def test_folder_run_draft_hint_points_at_origin_not_the_snapshot(tmp_path: Path):
+    folder, ws, result = _folder_run_cli(tmp_path, "draft-only")
+    assert result.returncode == EXIT_NO_WORK, result.stderr
+    assert not (tmp_path / "docs.murmur-run1").exists()
+    hint = next(l for l in result.stderr.splitlines() if "draft/a1" in l and "git clone" in l)
+    assert str(ws / "work" / "origin.git") in hint
+    assert "work/input" not in hint
+    command = hint.split("to look at one: ", 1)[1]
+    done = subprocess.run(command, shell=True, capture_output=True, text=True)
+    assert done.returncode == 0, done.stderr
+    copy = tmp_path / "docs.murmur-run1-draft-a1"
+    assert git(copy, "rev-parse", "--abbrev-ref", "HEAD") == "draft/a1"
+    assert (folder / "a.md").read_text() == "a\n"
