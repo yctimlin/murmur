@@ -12,3 +12,5 @@
 - 10-20 01:41 Analysed E1-T3b-C1-r1 timeline (DIAGNOSIS D4): quorum worked (first END at 25.6 active min, quorum 26.5, consensus phase 15% of tokens). Found a confound: peers read wall time and rushed because box freezes (~94 min) made the 120m cap look imminent.
 - 10-20 02:11 [r4eval] judged E1-T3b-C1-r1: 6.65
 - 10-20 02:41 AMENDMENT-1 (anonymizer deleted committed sqlite fixtures and could rewrite identifiers in code): fixed in tools/r4eval.py; E1-T3b-C1-r1's first 2 judgments (6.65) superseded and re-queued. Held-out author: 1 calibration done, 1 enlargement pending (PUBLIC.json).
+- 10-20 03:42 [r4eval] judged E1-T3b-C1-r1: 7.0
+- 10-20 05:10 Implemented candidate C2 (experiment/r4-c2 1c0364e, on C1 76d8b44): spine + independent acceptance checks replace the draft tournament (one peer builds a thin end-to-end spine + plan; others write ledger + black-box acceptance checks from the brief alone, fixtures, FACTs, then park; build phase: items DONE only when their check passes on main; cross-check of parts you did not build). Not launched: E2 is decided after E1. Tests 41 pass. Status: E1 2/20 done (T3b C1 q=7.0, T3b base4 pending judge), E1-T1b-C1-r1 running.
