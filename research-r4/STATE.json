@@ -24,23 +24,19 @@
   "session-5 resume 10-20 10:40 (all jobs alive)",
   "D5 token attribution (analysis/tokens.py)",
   "C3 implemented experiment/r4-c3 fbda22e",
-  "E3 prereg committed 92a38f1"
+  "E3 prereg committed 92a38f1",
+  "held-out author DONE 13:32 (4 tasks, sealed root 700 verified)",
+  "runner restarted PAR 2 (pid 1928441) 13:36"
  ],
  "running_jobs": [
-  {
-   "what": "held-out author (claude -p, restarts until PUBLIC.json done)",
-   "pid_wrapper": 1458552,
-   "pid_claude": "between sessions (wrapper sleeping; session 4 next)",
-   "public": "/workspace/r4/heldout/PUBLIC.json",
-   "note": "uses <=2 concurrent solo calibration runs; do NOT read /srv/murmur-sealed-r4"
-  },
   {
    "what": "r4 dev lab runner (E1 jobs)",
    "find": "pgrep -af r4-lab-runner",
    "lab": "/workspace/r4/lab",
    "results": "/workspace/r4/lab/results/E1-*/result.json",
-   "par": 1,
-   "note": "raise to PAR 3 (restart runner after current jobs; children survive) when author calibration is done"
+   "par": 2,
+   "note": "raise to PAR 3 after E1-T3b-solo-r1 (pid 1900911, child of the old runner) ends: kill parent only, restart directly (tools/start_runner.sh's pgrep matches its own caller's command line)",
+   "pid": 1928441
   },
   {
    "what": "E1 judge loop",
@@ -62,10 +58,11 @@
  ],
  "next_actions": [
   "poll; adapt loop queues jobs automatically, judge loop judges (its N=28 stop condition may need raising if the adaptive design runs >28)",
-  "when author done: verify sealed root-owned; restart runner with PAR 3 (tools/start_runner.sh 3 after killing only the runner parent; children survive); then set adapt to keep PAR pending jobs if desired (would be AMENDMENT-3)",
+  "after E1-T3b-solo-r1 ends: restart runner with PAR 3",
   "when E1/E2 screening ends (adapt log 'screening phase complete'): freeze sha256 of tools/adapt3.py in LOG, start a loop running it (copy adapt_loop.sh -> adapt3) + tools/judge_loop.sh E3 <N> 1",
   "when both candidates stopped (decisions.json): apply fallback rules if CAP, run agg, record E1/E2 outcome",
-  "then FINAL prereg + final_eval script"
+  "then FINAL prereg + final_eval script",
+  "write prereg/FINAL.md + tools/final_eval.py (sealed tasks H1-H4 copied in via sudo only at eval time) before the final eval"
  ],
  "budget": {
   "runs_done": 7,
