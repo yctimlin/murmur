@@ -15,13 +15,15 @@
   "AMENDMENT-1 anonymizer fix",
   "C2 implemented experiment/r4-c2 1c0364e",
   "E2 prereg committed 2be5fcc",
-  "C2 jobs queued (8)"
+  "C2 jobs queued (8)",
+  "E1 runs done: T3b/T1b x C1,base4,C2 (6); judged 4",
+  "session-3 resume 10-20 10:25 (all jobs alive)"
  ],
  "running_jobs": [
   {
    "what": "held-out author (claude -p, restarts until PUBLIC.json done)",
    "pid_wrapper": 1458552,
-   "pid_claude": 1458555,
+   "pid_claude": 1806760,
    "public": "/workspace/r4/heldout/PUBLIC.json",
    "note": "uses <=2 concurrent solo calibration runs; do NOT read /srv/murmur-sealed-r4"
   },
@@ -44,6 +46,7 @@
   }
  ],
  "next_actions": [
+  "Claude daily limit hit 08:47 10-20 (judge+PI); judge loop auto-retries; avoid heavy Claude use",
   "poll; judge loop E1 (28 runs incl C2) automatic",
   "when author done: verify sealed root-owned; restart runner PAR 3",
   "after all: python3 tools/r4eval.py agg E1 C1,base4 ; and agg for C2 vs C1 (use agg with arms C2,C1 -> modify cand/base)",
@@ -51,10 +54,12 @@
   "then write FINAL prereg + final_eval script"
  ],
  "budget": {
-  "runs_done": 3,
+  "runs_done": 6,
   "runs_queued": 28,
   "tokens_input_M": 0,
   "start": "2026-10-19 22:35",
-  "claude_403_events": 1
+  "claude_403_events": 1,
+  "claude_429_daily_events": 2,
+  "input_tokens_M_lab": 93.4
  }
 }
