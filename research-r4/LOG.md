@@ -80,3 +80,17 @@
 - 10-20 22:58 AMENDMENT-5 (user directive 22:56: ignore token cost), written with the adapt loop paused and before any decision analysis under it. Discloses that interim data had been seen. Tokens leave all keep rules (secondary only). C1 KEEP: P(dq vs base4 >= +0.5 AND active/base4 <= 1.10 AND active/solo <= 1.0). C2: P([(dq >= -0.3 AND active/ref <= 0.85) OR (dq >= +0.5 AND active/ref <= 1.10)] AND active/solo <= 1.0). Time model fitted on non-collapsed runs with solo as an arm, because collapsed runs are fast only by skipping work (flagged 16:31). Stopping, cap and allocation unchanged. C3/E3 deprioritized (token-economy candidate; not run). FINAL G4 (tokens <= 2x solo) is now secondary only. sha256: 6911d781 prereg/AMENDMENT-5.md; 76198d97 tools/adapt5.py; bed378d2 tools/adapt_loop.sh; def24641 tools/final_decide.py; 
 - 10-20 22:58 [adapt] queued E1-T1b-C1-r2 (A5 P_keep C1=0.52, C2=0.24)
 - 10-20 22:58 Adapt loop restarted on adapt5.py (pid 2347159). First A5 look: C1 P_keep 0.52 (P(dq>=0.5) 0.82, active vs base4 x1.00, vs solo x0.66), C2 0.24; queued E1-T1b-C1-r2. STATE/PROGRESS updated.
+- 10-20 23:38 [adapt] queued E1-T1b-base4-r2 (A5 P_keep C1=0.60, C2=0.23)
+- 10-21 00:03 [r4eval] judged E1-T4b-C2-r2: 6.8
+- 10-21 00:08 Poll: E1-T4b-C2-r2 judged 6.8; E1-T3b-base4-r2 finished (judging). A5 look 00:05: C1 P_keep 0.60, C2 0.24. Adapt queued E1-T1b-base4-r2 (pairing).
+- 10-21 01:38 [r4eval] judged E1-T3b-base4-r2: 7.6
+- 10-21 02:04 [adapt] queued E1-T3b-C2-r2 (A5 P_keep C1=0.55, C2=0.24)
+- 10-21 02:06 Poll: E1-T3b-base4-r2 judged 7.6; E1-T2-solo-r1 finished (active_nf 30.9, 1.8M; judging). Adapt (A5) queued E1-T3b-C2-r2; P_keep C1 0.55, C2 0.24.
+- 10-21 03:08 [r4eval] judged E1-T2-solo-r1: 7.9
+- 10-21 04:08 Poll: E1-T2-solo-r1 judged 7.9. Runs in progress (box freezes stretch wall time ~3-4x); nothing failed.
+- 10-21 04:39 [adapt] queued E1-T2-C1-r2 (A5 P_keep C1=0.56, C2=0.24)
+- 10-21 05:39 Poll: E1-T1b-base4-r2 finished (delivered, 24.1 min, 13.1M; judging); adapt queued E1-T2-C1-r2.
+- 10-21 06:09 [r4eval] judged E1-T1b-base4-r2: 7.65
+- 10-21 06:30 [adapt] queued E1-T2-base4-r2 (A5 P_keep C1=0.35, C2=0.41)
+- 10-21 06:35 [adapt] queued E1-T1b-C2-r2 (A5 P_keep C1=0.35, C2=0.41)
+- 10-21 07:09 AMENDMENT-6 (tooling, F5): E1-T3b-C1-r2 (67 active min, capped, 225 lines on main) had peer a1 killed at 23:08 by a provider error ('servers are currently overloaded', reconnects exhausted). New mechanical, arm-blind infra rule: any codex session ending in task_complete with a 'stream disconnected' error makes the run infra (withdrawn, rerun, never scored), for all past and future runs, dev and FINAL. Checked over all 26 E1 runs: it flags only E1-T3b-C1-r2 (plus E1-T4b-C1-r1, already infra). The base4 T4b collapses stay valid. Disclosed: the PI saw the run's unjudged numbers, and withdrawing it helps C1, so the rule is purely mechanical. sha256: 9bdbb8c7 prereg/AMENDMENT-6.md; 2853e990 tools/r4eval.py; 
