@@ -44,3 +44,19 @@
 - 10-20 14:39 [adapt] queued E1-T4b-C2-r1 (P_keep C1=0.52, C2=0.09)
 - 10-20 14:46 tools/runner.py made restart-safe (inflight(): ledger jobs without result.json whose --one child is alive count toward PAR); start_runner.sh pgrep anchored so it no longer matches its caller (a broad 'pkill -f' pattern killed my own shell once; children unaffected). Runner restarted PAR 3 (pid 1971388); in flight E1-T3b-solo-r1, E1-T4b-C1-r2, E1-T1b-solo-r1; E1-T4b-C2-r1 pending. Infra only, no effect on arms.
 - 10-20 14:46 AMENDMENT-3 (tooling only): final_eval.py precondition pgrep always self-matched -> fixed (anchored, no shell); runner.py restart-safe concurrency noted. Written before any held-out use.
+- 10-20 16:05 E1-T3b-solo-r1 finished: delivered, runner active 58.1 min (wall 233 with freezes), input 4.34M (T3b swarms 34-37 min, 15.9-19.0M). Judge pending.
+- 10-20 16:08 [adapt] queued E1-T2-C1-r1 (P_keep C1=0.52, C2=0.09)
+- 10-20 16:30 [adapt] queued E1-T2-base4-r1 (P_keep C1=0.30, C2=0.17)
+- 10-20 16:31 E1-T4b-C1-r2 finished: delivered, 28 commits, runner active 44.0 min, input 21.2M (paired base4 T4b run collapsed at 7.3M). Interim 16:30: C1 P_keep 0.30 (tok ratio med 1.48 vs the 1.5 limit), C2 0.17 vs C1. Note for the report: E1's token criterion compares against base4 runs that are cheap BECAUSE they collapse; unchanged (pre-registered), flagged as a limitation. Adapt queued E1-T2-C1-r1 and E1-T2-base4-r1.
+- 10-20 17:05 [r4eval] judged E1-T3b-solo-r1: 7.9
+- 10-20 17:05 [adapt] queued E1-T2-C2-r1 (P_keep C1=0.30, C2=0.17)
+- 10-20 17:14 E1-T3b-solo-r1 judged 7.9 (T3b: base4 7.8, C2 7.55, C1 7.0).
+- 10-20 17:41 [r4eval] judge E1-T1b-solo-r1 j1 attempt 0 failed: IndexError('list index out of range') stdout=''
+- 10-20 18:06 E1-T1b-solo-r1 finished: delivered, runner active 43.1 min, input 1.97M (T1b swarms 27-34 min, 13.3-17.8M). One judge attempt returned empty stdout (retrying automatically).
+- 10-20 18:19 [adapt] queued E1-T4b-solo-r1 (P_keep C1=0.31, C2=0.15)
+- 10-20 18:24 [adapt] queued E1-T4b-C1-r3 (P_keep C1=0.31, C2=0.15)
+- 10-20 18:24 [r4eval] judged E1-T1b-solo-r1: 6.95
+- 10-20 18:29 [adapt] queued E1-T4b-base4-r2 (P_keep C1=0.44, C2=0.11)
+- 10-20 18:30 Finished: E1-T4b-C2-r1 (delivered, 31 commits, 42.6 min, 18.3M), E1-T2-C1-r1 (16 commits, 39.1 min, 16.9M), E1-T2-base4-r1 (21 commits, 40.6 min, 18.1M). Judged E1-T1b-solo-r1 6.95. Judging is the bottleneck (4 unjudged): judge loop restarted with par 2 and stop-count 60 (the old N=28 bound predates the adaptive design). Running: E1-T2-C2-r1, E1-T4b-solo-r1, E1-T4b-C1-r3; pending E1-T4b-base4-r2.
+- 10-20 18:41 Session 6 resume (session 5 ended ~18:40). Jobs alive, nothing relaunched: runner 1971388 PAR 3 (running E1-T2-C2-r1, E1-T4b-C1-r3, E1-T4b-solo-r1 [solo codex 2118353]), adapt loop 1846605, judge loop 2151353 (par 2, 3 judge claudes active), heartbeat 1462275. New supervisor directive 18:06: fix auxiliary hidden-test scoring (cp cannot stat /srv/murmur-lab-hidden/<task>, IndexError in mutation step) as tooling-only amendment + backfill, and make judge robust to empty-stdout IndexError. Working on it now.
+- 10-20 18:43 AMENDMENT-4 (tooling only, prereg/AMENDMENT-4.md): hidden-test errors are expected — dev tasks are open tasks with no hidden tests by design (RUBRIC.md; r3 evallab had the same error on every open run); runner now skips scoring without score.sh (score_na). Mutation IndexError = missing LAB/bin/mutation.py; now tools/mutation.py (identical r3 scorer 4797fc2f) + explicit error; backfill launched (tools/backfill_mutation.py, pid 2169046, nice 19, log analysis/mutation_backfill.log). Judge: empty stdout now an explicit no-verdict error, fresh anonymized copy per retry, backoff. New sha256 runner.py 41ab4069, r4eval.py d48f661a (supersedes 15c75549 in FINAL.md). Running children use old code; new children and next judge pass use the fix.

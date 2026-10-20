@@ -43,7 +43,8 @@
   {
    "what": "E1 judge loop",
    "pidfile": "/workspace/r4/judge/E1.loop.pid",
-   "log": "/workspace/r4/judge/E1.loop.log"
+   "log": "/workspace/r4/judge/E1.loop.log",
+   "note": "par 2, N=60 (restarted 18:31)"
   },
   {
    "what": "heartbeat",
@@ -59,13 +60,13 @@
   }
  ],
  "next_actions": [
-  "poll; adapt loop queues jobs automatically, judge loop judges (its N=28 stop condition may need raising if the adaptive design runs >28)",
+  "poll; adapt loop queues jobs automatically, judge loop judges (par 2, N=60)",
   "when E1/E2 screening ends (adapt log 'screening phase complete'): freeze sha256 of tools/adapt3.py in LOG, start a loop running it (copy adapt_loop.sh -> adapt3) + tools/judge_loop.sh E3 <N> 1",
   "when both candidates stopped (decisions.json): apply fallback rules if CAP, run agg, record E1/E2 outcome",
   "final eval: after dev chain decided -> write prereg/FINAL-CANDIDATE.md (40-hex sha), commit+push, stop dev runner, python3 tools/final_eval.py start; then tools/final_decide.py when 32 judged"
  ],
  "budget": {
-  "runs_done": 7,
+  "runs_done": 14,
   "runs_queued": "adaptive (1 pending)",
   "tokens_input_M": 0,
   "start": "2026-10-19 22:35",
