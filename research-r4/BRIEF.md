@@ -81,3 +81,6 @@ Never print secrets (ANTHROPIC_*, relay keys, auth files).
 
 Start now: read the files, write your first LOG.md entry and PROGRESS.md, create STATE.json, then write your initial
 research plan.
+
+## Supervisor directives
+On every session start (and whenever you resume), read /workspace/r4/SUPERVISOR-DIRECTIVES.md and follow it; it carries instructions from the user. Re-check it at least every 30 minutes.
