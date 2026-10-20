@@ -26,7 +26,9 @@
   "C3 implemented experiment/r4-c3 fbda22e",
   "E3 prereg committed 92a38f1",
   "held-out author DONE 13:32 (4 tasks, sealed root 700 verified)",
-  "runner restarted PAR 2 (pid 1928441) 13:36"
+  "runner restarted PAR 2 (pid 1928441) 13:36",
+  "FINAL prereg + final_decide.py + final_eval.py committed 2b8e141",
+  "runner PAR 3 restart-safe 14:50"
  ],
  "running_jobs": [
   {
@@ -34,9 +36,9 @@
    "find": "pgrep -af r4-lab-runner",
    "lab": "/workspace/r4/lab",
    "results": "/workspace/r4/lab/results/E1-*/result.json",
-   "par": 2,
-   "note": "raise to PAR 3 after E1-T3b-solo-r1 (pid 1900911, child of the old runner) ends: kill parent only, restart directly (tools/start_runner.sh's pgrep matches its own caller's command line)",
-   "pid": 1928441
+   "par": 3,
+   "note": "restart-safe: tools/start_runner.sh N after killing ONLY the parent pid (never pkill -f with a pattern your own shell contains)",
+   "pid": 1971388
   },
   {
    "what": "E1 judge loop",
@@ -58,11 +60,9 @@
  ],
  "next_actions": [
   "poll; adapt loop queues jobs automatically, judge loop judges (its N=28 stop condition may need raising if the adaptive design runs >28)",
-  "after E1-T3b-solo-r1 ends: restart runner with PAR 3",
   "when E1/E2 screening ends (adapt log 'screening phase complete'): freeze sha256 of tools/adapt3.py in LOG, start a loop running it (copy adapt_loop.sh -> adapt3) + tools/judge_loop.sh E3 <N> 1",
   "when both candidates stopped (decisions.json): apply fallback rules if CAP, run agg, record E1/E2 outcome",
-  "then FINAL prereg + final_eval script",
-  "write prereg/FINAL.md + tools/final_eval.py (sealed tasks H1-H4 copied in via sudo only at eval time) before the final eval"
+  "final eval: after dev chain decided -> write prereg/FINAL-CANDIDATE.md (40-hex sha), commit+push, stop dev runner, python3 tools/final_eval.py start; then tools/final_decide.py when 32 judged"
  ],
  "budget": {
   "runs_done": 7,
