@@ -28,7 +28,9 @@
   "held-out author DONE 13:32 (4 tasks, sealed root 700 verified)",
   "runner restarted PAR 2 (pid 1928441) 13:36",
   "FINAL prereg + final_decide.py + final_eval.py committed 2b8e141",
-  "runner PAR 3 restart-safe 14:50"
+  "runner PAR 3 restart-safe 14:50",
+  "session-6 resume 10-20 18:41 (all jobs alive)",
+  "AMENDMENT-4 tooling (score_na, tools/mutation.py, judge robustness) 6d6ed96"
  ],
  "running_jobs": [
   {
@@ -57,10 +59,17 @@
    "log": "/workspace/r4/analysis/adapt/loop.log",
    "decisions": "/workspace/r4/analysis/adapt/decisions.json",
    "stop": "touch analysis/adapt/STOPADAPT"
+  },
+  {
+   "what": "mutation backfill (aux metric)",
+   "pidfile": "/workspace/r4/analysis/mutation_backfill.pid",
+   "log": "/workspace/r4/analysis/mutation_backfill.log",
+   "note": "one-shot; rerun tools/backfill_mutation.py /workspace/r4/lab if it died (skips runs that have mutation)"
   }
  ],
  "next_actions": [
   "poll; adapt loop queues jobs automatically, judge loop judges (par 2, N=60)",
+  "check mutation backfill log; report mutation as secondary only",
   "when E1/E2 screening ends (adapt log 'screening phase complete'): freeze sha256 of tools/adapt3.py in LOG, start a loop running it (copy adapt_loop.sh -> adapt3) + tools/judge_loop.sh E3 <N> 1",
   "when both candidates stopped (decisions.json): apply fallback rules if CAP, run agg, record E1/E2 outcome",
   "final eval: after dev chain decided -> write prereg/FINAL-CANDIDATE.md (40-hex sha), commit+push, stop dev runner, python3 tools/final_eval.py start; then tools/final_decide.py when 32 judged"
