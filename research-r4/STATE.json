@@ -30,7 +30,8 @@
   "FINAL prereg + final_decide.py + final_eval.py committed 2b8e141",
   "runner PAR 3 restart-safe 14:50",
   "session-6 resume 10-20 18:41 (all jobs alive)",
-  "AMENDMENT-4 tooling (score_na, tools/mutation.py, judge robustness) 6d6ed96"
+  "AMENDMENT-4 tooling (score_na, tools/mutation.py, judge robustness) 6d6ed96",
+  "mutation backfill done (18 runs) 22:53"
  ],
  "running_jobs": [
   {
@@ -59,12 +60,6 @@
    "log": "/workspace/r4/analysis/adapt/loop.log",
    "decisions": "/workspace/r4/analysis/adapt/decisions.json",
    "stop": "touch analysis/adapt/STOPADAPT"
-  },
-  {
-   "what": "mutation backfill (aux metric)",
-   "pidfile": "/workspace/r4/analysis/mutation_backfill.pid",
-   "log": "/workspace/r4/analysis/mutation_backfill.log",
-   "note": "one-shot; rerun tools/backfill_mutation.py /workspace/r4/lab if it died (skips runs that have mutation)"
   }
  ],
  "next_actions": [

@@ -61,3 +61,17 @@
 - 10-20 18:41 Session 6 resume (session 5 ended ~18:40). Jobs alive, nothing relaunched: runner 1971388 PAR 3 (running E1-T2-C2-r1, E1-T4b-C1-r3, E1-T4b-solo-r1 [solo codex 2118353]), adapt loop 1846605, judge loop 2151353 (par 2, 3 judge claudes active), heartbeat 1462275. New supervisor directive 18:06: fix auxiliary hidden-test scoring (cp cannot stat /srv/murmur-lab-hidden/<task>, IndexError in mutation step) as tooling-only amendment + backfill, and make judge robust to empty-stdout IndexError. Working on it now.
 - 10-20 18:43 AMENDMENT-4 (tooling only, prereg/AMENDMENT-4.md): hidden-test errors are expected — dev tasks are open tasks with no hidden tests by design (RUBRIC.md; r3 evallab had the same error on every open run); runner now skips scoring without score.sh (score_na). Mutation IndexError = missing LAB/bin/mutation.py; now tools/mutation.py (identical r3 scorer 4797fc2f) + explicit error; backfill launched (tools/backfill_mutation.py, pid 2169046, nice 19, log analysis/mutation_backfill.log). Judge: empty stdout now an explicit no-verdict error, fresh anonymized copy per retry, backoff. New sha256 runner.py 41ab4069, r4eval.py d48f661a (supersedes 15c75549 in FINAL.md). Running children use old code; new children and next judge pass use the fix.
 - 10-20 18:44 Note: an accidental manual invocation of tools/adapt.py (meant as --help) performed one extra interim look at 18:44 (analysis/adapt/1020-1844.json); it queued nothing (1 job already pending: E1-T4b-base4-r2) and changes no rule. Interim: C1 P_keep 0.44 (dq +0.81, tok x1.32, act x1.03; n_judged 2 paired), C2 P_keep 0.11 vs C1. 9 E1 runs judged; unjudged finished: T4b-C1-r2, T4b-C2-r1, T2-C1-r1, T2-base4-r1 (judging in progress, par 2).
+- 10-20 19:07 [r4eval] judged E1-T2-base4-r1: 7.8
+- 10-20 19:07 [r4eval] judged E1-T2-C1-r1: 7.9
+- 10-20 19:07 [r4eval] judged E1-T4b-C1-r2: 7.35
+- 10-20 19:40 [r4eval] judged E1-T4b-C1-r2: 7.275
+- 10-20 19:41 [adapt] queued E1-T4b-C2-r2 (P_keep C1=0.48, C2=0.13)
+- 10-20 19:44 [r4eval] judged E1-T4b-C2-r1: 7.2
+- 10-20 21:11 [adapt] queued E1-T3b-C1-r2 (P_keep C1=0.46, C2=0.15)
+- 10-20 21:16 [adapt] queued E1-T3b-base4-r2 (P_keep C1=0.22, C2=0.16)
+- 10-20 21:36 Finished: E1-T4b-C1-r3 (delivered, 27 commits, 35.0 min, 18.6M), E1-T4b-base4-r2 (3 commits, 22.3 min, 5.3M — looks like a 2nd base4 collapse on T4b; judge pending), E1-T4b-solo-r1 (45.4 min, 3.7M), E1-T2-C2-r1 (23 commits, 35.0 min, 16.3M). E1-T4b-base4-r2 ran on the AMENDMENT-4 runner: score_na recorded, mutation computed in-run (fix verified). Mutation backfill pass 1 done; pass 2 launched for runs finished meanwhile. Adapt queued E1-T3b-C1-r2 + E1-T3b-base4-r2 (C1 P_keep fell to 0.22 as cheap collapsed base4 runs raise C1's token ratio to 1.59 — the pre-registered limitation noted 16:31).
+- 10-20 21:37 [r4eval] judged E1-T2-C2-r1: 7.9
+- 10-20 21:39 [r4eval] judged E1-T4b-C1-r3: 7.4
+- 10-20 21:40 [adapt] queued E1-T2-solo-r1 (P_keep C1=0.23, C2=0.17)
+- 10-20 22:40 [r4eval] judged E1-T4b-base4-r2: 1.7000000000000002
+- 10-20 22:53 E1-T4b-base4-r2 judged 1.7 = 2nd base4 collapse on T4b (2/2 base4 T4b runs collapsed; C1 T4b 7.275/7.4, C2 T4b 7.2, solo T4b pending). Mutation backfill complete for all 18 finished runs (secondary only). Interim 22:51: C1 P_keep 0.29 (dq +1.84 vs base4 but token ratio 1.60 > 1.5 limit because collapsed base4 runs are cheap), C2 0.17 vs C1.
