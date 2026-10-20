@@ -1,5 +1,5 @@
 {
- "phase": "2-E1+E2 adaptive (AMENDMENT-2): Bayesian sequential allocation over base4/C1/C2 x T1b,T2,T3b,T4b",
+ "phase": "2-E1+E2 adaptive (AMENDMENT-2 + AMENDMENT-5: no token terms; quality + active-time speed vs base4/ref and solo)",
  "completed": [
   "read BRIEF/CONTEXT/noam-brown",
   "session1 read r3/murmur/codex (died on Claude 403 daily limit)",
@@ -31,7 +31,10 @@
   "runner PAR 3 restart-safe 14:50",
   "session-6 resume 10-20 18:41 (all jobs alive)",
   "AMENDMENT-4 tooling (score_na, tools/mutation.py, judge robustness) 6d6ed96",
-  "mutation backfill done (18 runs) 22:53"
+  "mutation backfill done (18 runs) 22:53",
+  "session-7 resume 10-20 22:56 (all jobs alive)",
+  "AMENDMENT-5 committed+pushed 9719434 (tokens secondary, adapt5.py, C3 deprioritized, FINAL G4 secondary)",
+  "adapt loop restarted on adapt5.py 22:58"
  ],
  "running_jobs": [
   {
@@ -55,19 +58,20 @@
    "note": "lab/heartbeat.pid holds a stale parent pid"
   },
   {
-   "what": "adaptive allocator loop (every 5 min; keeps exactly 1 pending job)",
+   "what": "adaptive allocator loop (tools/adapt5.py every 5 min; keeps exactly 1 pending job)",
    "pidfile": "/workspace/r4/analysis/adapt/loop.pid",
    "log": "/workspace/r4/analysis/adapt/loop.log",
    "decisions": "/workspace/r4/analysis/adapt/decisions.json",
-   "stop": "touch analysis/adapt/STOPADAPT"
+   "stop": "touch analysis/adapt/STOPADAPT",
+   "pid": 2347159
   }
  ],
  "next_actions": [
-  "poll; adapt loop queues jobs automatically, judge loop judges (par 2, N=60)",
-  "check mutation backfill log; report mutation as secondary only",
-  "when E1/E2 screening ends (adapt log 'screening phase complete'): freeze sha256 of tools/adapt3.py in LOG, start a loop running it (copy adapt_loop.sh -> adapt3) + tools/judge_loop.sh E3 <N> 1",
-  "when both candidates stopped (decisions.json): apply fallback rules if CAP, run agg, record E1/E2 outcome",
-  "final eval: after dev chain decided -> write prereg/FINAL-CANDIDATE.md (40-hex sha), commit+push, stop dev runner, python3 tools/final_eval.py start; then tools/final_decide.py when 32 judged"
+  "poll; adapt loop (adapt5) queues jobs, judge loop judges (par 2, N=60)",
+  "C3/E3 NOT run (deprioritized by AMENDMENT-5); do not start adapt3",
+  "when both candidates stopped (decisions.json) or CAP: apply AMENDMENT-5 fallback (quality + active ratios vs ref & solo), run agg, record E1/E2 outcome",
+  "optional: a new quality/speed candidate needs its own prereg before any run",
+  "final eval: write prereg/FINAL-CANDIDATE.md (40-hex sha), commit+push, stop dev runner, python3 tools/final_eval.py start; tools/final_decide.py (G4 secondary) when 32 judged"
  ],
  "budget": {
   "runs_done": 14,
