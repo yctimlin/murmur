@@ -1,5 +1,5 @@
 {
- "phase": "2-E1+E2 running (E1 base4 vs C1, E2 C2 interleaved, same lab)",
+ "phase": "2-E1+E2 adaptive (AMENDMENT-2): Bayesian sequential allocation over base4/C1/C2 x T1b,T2,T3b,T4b",
  "completed": [
   "read BRIEF/CONTEXT/noam-brown",
   "session1 read r3/murmur/codex (died on Claude 403 daily limit)",
@@ -17,7 +17,10 @@
   "E2 prereg committed 2be5fcc",
   "C2 jobs queued (8)",
   "E1 runs done: T3b/T1b x C1,base4,C2 (6); judged 4",
-  "session-3 resume 10-20 10:25 (all jobs alive)"
+  "session-3 resume 10-20 10:25 (all jobs alive)",
+  "session-4 resume 10-20 10:27",
+  "AMENDMENT-2 adaptive design committed+pushed b71f72d (before applying)",
+  "withdrew 21 fixed-schedule jobs; adapt loop started"
  ],
  "running_jobs": [
   {
@@ -36,26 +39,33 @@
    "note": "raise to PAR 3 (restart runner after current jobs; children survive) when author calibration is done"
   },
   {
-   "what": "heartbeat",
-   "pidfile": "/workspace/r4/lab/heartbeat.pid"
-  },
-  {
    "what": "E1 judge loop",
    "pidfile": "/workspace/r4/judge/E1.loop.pid",
    "log": "/workspace/r4/judge/E1.loop.log"
+  },
+  {
+   "what": "heartbeat",
+   "find": "pgrep -f tools/heartbeat.sh",
+   "note": "lab/heartbeat.pid holds a stale parent pid"
+  },
+  {
+   "what": "adaptive allocator loop (every 5 min; keeps exactly 1 pending job)",
+   "pidfile": "/workspace/r4/analysis/adapt/loop.pid",
+   "log": "/workspace/r4/analysis/adapt/loop.log",
+   "decisions": "/workspace/r4/analysis/adapt/decisions.json",
+   "stop": "touch analysis/adapt/STOPADAPT"
   }
  ],
  "next_actions": [
-  "Claude daily limit hit 08:47 10-20 (judge+PI); judge loop auto-retries; avoid heavy Claude use",
-  "poll; judge loop E1 (28 runs incl C2) automatic",
-  "when author done: verify sealed root-owned; restart runner PAR 3",
-  "after all: python3 tools/r4eval.py agg E1 C1,base4 ; and agg for C2 vs C1 (use agg with arms C2,C1 -> modify cand/base)",
-  "apply E1 + E2 decision rules",
-  "then write FINAL prereg + final_eval script"
+  "poll; adapt loop queues jobs automatically, judge loop judges (its N=28 stop condition may need raising if the adaptive design runs >28)",
+  "when author done: verify sealed root-owned; restart runner with PAR 3 (tools/start_runner.sh 3 after killing only the runner parent; children survive); then set adapt to keep PAR pending jobs if desired (would be AMENDMENT-3)",
+  "when both candidates stopped (decisions.json): apply fallback rules if CAP, run agg, record E1/E2 outcome",
+  "plan C3 aimed at tokens (swarm ~3-4x solo input; neither C1 nor C2 reduces tokens so far) with its own prereg",
+  "then FINAL prereg + final_eval script"
  ],
  "budget": {
-  "runs_done": 6,
-  "runs_queued": 28,
+  "runs_done": 7,
+  "runs_queued": "adaptive (1 pending)",
   "tokens_input_M": 0,
   "start": "2026-10-19 22:35",
   "claude_403_events": 1,

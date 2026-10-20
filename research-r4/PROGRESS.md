@@ -1,9 +1,14 @@
-Updated: 2026-10-20 10:24 (Asia/Taipei)
-Phase: 2 — E1 (C1 consensus termination vs base4) + E2 (C2 spine + acceptance checks), 6/28 runs done, all delivered.
-Latest (judged quality, 2 judges): T3b C1 7.0 vs base4 7.8; T1b C1 7.7 vs base4 7.6. C2 runs (T3b, T1b) done, judging
-pending. Freeze-excluded active min: base4 33.9/28.4, C1 34.4/27.0, C2 36.8/34.0 (T3b/T1b); input tokens base4 15.0/12.8M,
-C1 18.3/12.7M, C2 17.3/17.2M. n too small for any decision.
-Running: held-out author (session 3; 6 tasks authored, 4 calibrations done, 2 running); dev runner PAR 1 (E1-T4b-base4-r1);
-heartbeat; E1 judge loop (auto-retry).
-Next: keep polling; judge C2 runs; raise runner to PAR 3 when author finishes; aggregate + apply E1/E2 decision rules.
-Blockers: Claude daily usage limit (429) hit 08:47 — stalled judging and ended the previous PI session; box freezes.
+Updated: 2026-10-20 10:36 (Asia/Taipei)
+Phase: 2 — E1 (C1 consensus termination vs base4) + E2 (C2 spine + acceptance checks), now on an ADAPTIVE schedule
+(prereg/AMENDMENT-2.md, committed+pushed b71f72d before use, per the 10:27 supervisor directive).
+Adaptive rule: Bayesian two-part model (collapse rate + quality with task effects; log tokens/time) -> P_keep for the
+pre-registered E1/E2 KEEP rules; stop KEEP >=0.90 / REJECT <=0.10 after >=3 judged runs on >=2 paired tasks; cap
+3 runs/arm/task; uncertainty-sampling allocation with comparator pairing; r3 collapse-heavy tasks (T4b, then T3b) first;
+1 solo per task after every 4 swarm runs. The 21 fixed-schedule jobs were withdrawn.
+Latest (judged quality): T3b C1 7.0 / base4 7.8 / C2 7.55; T1b C1 7.7 / base4 7.6 (C2 pending). No collapse in 5 judged
+runs. Interim P_keep: C1 0.32 (quality diff -0.10, tokens x1.08 vs base4); C2 not yet judged enough (tokens x1.13 vs C1;
+its KEEP needs <=0.85 or a +0.5 quality gain). Swarm input still ~13-18M vs r3 solo 4.4M (3-4x).
+Running: held-out author (6 authored, 4 calibrations done, 2 running); runner PAR 1 (E1-T4b-base4-r1; next E1-T3b-solo-r1,
+then likely T4b C1/C2 and T2); heartbeat; judge loop; adapt loop (pid 1846605).
+Next: let the adaptive loop run; PAR 3 once the author finishes; plan C3 targeting token cost.
+Blockers: box freezes (~90 min per run, runs take ~2 h wall for ~25-35 active min); Claude daily limit (lifted for now).
