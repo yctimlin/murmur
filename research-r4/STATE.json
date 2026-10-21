@@ -1,5 +1,5 @@
 {
- "phase": "2-E1+E2 adaptive (AMENDMENT-2 + A5 no-token rule + A6 infra rule)",
+ "phase": "2-E1+E2 adaptive running + FORENSICS (directive 10-21 14:02)",
  "completed": [
   "read BRIEF/CONTEXT/noam-brown",
   "session1 read r3/murmur/codex (died on Claude 403 daily limit)",
@@ -40,7 +40,10 @@
   "AMENDMENT-7 PAR 4 + judge par 4 (10:44)",
   "PAR 5 (11:12, A7 addendum)",
   "judge backlog cleared 12:06 (3 new collapses: T1b-C1-r2, T2-C1-r2, T1b-C2-r2)",
-  "A6 scan 12:50: T4b-base4-r3 + T2-C2-r2 infra (rerun)"
+  "A6 scan 12:50: T4b-base4-r3 + T2-C2-r2 infra (rerun)",
+  "session-9 resume 10-21 14:03 (all jobs alive)",
+  "housekeeping tools/cleanup_ws.py freed 5.8 GB 14:08",
+  "forensic timelines extracted 14:20 (tools/forensics_extract.py)"
  ],
  "running_jobs": [
   {
@@ -70,9 +73,17 @@
    "decisions": "/workspace/r4/analysis/adapt/decisions.json",
    "stop": "touch analysis/adapt/STOPADAPT",
    "pid": 2347159
+  },
+  {
+   "what": "7 forensic analyst subagents (session-9 Agent tool; die with session)",
+   "outputs": "analysis/forensics/runs/*.md, analysis/forensics/contrasts/*.md",
+   "note": "if session ended before they finished: relaunch only for runs missing a runs/RID.md, protocol analysis/forensics/PROTOCOL.md"
   }
  ],
  "next_actions": [
+  "wait for forensic analysts; write analysis/FORENSICS.md (taxonomy with counts, time accounting, root causes)",
+  "derive mechanism-level improvements citing log evidence; pre-register (prereg/E4*.md) before testing",
+  "run tools/cleanup_ws.py after new judgments",
   "monitor load/mem at PAR 4 (AMENDMENT-7 guard); consider PAR 5 if avail mem > 4 GB",
   "report: collapse rate rose after 10-20 21:00 (2/20 -> 3/8); solo runs all predate it; note in limitations",
   "poll; adapt loop (adapt5) queues jobs, judge loop judges (par 2, N=60)",
