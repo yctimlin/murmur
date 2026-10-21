@@ -49,36 +49,25 @@
   "K0 708d5fa + K1 cd0d635 implemented, tested, smoke-tested, pushed",
   "AMENDMENT-8 + E4 prereg committed+pushed 9828cd6",
   "adapt loop stopped (STOPADAPT) 23:00",
-  "E4 queued 24 jobs 23:01 (lab/E4-plan.json), judge loop E4 started"
+  "E4 queued 24 jobs 23:01 (lab/E4-plan.json), judge loop E4 started",
+  "session-11 resume 10-22 02:08 (runner, E4 judge, heartbeat alive)",
+  "E1-T2-C1-r3 = infra (A6 provider-killed), not rerun (logged deviation from A8 item 1)",
+  "E1/E2 fallback computed 02:15: C1 REJECT (-0.20), C2 REJECT (+0.16, act 0.88) -> analysis/e1_fallback.json; E1 judge loop stopped"
  ],
  "running_jobs": [
   {
-   "what": "r4 dev lab runner (E1 jobs)",
+   "what": "r4 dev lab runner (E4 jobs)",
    "find": "pgrep -af r4-lab-runner",
    "lab": "/workspace/r4/lab",
-   "results": "/workspace/r4/lab/results/E1-*/result.json",
+   "results": "/workspace/r4/lab/results/E4-*/result.json",
    "par": 5,
    "note": "restart-safe: tools/start_runner.sh N after killing ONLY the parent pid (never pkill -f with a pattern your own shell contains)",
    "pid": 2754406
   },
   {
-   "what": "E1 judge loop",
-   "pidfile": "/workspace/r4/judge/E1.loop.pid",
-   "log": "/workspace/r4/judge/E1.loop.log",
-   "note": "par 4, N=60 (restarted 10:44 by AMENDMENT-7)"
-  },
-  {
    "what": "heartbeat",
    "find": "pgrep -f tools/heartbeat.sh",
    "note": "lab/heartbeat.pid holds a stale parent pid"
-  },
-  {
-   "what": "adaptive allocator loop (tools/adapt5.py every 5 min; keeps exactly 1 pending job)",
-   "pidfile": "/workspace/r4/analysis/adapt/loop.pid",
-   "log": "/workspace/r4/analysis/adapt/loop.log",
-   "decisions": "/workspace/r4/analysis/adapt/decisions.json",
-   "stop": "touch analysis/adapt/STOPADAPT",
-   "pid": 2347159
   },
   {
    "what": "E4 judge loop",
@@ -88,8 +77,8 @@
   }
  ],
  "next_actions": [
+  "poll E4 with tools/wait_change.sh 540 (24 runs; 5 in flight at 02:08, 19 pending)",
   "poll E4 (24 runs, PAR 5; runs may last up to 120 active min ~ several wall hours)",
-  "after E1-T2-C1-r3 judged: compute AMENDMENT-5 fallback for E1/E2, report with F-1 caveat (AMENDMENT-8)",
   "safety stop: if >=3 of 4 block-1 K1 runs collapse, withdraw block-2 K1 jobs",
   "compute S1/S2/S3 mechanism signatures per E4 run (extend tools/forensics_extract.py); D1-D3 per prereg/E4.md",
   "watch S3: builders verifying their own rows (seen in K1 smoke)",
@@ -97,7 +86,7 @@
   "then FINAL: prereg/FINAL-CANDIDATE.md per AMENDMENT-8 rule, commit+push, stop dev runner, tools/final_eval.py start"
  ],
  "budget": {
-  "runs_done": 14,
+  "runs_done": 37,
   "runs_queued": "adaptive (1 pending)",
   "tokens_input_M": 0,
   "start": "2026-10-19 22:35",
