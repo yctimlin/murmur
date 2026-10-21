@@ -1,5 +1,5 @@
-Updated: 2026-10-21 22:55 (Asia/Taipei)
-Phase: 3 — E4 preparation (session 10 resumed 22:12; nothing relaunched, all lab jobs alive).
+Updated: 2026-10-21 23:02 (Asia/Taipei)
+Phase: 3 — E4 RUNNING (prereg committed+pushed 9828cd6 before any E4 run).
 Done since 17:08:
 - FORENSICS.md (F-1 wallclock rush 19/27 swarm runs, F-2 role inheritance, F-3 self-referential verification).
 - K0 = base4 + M0 (budget-clock file from murmur's monotonic cap clock + closing.md pointer; peers spawned with
@@ -12,6 +12,6 @@ Done since 17:08:
   (base4 x1, K0 x2, K1 x2, solo x1 per task = 24 runs; D1 mechanism check, D2 K0 non-regression, D3 K1 KEEP).
 E1/E2 latest: 37 judged; healthy swarm 6.65-7.9, 5 collapses (1.6-2.55); solo 6.95-7.9 at 31-47 active min;
 swarm active 17-45 (truncated by F-1). Judge blinding: arm-guess accuracy 0.57 (r3: 0.82).
-Running: runner PAR 5 (E1-T2-C1-r3 in flight), judge loop E1, adapt5 (idle, all stopped), heartbeat.
-Next: verify K1 smoke -> commit+push prereg (AMENDMENT-8, E4) -> push K0/K1 to lab repo -> queue E4 -> judge loop E4.
+Running: runner PAR 5 (E1-T2-C1-r3 + first 4 E4 runs), judge loops E1 + E4 (par 4), heartbeat; adapt5 stopped.
+Next: poll E4; E1/E2 fallback report once E1-T2-C1-r3 is judged; mechanism signatures S1-S3; D1-D3; then FINAL.
 Blockers: none (VM freezes ~75% of wall time).

@@ -1,5 +1,5 @@
 {
- "phase": "2-E1+E2 adaptive running + FORENSICS (directive 10-21 14:02)",
+ "phase": "3-E4 running (K0/K1 vs base4/solo, prereg/E4.md)",
  "completed": [
   "read BRIEF/CONTEXT/noam-brown",
   "session1 read r3/murmur/codex (died on Claude 403 daily limit)",
@@ -43,7 +43,13 @@
   "A6 scan 12:50: T4b-base4-r3 + T2-C2-r2 infra (rerun)",
   "session-9 resume 10-21 14:03 (all jobs alive)",
   "housekeeping tools/cleanup_ws.py freed 5.8 GB 14:08",
-  "forensic timelines extracted 14:20 (tools/forensics_extract.py)"
+  "forensic timelines extracted 14:20 (tools/forensics_extract.py)",
+  "session-10 resume 10-21 22:12 (all jobs alive)",
+  "FORENSICS.md done 17:05",
+  "K0 708d5fa + K1 cd0d635 implemented, tested, smoke-tested, pushed",
+  "AMENDMENT-8 + E4 prereg committed+pushed 9828cd6",
+  "adapt loop stopped (STOPADAPT) 23:00",
+  "E4 queued 24 jobs 23:01 (lab/E4-plan.json), judge loop E4 started"
  ],
  "running_jobs": [
   {
@@ -75,22 +81,20 @@
    "pid": 2347159
   },
   {
-   "what": "7 forensic analyst subagents (session-9 Agent tool; die with session)",
-   "outputs": "analysis/forensics/runs/*.md, analysis/forensics/contrasts/*.md",
-   "note": "if session ended before they finished: relaunch only for runs missing a runs/RID.md, protocol analysis/forensics/PROTOCOL.md"
+   "what": "E4 judge loop",
+   "pidfile": "/workspace/r4/judge/E4.loop.pid",
+   "log": "/workspace/r4/judge/E4.loop.log",
+   "note": "par 4, N=24"
   }
  ],
  "next_actions": [
-  "wait for forensic analysts; write analysis/FORENSICS.md (taxonomy with counts, time accounting, root causes)",
-  "derive mechanism-level improvements citing log evidence; pre-register (prereg/E4*.md) before testing",
+  "poll E4 (24 runs, PAR 5; runs may last up to 120 active min ~ several wall hours)",
+  "after E1-T2-C1-r3 judged: compute AMENDMENT-5 fallback for E1/E2, report with F-1 caveat (AMENDMENT-8)",
+  "safety stop: if >=3 of 4 block-1 K1 runs collapse, withdraw block-2 K1 jobs",
+  "compute S1/S2/S3 mechanism signatures per E4 run (extend tools/forensics_extract.py); D1-D3 per prereg/E4.md",
+  "watch S3: builders verifying their own rows (seen in K1 smoke)",
   "run tools/cleanup_ws.py after new judgments",
-  "monitor load/mem at PAR 4 (AMENDMENT-7 guard); consider PAR 5 if avail mem > 4 GB",
-  "report: collapse rate rose after 10-20 21:00 (2/20 -> 3/8); solo runs all predate it; note in limitations",
-  "poll; adapt loop (adapt5) queues jobs, judge loop judges (par 2, N=60)",
-  "C3/E3 NOT run (deprioritized by AMENDMENT-5); do not start adapt3",
-  "when both candidates stopped (decisions.json) or CAP: apply AMENDMENT-5 fallback (quality + active ratios vs ref & solo), run agg, record E1/E2 outcome",
-  "optional: a new quality/speed candidate needs its own prereg before any run",
-  "final eval: write prereg/FINAL-CANDIDATE.md (40-hex sha), commit+push, stop dev runner, python3 tools/final_eval.py start; tools/final_decide.py (G4 secondary) when 32 judged"
+  "then FINAL: prereg/FINAL-CANDIDATE.md per AMENDMENT-8 rule, commit+push, stop dev runner, tools/final_eval.py start"
  ],
  "budget": {
   "runs_done": 14,
