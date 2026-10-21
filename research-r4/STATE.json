@@ -1,5 +1,5 @@
 {
- "phase": "2-E1+E2 adaptive (AMENDMENT-2 + AMENDMENT-5: no token terms; quality + active-time speed vs base4/ref and solo)",
+ "phase": "2-E1+E2 adaptive (AMENDMENT-2 + A5 no-token rule + A6 infra rule)",
  "completed": [
   "read BRIEF/CONTEXT/noam-brown",
   "session1 read r3/murmur/codex (died on Claude 403 daily limit)",
@@ -34,7 +34,10 @@
   "mutation backfill done (18 runs) 22:53",
   "session-7 resume 10-20 22:56 (all jobs alive)",
   "AMENDMENT-5 committed+pushed 9719434 (tokens secondary, adapt5.py, C3 deprioritized, FINAL G4 secondary)",
-  "adapt loop restarted on adapt5.py 22:58"
+  "adapt loop restarted on adapt5.py 22:58",
+  "AMENDMENT-6 provider-killed=infra f6b2cc4 (E1-T3b-C1-r2 withdrawn)",
+  "session-8 resume 10-21 10:42 (all jobs alive)",
+  "AMENDMENT-7 PAR 4 + judge par 4 (10:44)"
  ],
  "running_jobs": [
   {
@@ -42,15 +45,15 @@
    "find": "pgrep -af r4-lab-runner",
    "lab": "/workspace/r4/lab",
    "results": "/workspace/r4/lab/results/E1-*/result.json",
-   "par": 3,
+   "par": 4,
    "note": "restart-safe: tools/start_runner.sh N after killing ONLY the parent pid (never pkill -f with a pattern your own shell contains)",
-   "pid": 1971388
+   "pid": 2726980
   },
   {
    "what": "E1 judge loop",
    "pidfile": "/workspace/r4/judge/E1.loop.pid",
    "log": "/workspace/r4/judge/E1.loop.log",
-   "note": "par 2, N=60 (restarted 18:31)"
+   "note": "par 4, N=60 (restarted 10:44 by AMENDMENT-7)"
   },
   {
    "what": "heartbeat",
@@ -67,6 +70,7 @@
   }
  ],
  "next_actions": [
+  "monitor load/mem at PAR 4 (AMENDMENT-7 guard); consider PAR 5 if avail mem > 4 GB",
   "poll; adapt loop (adapt5) queues jobs, judge loop judges (par 2, N=60)",
   "C3/E3 NOT run (deprioritized by AMENDMENT-5); do not start adapt3",
   "when both candidates stopped (decisions.json) or CAP: apply AMENDMENT-5 fallback (quality + active ratios vs ref & solo), run agg, record E1/E2 outcome",
@@ -79,7 +83,7 @@
   "tokens_input_M": 0,
   "start": "2026-10-19 22:35",
   "claude_403_events": 1,
-  "claude_429_daily_events": 2,
+  "claude_429_daily_events": 3,
   "input_tokens_M_lab": 93.4
  }
 }
