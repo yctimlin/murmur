@@ -38,7 +38,9 @@
   "AMENDMENT-6 provider-killed=infra f6b2cc4 (E1-T3b-C1-r2 withdrawn)",
   "session-8 resume 10-21 10:42 (all jobs alive)",
   "AMENDMENT-7 PAR 4 + judge par 4 (10:44)",
-  "PAR 5 (11:12, A7 addendum)"
+  "PAR 5 (11:12, A7 addendum)",
+  "judge backlog cleared 12:06 (3 new collapses: T1b-C1-r2, T2-C1-r2, T1b-C2-r2)",
+  "A6 scan 12:50: T4b-base4-r3 + T2-C2-r2 infra (rerun)"
  ],
  "running_jobs": [
   {
@@ -72,6 +74,7 @@
  ],
  "next_actions": [
   "monitor load/mem at PAR 4 (AMENDMENT-7 guard); consider PAR 5 if avail mem > 4 GB",
+  "report: collapse rate rose after 10-20 21:00 (2/20 -> 3/8); solo runs all predate it; note in limitations",
   "poll; adapt loop (adapt5) queues jobs, judge loop judges (par 2, N=60)",
   "C3/E3 NOT run (deprioritized by AMENDMENT-5); do not start adapt3",
   "when both candidates stopped (decisions.json) or CAP: apply AMENDMENT-5 fallback (quality + active ratios vs ref & solo), run agg, record E1/E2 outcome",
