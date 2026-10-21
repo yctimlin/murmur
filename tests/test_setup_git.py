@@ -35,7 +35,8 @@ def test_prompts_render_with_fixes(tmp_path: Path):
 
     closing = render("closing.md", cap="1h", clock="/w/budget-clock.txt")
     assert "draft/<your id>" in closing and "port 0" in closing
-    peer = render("peer.md", id="a1", n="2", peer_ids="a1, a2", clone="/c", env="", draft="10")
+    peer = render("peer.md", id="a1", n="2", peer_ids="a1, a2", clone="/c", env="", draft="10",
+                  ledger="/w/ledger.py")
     assert "$MURMUR_AGENT" in peer
     root = render("root.md", n="2", spawns="-", wait_ms=str(ROOT_WAIT_MS))
     assert str(ROOT_WAIT_MS) in root

@@ -29,6 +29,7 @@ from importlib.resources import files
 from pathlib import Path
 from string import Template
 
+from murmur import ledger as murmur_ledger
 from murmur.cow import CowCopyError, cow_copy
 from murmur.procutil import (
     install_interrupt_handlers,
@@ -717,9 +718,13 @@ def setup(args: argparse.Namespace) -> None:
                     clone=agent["clone"],
                     env=env_block(agent["env"]),
                     draft=str(draft_minutes),
+                    ledger=str(ws / "ledger.py"),
                 )
             (ws / "prompts" / f"{agent['id']}.md").write_text(f"{brief}\n\n{closing}\n\n{appendix}\n")
         if not solo:
+            ledger = {"ids": ids, "codex_home": str(ws / "codex-home"), **murmur_ledger.build(brief, ids)}
+            (ws / "ledger.json").write_text(json.dumps(ledger, indent=2) + "\n")
+            shutil.copyfile(Path(murmur_ledger.__file__), ws / "ledger.py")
             spawns = "\n".join(
                 f"   - `task_name`: `{agent['id']}`, message: `Your instructions are in "
                 f"{ws / 'prompts' / (agent['id'] + '.md')}. Read the whole file first, then follow it.`"

@@ -48,8 +48,26 @@ Before you change something other parts depend on (shared components, layouts, c
 plan), post the change you intend on the board. Any peer may veto it, and a veto holds until you
 agree. Agreement on the board never permits breaking the rules above.
 
+The brief is the checklist. murmur split it into numbered rows, one per sentence or bullet, and
+gave each row a verifier by rotation; `python3 $ledger` shows every row with its verifier and status
+(`python3 $ledger $id` shows only yours). Every row starts OPEN, and only its verifier can close it,
+by a post in the `verify` channel:
+- `VERIFIED R12 <evidence>`: you used the latest `main` the way its user will meet it, on the real
+  input (the browser for screens, the real data and files for data, the documented commands for a
+  CLI), and the evidence is the command or the steps you ran and what you observed. The repo's own
+  tests, the builder's report or a draft do not count.
+- `FAIL R12 <what is wrong>`: post it as a task too; the row stays open until you verify the fix.
+- `N/A R3 <why>` for sentences that ask for nothing, and `DESCOPED R40 <reason from the brief or the
+  environment>` for what will not be done (say so in `PR.md`).
+- One post may cover several rows (`VERIFIED R4, R5, R9 ...`). If you built most of a row yourself,
+  `HANDOFF R12 <peer>` gives it to someone who did not; if a row's verifier has finished, any peer may
+  hand it on.
+Verify as soon as the parts for your rows land, not only at the end, so failures come back while
+their builders are still working.
+
 Your part being on `origin/main` does not finish the objective. Before you finish, pull `main` and
 review the whole result the way its user will meet it, not only your part: run it, and try every
 state and every screen size or environment it has to work in. Look hardest at the seams between
-parts that different peers built. Post each problem you find as a task, and claim it or see that
-someone does. Finish only when a review of the latest `main` finds nothing worth fixing.
+parts that different peers built. Post each problem you find as a task, and claim it or see that someone
+does. Finish only when `python3 $ledger` shows no row that is OPEN or FAIL and a review of the
+latest `main` finds nothing worth fixing.
