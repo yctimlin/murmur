@@ -106,3 +106,9 @@
 - 10-21 10:44 [adapt] queued E1-T3b-C1-r4 (A5 P_keep C1=0.41, C2=0.32)
 - 10-21 10:42 Session 8 resume (session 7 ended ~10:40). Jobs found alive: runner 1971388 PAR 3 (E1-T2-C2-r2, E1-T4b-C1-r4, E1-T4b-base4-r3 running; E1-T4b-C2-r3 pending), adapt5 loop 2347159, judge loop 2151353 (par 2), heartbeat 1462275. Judge backlog 6 (E1-T1b-C1-r2, E1-T1b-C2-r2, E1-T2-C1-r2, E1-T2-base4-r2, E1-T3b-C1-r3, E1-T3b-C2-r2) after Claude 429 DAILY_LIMIT 07:49-10:07. New USER directive 10:40: speed up (more judges, higher PAR).
 - 10-21 10:44 AMENDMENT-7 (tooling/throughput only, prereg/AMENDMENT-7.md): runner restarted PAR 4 (pid 2726980; in-flight runs kept, claimed E1-T4b-C2-r3 at once -> 4 running); judge loop restarted par 4 (pid 2726981; killed one ~5-min-old in-flight judge, will be redone). Box at change: 8 cores, ~7 GB available, load 1.8/6.7/10.5. Freezes (heartbeat): ~20 min every ~30 min since 04:00, 27.4 h frozen total; excluded from active_nf. Guard: back to PAR 3 if avail mem < 2 GB or sustained load > 16.
+- 10-21 10:45 [r4eval] judged E1-T2-C1-r2: 2.25
+- 10-21 10:46 [r4eval] judged E1-T1b-C1-r2: 2.45
+- 10-21 10:46 [r4eval] judged E1-T1b-C2-r2: 2.55
+- 10-21 10:48 [r4eval] judged E1-T2-base4-r2: 7.9
+- 10-21 11:07 [r4eval] judged E1-T3b-C2-r2: 7.4
+- 10-21 11:12 AMENDMENT-7 addendum: frozen fraction is 0.76/0.74/0.78 at 1/2/3 concurrent runs (host-side, PAR-independent); avail mem 6.6-8.7 GB at PAR 4 + 4 judges -> runner PAR 5 (pid 2754406). Sensitivity check (runs at <= 3 concurrent) pre-declared for the final analysis.

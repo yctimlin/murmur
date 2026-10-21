@@ -37,7 +37,8 @@
   "adapt loop restarted on adapt5.py 22:58",
   "AMENDMENT-6 provider-killed=infra f6b2cc4 (E1-T3b-C1-r2 withdrawn)",
   "session-8 resume 10-21 10:42 (all jobs alive)",
-  "AMENDMENT-7 PAR 4 + judge par 4 (10:44)"
+  "AMENDMENT-7 PAR 4 + judge par 4 (10:44)",
+  "PAR 5 (11:12, A7 addendum)"
  ],
  "running_jobs": [
   {
@@ -45,9 +46,9 @@
    "find": "pgrep -af r4-lab-runner",
    "lab": "/workspace/r4/lab",
    "results": "/workspace/r4/lab/results/E1-*/result.json",
-   "par": 4,
+   "par": 5,
    "note": "restart-safe: tools/start_runner.sh N after killing ONLY the parent pid (never pkill -f with a pattern your own shell contains)",
-   "pid": 2726980
+   "pid": 2754406
   },
   {
    "what": "E1 judge loop",
