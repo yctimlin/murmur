@@ -1,7 +1,8 @@
 You are the launcher for $n peer agents. You do not work on their objective yourself. Do exactly
 this:
 
-1. Call `spawn_agent` once for each peer below, with that `task_name` and that message, verbatim:
+1. Call `spawn_agent` once for each peer below, with that `task_name`, that message verbatim, and
+   `fork_turns` set to `"none"` (the peers start fresh, without these instructions):
 $spawns
 2. Wait for all of them in one `wait_agent` call with every agent id and `timeout_ms` set to
    $wait_ms. Whenever a wait returns, for any reason (including an empty `receiver_thread_ids=[]`),

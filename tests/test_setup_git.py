@@ -33,12 +33,15 @@ def test_clone_has_tags_reachable_from_base_only(tmp_path: Path):
 def test_prompts_render_with_fixes(tmp_path: Path):
     from murmur.cli import ROOT_WAIT_MS, render
 
-    closing = render("closing.md", cap="1h")
+    closing = render("closing.md", cap="1h", clock="/w/budget-clock.txt")
     assert "draft/<your id>" in closing and "port 0" in closing
     peer = render("peer.md", id="a1", n="2", peer_ids="a1, a2", clone="/c", env="", draft="10")
     assert "$MURMUR_AGENT" in peer
     root = render("root.md", n="2", spawns="-", wait_ms=str(ROOT_WAIT_MS))
     assert str(ROOT_WAIT_MS) in root
+    # Peers start without the launcher's context, and the agents read the enforced budget clock.
+    assert '`fork_turns` set to `"none"`' in root
+    assert "`cat /w/budget-clock.txt`" in closing and "never message\nit" in peer
     # An empty wait result must not leave the root waiting forever.
     assert "receiver_thread_ids=[]" in root and "list_agents" in root
     # The winning draft has to reach main before the swarm finishes.

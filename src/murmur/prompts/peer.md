@@ -11,7 +11,9 @@ Integrate often: `git pull --rebase origin main`, then
 Coordinate on the message board. A suggested convention: a `tasks` channel where a claim is a post
 and the earliest claim wins, and a `findings` channel with `FACT` / `FAIL` / `DONE` posts that
 point at commits and paths instead of pasting content. Subscribe to what you need. `list_agents`
-shows your peers. Use `followup_task` to wake a peer who has finished when you need them. Post only
+shows your peers. Use `followup_task` to wake a peer who has finished when you need them. The launcher
+(`/root`) only started you and waits; it never reads, answers or acts on anything, so never message
+it or wait for it: the work and deciding when it is finished are up to you and your peers. Post only
 when it carries information.
 
 Build first, and once, what makes all of you faster: a way to run the result without credentials,

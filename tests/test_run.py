@@ -116,6 +116,8 @@ def test_timeout_exits_capped(tmp_path: Path):
     assert "review it:" not in result.stdout  # nothing reached main
     record = json.loads((workspace / "logs" / "run.json").read_text())
     assert record["started_at"] < record["ended_at"]
+    # The launcher publishes the clock that enforces the cap.
+    assert "min left" in (workspace / "budget-clock.txt").read_text()
 
 
 def test_interruption_exits_130_and_stops_codex(tmp_path: Path):

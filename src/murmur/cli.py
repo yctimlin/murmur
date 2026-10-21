@@ -191,6 +191,40 @@ def write_codex_home(home: Path, trusted: Path, catalog: Path) -> None:
         (home / "auth.json").symlink_to(auth)
 
 
+# The cap is enforced on the monotonic clock, which stops while the machine is suspended; agents
+# that read the wall clock across a suspension believe the cap is near long before it is. The
+# launcher therefore publishes the clock it enforces (closing.md points the agents at it).
+CLOCK_FILE = "budget-clock.txt"
+
+
+class _BudgetClock:
+    def __init__(self, path: Path, started: float, cap_s: float, period_s: float = 30.0) -> None:
+        self.path, self.started, self.cap_s, self.period_s = path, started, cap_s, period_s
+        self._done = threading.Event()
+        self._write()
+        self._thread = threading.Thread(target=self._loop, daemon=True)
+        self._thread.start()
+
+    def _write(self) -> None:
+        used = (time.monotonic() - self.started) / 60
+        left = max(self.cap_s / 60 - used, 0)
+        text = (f"murmur budget clock: {used:.0f} of {self.cap_s / 60:.0f} min used, {left:.0f} min left "
+                f"(updated every {self.period_s:.0f} s; wall-clock time is not the budget)\n")
+        tmp = self.path.with_suffix(".tmp")
+        tmp.write_text(text)
+        tmp.replace(self.path)
+
+    def _loop(self) -> None:
+        while not self._done.wait(self.period_s):
+            try:
+                self._write()
+            except OSError:
+                pass
+
+    def stop(self) -> None:
+        self._done.set()
+
+
 def render(name: str, **values: str) -> str:
     text = files("murmur").joinpath("prompts", name).read_text()
     return Template(text).substitute(values).strip()
@@ -668,7 +702,7 @@ def setup(args: argparse.Namespace) -> None:
             fail(f"brief not found: {brief_file}")
         brief = brief_file.read_text().strip()
         agents, strategy = _prepare_clones(ws, origin, options, run_id, ids, procs)
-        closing = render("closing.md", cap=options["cap"])
+        closing = render("closing.md", cap=options["cap"], clock=str(ws / CLOCK_FILE))
         draft_minutes = max(10, seconds(options["cap"]) // 600)
         for agent in agents:
             write_env_sh(Path(agent["clone"]), agent["env"])
@@ -829,6 +863,7 @@ def run(args: argparse.Namespace) -> None:
         log_err = ws / "logs" / "session.err"
         started_at = now()
         started = time.monotonic()
+        clock = _BudgetClock(ws / CLOCK_FILE, started, seconds(meta["cap"]))
         capped = interrupted = False
         interruption_signal: int | None = None
         codex_exit: int | None = None
@@ -845,6 +880,7 @@ def run(args: argparse.Namespace) -> None:
                 if exc.args and exc.args[0] in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
                     interruption_signal = int(exc.args[0])
             finally:
+                clock.stop()
                 # Stop Codex with the signal the launcher got, so a Ctrl-C stays a Ctrl-C.
                 stop_process_group(proc, term_signal=interruption_signal or signal.SIGTERM)
                 codex_exit = proc.returncode

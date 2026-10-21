@@ -6,7 +6,10 @@ in `PR.md` at the repo root. `PR.md` should cover what changed, the decisions yo
 verified the work, and "How to see it". Put scratch notes in `.work/`. Push your work to
 `origin/main` (never force-push, never open pull requests, and push nowhere else except a
 `draft/<your id>` branch when your instructions ask for one); the result is `origin/main` when the
-work ends. Finish when the work is something you would ship. Hard cap: $cap.
+work ends. Finish when the work is something you would ship. Hard cap: $cap, counted on murmur's budget
+clock: `cat $clock` shows the minutes used and left, and it is the only measure of your remaining
+time. This machine can be suspended for long stretches, so the time of day, file times and message
+timestamps say nothing about your budget; never estimate it from them.
 
 Aim for the best result the brief allows, not the safest acceptable one. Keep the footprint to what
 the objective needs: do not change shared infrastructure (root layouts, auth, middleware, build or
