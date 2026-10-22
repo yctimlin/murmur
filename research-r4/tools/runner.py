@@ -28,6 +28,35 @@ ALLOWED_SETUP = {"py": "python3 -m venv .venv && .venv/bin/pip install -q pytest
 MODEL = os.environ.get("MURMUR_LAB_MODEL", "gpt-6-astra")   # murmur eec78f8 default, recorded
 EFFORT = os.environ.get("MURMUR_LAB_EFFORT", "high")
 
+class ActiveClock:
+    """Same rule as murmur's cap clock (experiment/r4-base4f, r4-k1f): a 1 s ticker leaves out any tick that arrives
+    more than 10 s late, i.e. host-side VM freezes during which CLOCK_MONOTONIC keeps advancing (AMENDMENT-10)."""
+    def __init__(self, tick=1.0, stall=10.0):
+        import threading
+        self.tick, self.stall, self.t0 = tick, stall, time.monotonic(); self.last = self.t0; self.stalled = 0.0
+        self.lock = threading.Lock(); self.done = threading.Event()
+        threading.Thread(target=lambda: [self.sample() for _ in iter(lambda: self.done.wait(self.tick), True)], daemon=True).start()
+    def sample(self):
+        with self.lock:
+            n = time.monotonic(); g = n - self.last
+            if g > self.tick + self.stall: self.stalled += g - self.tick
+            self.last = n
+    def active(self): self.sample(); return self.last - self.t0 - self.stalled
+
+def run_active(cmd, timeout, r=None, key=None, **kw):
+    """subprocess.run with a timeout counted in running (freeze-excluded) seconds; hard wall ceiling 16 h."""
+    c = ActiveClock(); w0 = time.time(); p = subprocess.Popen(cmd, **kw)
+    try:
+        while True:
+            try: rc = p.wait(timeout=5); break
+            except subprocess.TimeoutExpired:
+                if c.active() >= timeout or time.time() - w0 > 16 * 3600:
+                    p.kill(); p.wait(); raise subprocess.TimeoutExpired(cmd, timeout)
+    finally:
+        c.done.set()
+        if r is not None and key: r[key] = dict(active_min=round(c.active() / 60, 2), stalled_min=round(c.stalled / 60, 2))
+    return rc
+
 PR_SENTENCE = ("Record what you changed, the decisions you made, how you verified the work and how to see it "
                "in `PR.md` at the repository root.")
 def under_roots(p):
@@ -112,8 +141,8 @@ def run_exec(name, j, out, r):
     t0 = time.time()
     with open(os.path.join(ws, "prompt.md")) as pi, open(os.path.join(ws, "session.jsonl"), "w") as so, open(os.path.join(ws, "err.log"), "w") as se:
         try:
-            r["run_exit"] = subprocess.run(["codex", "exec", "--json", "--skip-git-repo-check", "-m", MODEL, "-c", f'model_reasoning_effort="{EFFORT}"',
-                                            "--sandbox", "workspace-write", "-c", 'approval_policy="never"'], stdin=pi, stdout=so, stderr=se, cwd=ws, env=env, timeout=cap * 60).returncode
+            r["run_exit"] = run_active(["codex", "exec", "--json", "--skip-git-repo-check", "-m", MODEL, "-c", f'model_reasoning_effort="{EFFORT}"',
+                                        "--sandbox", "workspace-write", "-c", 'approval_policy="never"'], cap * 60, r, "clock", stdin=pi, stdout=so, stderr=se, cwd=ws, env=env)
         except subprocess.TimeoutExpired: r["run_exit"] = "timeout"
     r["wall_min"] = round((time.time() - t0) / 60, 2); r["ws"] = ws; r.update(tokens(home))
     if subprocess.run(["git", "-C", repo, "status", "--porcelain"], capture_output=True, text=True).stdout.strip():
@@ -139,12 +168,12 @@ def run_murmur(name, j, out, r, port):
         args += ["--config", cfg]
     t0 = time.time()
     with open(os.path.join(out, "setup.log"), "w") as lf:
-        r["setup_exit"] = subprocess.run(args, stdout=lf, stderr=subprocess.STDOUT, env=env, timeout=1800).returncode
+        r["setup_exit"] = run_active(args, 1800, stdout=lf, stderr=subprocess.STDOUT, env=env)
     ws = os.path.join(WS, name); r["ws"] = ws
     if r["setup_exit"] != 0: return None
     cap = int(re.match(r"\d+", j.get("cap", "30m")).group()) + 10
     with open(os.path.join(out, "run.log"), "w") as lf:
-        try: r["run_exit"] = subprocess.run([M, "run", ws], stdout=lf, stderr=subprocess.STDOUT, env=env, timeout=cap * 60).returncode
+        try: r["run_exit"] = run_active([M, "run", ws], cap * 60, r, "clock", stdout=lf, stderr=subprocess.STDOUT, env=env)
         except subprocess.TimeoutExpired: r["run_exit"] = "timeout"
     r["wall_min"] = round((time.time() - t0) / 60, 2); r.update(tokens(os.path.join(ws, "codex-home")))
     if os.path.exists(os.path.join(ws, "logs/run.json")): shutil.copy(os.path.join(ws, "logs/run.json"), out)

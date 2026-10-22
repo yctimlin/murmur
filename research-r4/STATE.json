@@ -1,5 +1,5 @@
 {
- "phase": "3-E4 data complete (24/24 valid, 23 judged); D1 PASS (hand-check); awaiting last judgment (E4-T4b-K0-r1)",
+ "phase": "4-pre: freeze-clock fix + E5 head-to-head (user directive 22:50); held-out FINAL on hold",
  "completed": [
   "read BRIEF/CONTEXT/noam-brown",
   "session1 read r3/murmur/codex (died on Claude 403 daily limit)",
@@ -68,35 +68,29 @@
   "session-16 resume 10-22 17:39 (all jobs alive)",
   "session-17 resume 10-22 18:06 (all jobs alive)",
   "E4 24/24 valid 21:42 (T4b-K0-r1 2nd rerun valid)",
-  "signatures E4 + D1 hand-check 21:55: D1 PASS (0/16 S1, 0 early quits); freeze-clock confound found"
+  "signatures E4 + D1 hand-check 21:55: D1 PASS (0/16 S1, 0 early quits); freeze-clock confound found",
+  "E4 decided 22:33 (analysis/E4-RESULT.md): D1 PASS, D2 FAIL, D3 KEEP K1",
+  "FINAL-CANDIDATE K1 5c75a7b 22:35; dev runner+E4 judge stopped",
+  "final_eval.py precheck refused 22:37 (never ran)",
+  "session-18 resume 10-22 22:49; user directive 22:50: fix clock first, held-out on hold"
  ],
  "running_jobs": [
   {
-   "what": "r4 dev lab runner (E4 jobs)",
-   "find": "pgrep -af r4-lab-runner",
-   "lab": "/workspace/r4/lab",
-   "results": "/workspace/r4/lab/results/E4-*/result.json",
-   "par": 5,
-   "note": "restart-safe: tools/start_runner.sh N after killing ONLY the parent pid (never pkill -f with a pattern your own shell contains)",
-   "pid": 2754406
-  },
-  {
    "what": "heartbeat",
-   "find": "pgrep -f tools/heartbeat.sh",
-   "note": "lab/heartbeat.pid holds a stale parent pid"
+   "find": "pgrep -f tools/heartbeat.sh"
   },
   {
-   "what": "E4 judge loop",
-   "pidfile": "/workspace/r4/judge/E4.loop.pid",
-   "log": "/workspace/r4/judge/E4.loop.log",
-   "note": "par 4, N=24"
+   "what": "clock probe",
+   "pidfile": "/workspace/r4/analysis/clock/clocklog.pid",
+   "log": "/workspace/r4/analysis/clock/clocklog.txt"
   }
  ],
  "next_actions": [
-  "wait for judge of E4-T4b-K0-r1 (judge loop)",
-  "python3 analysis/e4_decide.py with D1 overridden by hand-check -> analysis/e4_decision.json; report D1-D3 in LOG/PROGRESS",
-  "decide freeze-clock mitigation for FINAL (lab-side: lower PAR / freeze-aware cap) as a logged amendment BEFORE final runs",
-  "then FINAL: prereg/FINAL-CANDIDATE.md per AMENDMENT-8 rule, commit+push, stop dev runner, tools/final_eval.py start"
+  "implement stall-excluded cap clock patch (same on base4 146d476 and K1 cd0d635 -> experiment/r4-base4f, experiment/r4-k1f) + test",
+  "runner: freeze-aware timeouts for exec/solo and murmur",
+  "AMENDMENT-10 + prereg/E5.md, commit+push before any run",
+  "raise lab budget (ledger 74/80) as tooling amendment",
+  "run E5 adaptive; report in LOG/PROGRESS; held-out only with winner"
  ],
  "budget": {
   "runs_done": 48,
