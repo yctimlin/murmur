@@ -1,0 +1,35 @@
+{
+ "status": "done",
+ "finished_at": "2026-10-20T13:32:34+08:00",
+ "tasks": [
+  {
+   "slot": "H1",
+   "version_id": "H1",
+   "bundle_sha256": "b872e7b4d4afb722a7c9c0f4501f8c169387d2743cfa2c5e37cd20eaab93a806",
+   "calib_active_min": 42.37,
+   "enlargements": 0
+  },
+  {
+   "slot": "H2",
+   "version_id": "H2v3",
+   "bundle_sha256": "28e5bc5d7e5e77e3f2d227e9d92af64ed01c41f28d031167e18227ecb1f08df2",
+   "calib_active_min": 45.6,
+   "enlargements": 2
+  },
+  {
+   "slot": "H3",
+   "version_id": "H3",
+   "bundle_sha256": "c03aab1018ad0e888333833c827721d57bffff72c89bdc60886457c9a6a79d53",
+   "calib_active_min": 66.55,
+   "enlargements": 0
+  },
+  {
+   "slot": "H4",
+   "version_id": "H4",
+   "bundle_sha256": "5d91dae2ad8a86af7ad6f079e59067beae7cd61aca6f20c6094771ce35f98fdf",
+   "calib_active_min": 44.37,
+   "enlargements": 0
+  }
+ ],
+ "notes": "All 4 slots calibrated >=40 active min with codex exec. One slot needed 2 enlargements; its last version's first run failed mid-run with a relay error and was rerun (not counted). One backup task authored and partially calibrated, unused; 0 replacements used."
+}

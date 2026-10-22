@@ -81,16 +81,21 @@ Operator mechanical check of original input files: {json.dumps(oc)} (originals_c
 
 End your answer with the single final JSON line exactly as the rubric specifies (include "guess")."""
     for att in range(4):
+        out_s = err_s = ""
         try:
             r = subprocess.run([CLAUDE, "-p", p, "--permission-mode", "bypassPermissions"], cwd=d, capture_output=True, text=True, timeout=2700, stdin=subprocess.DEVNULL)
-            lines = [l for l in r.stdout.strip().splitlines() if l.strip().strip("`").startswith("{") and "overall" in l]
+            out_s, err_s = r.stdout or "", r.stderr or ""
+            lines = [l for l in out_s.strip().splitlines() if l.strip().strip("`").startswith("{") and "overall" in l]
+            if not lines: raise RuntimeError(f"no verdict JSON (exit {r.returncode}, {len(out_s)} chars stdout)")
             j = json.loads(lines[-1].strip().strip("`")); j["_rid"] = rid; j["_originals"] = oc
-            g = re.findall(r'"guess"\s*:\s*"(single|team)"', r.stdout)
+            g = re.findall(r'"guess"\s*:\s*"(single|team)"', out_s)
             if "guess" not in j and g: j["guess"] = g[-1]
-            open(f"{D}/{n}.j{k}.md", "w").write(r.stdout); json.dump(j, open(out, "w")); shutil.rmtree(d, ignore_errors=True); return j
+            open(f"{D}/{n}.j{k}.md", "w").write(out_s); json.dump(j, open(out, "w")); shutil.rmtree(d, ignore_errors=True); return j
         except Exception as e:
-            log(f"judge {n} j{k} attempt {att} failed: {repr(e)[:100]} stdout={r.stdout[-160:]!r}" if 'r' in dir() else f"judge {n} j{k} attempt {att} failed: {repr(e)[:100]}")
-            time.sleep(300 if "limit" in (locals().get('r') and r.stdout or "") else 90)
+            log(f"judge {n} j{k} attempt {att} failed: {repr(e)[:120]} stdout={out_s[-160:]!r} stderr={err_s[-160:]!r}")
+            # fresh anonymized copy per attempt: a failed judge may have modified/installed things in the directory
+            shutil.rmtree(d, ignore_errors=True); d = anonymize(n, rid)
+            time.sleep(600 if "limit" in (out_s + err_s).lower() else 120 * (att + 1))
     shutil.rmtree(d, ignore_errors=True); return None
 def score_run(exp, n):
     r = res(n)
@@ -102,7 +107,16 @@ def score_run(exp, n):
     if not js: return None
     ov = stt.median([j["overall"] for j in js]) if len(js) == 3 else stt.mean([j["overall"] for j in js])
     return {"overall": ov, "judgments": js}
-def is_infra(r): return bool(r.get("infra")) or ("CalledProcessError" in str(r.get("error") or "") and not r.get("delivered"))
+def provider_killed(ws):
+    """AMENDMENT-6: a session (root, peer or solo) ended by a provider error after codex exhausted its reconnects
+    (task_complete with error 'stream disconnected ...', e.g. 'servers are currently overloaded'; AMENDMENT-9: or
+    'exceeded retry limit, last status: ...')."""
+    for f in glob.glob(f"{ws}/codex-home/sessions/**/rollout*.jsonl", recursive=True):
+        for l in open(f, errors="replace"):
+            if '"task_complete"' in l and re.search(r'"error"\s*:\s*\{\s*"message"\s*:\s*"(stream disconnected|exceeded retry limit)', l): return True
+    return False
+def is_infra(r): return bool(r.get("infra")) or ("CalledProcessError" in str(r.get("error") or "") and not r.get("delivered")) \
+    or bool(r.get("ws") and provider_killed(r["ws"]))
 def finished(exp): return sorted(os.path.basename(os.path.dirname(p)) for p in glob.glob(f"{L}/results/{exp}-*/result.json"))
 def judge(exp, par=2):
     todo = [n for n in finished(exp) if not os.path.exists(f"{J}/{exp}/{n}.score.json")]

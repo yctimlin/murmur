@@ -1,0 +1,589 @@
+[
+ {
+  "run": "E4-T1b-K0-r1",
+  "budget_end": 35.1,
+  "pressure_posts": [
+   {
+    "by": "a2",
+    "budget_min": 26.3,
+    "text": "BUDGET checkpoint: clock now 91/120, 29min left (jumped). a2 PR final content pushed b1f1c88. Finishing whole-app latest-main smoke; please prioritize final cla"
+   },
+   {
+    "by": "a2",
+    "budget_min": 30.9,
+    "text": "a2 clock108/120,12min left. Updating PR/README measured10x and final tests right now. Please no new features; final binary extension fix only if already complet"
+   }
+  ],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {
+   "a3": [
+    35.0
+   ]
+  },
+  "ledger_calls": 0,
+  "premature_end": true
+ },
+ {
+  "run": "E4-T1b-K0-r2",
+  "budget_end": 35.1,
+  "pressure_posts": [
+   {
+    "by": "a2",
+    "budget_min": 25.2,
+    "text": "Clock now 84/120 used; 36min left. a2 adapters fully main now, urgent full-flow UI/API review please. I correct plot metadata and related-title shape and add Op"
+   }
+  ],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {},
+  "ledger_calls": 0,
+  "premature_end": true
+ },
+ {
+  "run": "E4-T1b-K1-r1",
+  "budget_end": 38.3,
+  "pressure_posts": [
+   {
+    "by": "a1",
+    "budget_min": 32.2,
+    "text": "a2 owns final PR.md update per earlier a1 request; a3 please coordinate append to avoid conflicts. Binary parser hook + test in flight; own assigned UI/account/"
+   },
+   {
+    "by": "a3",
+    "budget_min": 36.6,
+    "text": "URGENT budget118/120 now2min left. Remaining OPEN R9,R10,R49,R60,R79,R84 a1 and R77 a2. All a3 verification closed; mainf571e31 contains all a3 work and20tests "
+   }
+  ],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {},
+  "ledger_calls": 29,
+  "premature_end": true,
+  "verify_posts": 26,
+  "verify_verbs": {
+   "VERIFIED": 14,
+   "FAIL": 0,
+   "N/A": 3,
+   "DESCOPED": 1,
+   "HANDOFF": 8
+  },
+  "ledger_final": "0 of 84 rows not closed: OPEN 0, FAIL 0, VERIFIED 56, N/A 27, DESCOPED 1"
+ },
+ {
+  "run": "E4-T1b-K1-r2",
+  "budget_end": 32.2,
+  "pressure_posts": [
+   {
+    "by": "a1",
+    "budget_min": 7.2,
+    "text": "a1 confirms split. a3 draft URL was findings post: http://127.0.0.1:55600; screenshot a1/.work/a1.png. Adopt sha256 (not digest) per schema above. Prefer Curati"
+   }
+  ],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {
+   "a1": [
+    32.0
+   ],
+   "a2": [
+    31.9
+   ],
+   "a3": [
+    31.5
+   ]
+  },
+  "ledger_calls": 31,
+  "premature_end": false,
+  "verify_posts": 32,
+  "verify_verbs": {
+   "VERIFIED": 19,
+   "FAIL": 0,
+   "N/A": 5,
+   "DESCOPED": 0,
+   "HANDOFF": 8
+  },
+  "ledger_final": "0 of 84 rows not closed: OPEN 0, FAIL 0, VERIFIED 54, N/A 30, DESCOPED 0"
+ },
+ {
+  "run": "E4-T1b-base4-r1",
+  "budget_end": 31.0,
+  "pressure_posts": [
+   {
+    "by": "a3",
+    "budget_min": 18.2,
+    "text": "DONE UI on origin/main 7c6fa2c. Clock now 17:05 UTC (~90m since start), 30m remaining hard cap. Need core/API pushed immediately for integration. README need CL"
+   },
+   {
+    "by": "a1",
+    "budget_min": 22.9,
+    "text": "DONE core on origin/main 8321e4d. Smoke: initial 1250 files (includes PR.md), 1.3s; no-change scan 1250 unchanged; EXP-2023-001 dossier 28 notes + 1 log. a1 now"
+   },
+   {
+    "by": "a3",
+    "budget_min": 23.9,
+    "text": "a1/a2 UI series and events already fixed in main 7529315; pull latest. Writing final README now; hard cap 17:37 leaves ~4 min. Please run complete integration t"
+   },
+   {
+    "by": "a1",
+    "budget_min": 25.9,
+    "text": "DONE core fixes/tests origin/main 2b808c0. All 5 core tests pass; real CLI ingestion and static dossier export succeeded. API smoke in progress. Need latest sha"
+   },
+   {
+    "by": "a3",
+    "budget_min": 27.0,
+    "text": "a3 README now committed with exact CLI syntax, API guide, plugin contracts, backup/restore and Python3.13 verification limit. Actual API smoke: initial 1250 ite"
+   },
+   {
+    "by": "a3",
+    "budget_min": 27.7,
+    "text": "DONE a3 complete within hard cap: final README/DESIGN/UI and honest verification limitations in PR.md pushed main. All 8 integrated unit/integration tests passe"
+   }
+  ],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {
+   "a1": [
+    28.4
+   ],
+   "a2": [
+    30.9
+   ],
+   "a3": [
+    28.2
+   ]
+  },
+  "ledger_calls": 0,
+  "premature_end": true
+ },
+ {
+  "run": "E4-T1b-solo-r1",
+  "budget_end": 38.6,
+  "pressure_posts": [],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {},
+  "ledger_calls": 0,
+  "premature_end": false
+ },
+ {
+  "run": "E4-T2-K0-r1",
+  "budget_end": 53.7,
+  "pressure_posts": [],
+  "early_quits": [],
+  "to_root": 8,
+  "peer_ends": {
+   "a1": [
+    49.3
+   ],
+   "a2": [
+    53.4
+   ],
+   "a3": [
+    46.1
+   ]
+  },
+  "ledger_calls": 0,
+  "premature_end": false
+ },
+ {
+  "run": "E4-T2-K0-r2",
+  "budget_end": 29.0,
+  "pressure_posts": [
+   {
+    "by": "a2",
+    "budget_min": 7.1,
+    "text": "PROPOSE core.py contract now: demo_state(month='2026-11')->state dict {month,timezone:'UTC',staff:[{id:str,name,role:'doctor'|'nurse'|'reception',hours_per_week"
+   }
+  ],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {
+   "a1": [
+    28.8
+   ],
+   "a2": [
+    28.9
+   ],
+   "a3": [
+    26.2
+   ]
+  },
+  "ledger_calls": 0,
+  "premature_end": false
+ },
+ {
+  "run": "E4-T2-K1-r1",
+  "budget_end": 45.0,
+  "pressure_posts": [],
+  "early_quits": [],
+  "to_root": 12,
+  "peer_ends": {
+   "a1": [
+    44.6
+   ]
+  },
+  "ledger_calls": 12,
+  "premature_end": false,
+  "verify_posts": 12,
+  "verify_verbs": {
+   "VERIFIED": 10,
+   "FAIL": 2,
+   "N/A": 0,
+   "DESCOPED": 0,
+   "HANDOFF": 0
+  },
+  "ledger_final": "0 of 9 rows not closed: OPEN 0, FAIL 0, VERIFIED 9, N/A 0, DESCOPED 0"
+ },
+ {
+  "run": "E4-T2-K1-r2",
+  "budget_end": 24.9,
+  "pressure_posts": [],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {
+   "a1": [
+    24.5
+   ],
+   "a2": [
+    24.8
+   ],
+   "a3": [
+    24.4
+   ]
+  },
+  "ledger_calls": 21,
+  "premature_end": false,
+  "verify_posts": 10,
+  "verify_verbs": {
+   "VERIFIED": 6,
+   "FAIL": 0,
+   "N/A": 1,
+   "DESCOPED": 0,
+   "HANDOFF": 3
+  },
+  "ledger_final": "0 of 9 rows not closed: OPEN 0, FAIL 0, VERIFIED 8, N/A 1, DESCOPED 0"
+ },
+ {
+  "run": "E4-T2-base4-r1",
+  "budget_end": 28.8,
+  "pressure_posts": [
+   {
+    "by": "a1",
+    "budget_min": 27.4,
+    "text": "a1 latest fetch79bceb9 still awaits a3 connection-close commit. Session hard cap approaching (~115m from22:36 to00:31 timestamps); please integrate closure prom"
+   },
+   {
+    "by": "a3",
+    "budget_min": 27.8,
+    "text": "a1/a2 closure fix already pushed ba85639 atop a2's1306b64, all46 Python tests + Python3.13 warning checks passed. Please fetch latest. Running final latest-main"
+   }
+  ],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {
+   "a1": [
+    28.7
+   ],
+   "a2": [
+    28.7
+   ],
+   "a3": [
+    28.3
+   ]
+  },
+  "ledger_calls": 0,
+  "premature_end": true
+ },
+ {
+  "run": "E4-T2-solo-r1",
+  "budget_end": 38.1,
+  "pressure_posts": [],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {},
+  "ledger_calls": 0,
+  "premature_end": false
+ },
+ {
+  "run": "E4-T3b-K0-r1",
+  "budget_end": 42.0,
+  "pressure_posts": [],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {
+   "a1": [
+    41.8
+   ],
+   "a2": [
+    40.5
+   ],
+   "a3": [
+    40.7
+   ]
+  },
+  "ledger_calls": 0,
+  "premature_end": false
+ },
+ {
+  "run": "E4-T3b-K0-r2",
+  "budget_end": 40.3,
+  "pressure_posts": [],
+  "early_quits": [],
+  "to_root": 7,
+  "peer_ends": {
+   "a1": [
+    26.6
+   ],
+   "a2": [
+    35.0
+   ],
+   "a3": [
+    39.5
+   ]
+  },
+  "ledger_calls": 0,
+  "premature_end": false
+ },
+ {
+  "run": "E4-T3b-K1-r1",
+  "budget_end": 30.7,
+  "pressure_posts": [],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {},
+  "ledger_calls": 19,
+  "premature_end": false,
+  "verify_posts": 33,
+  "verify_verbs": {
+   "VERIFIED": 18,
+   "FAIL": 0,
+   "N/A": 7,
+   "DESCOPED": 0,
+   "HANDOFF": 8
+  },
+  "ledger_final": "19 of 129 rows not closed: OPEN 19, FAIL 0, VERIFIED 102, N/A 8, DESCOPED 0"
+ },
+ {
+  "run": "E4-T3b-K1-r2",
+  "budget_end": 42.7,
+  "pressure_posts": [
+   {
+    "by": "a2",
+    "budget_min": 38.0,
+    "text": "Budget clock92/120min (28min left). Latest full54-test suite passes25.486s;129/129 ledger closed. Please finish announced long-log fix and integrate promptly, t"
+   },
+   {
+    "by": "a1",
+    "budget_min": 42.2,
+    "text": "URGENT budget118/120 min,2min left. a1 pulled latest and running full suite now; a3 integrate nested trigger --relative immediately if not landed; freeze all fu"
+   },
+   {
+    "by": "a2",
+    "budget_min": 42.6,
+    "text": "FINAL a2 latestmain27a60b7 clean and pushed. Full offline suite58 tests passed49.393s; focused compiler+trigger18tests passed0.221s after identical nested --rel"
+   }
+  ],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {},
+  "ledger_calls": 38,
+  "premature_end": true,
+  "verify_posts": 72,
+  "verify_verbs": {
+   "VERIFIED": 29,
+   "FAIL": 0,
+   "N/A": 6,
+   "DESCOPED": 0,
+   "HANDOFF": 37
+  },
+  "ledger_final": "0 of 129 rows not closed: OPEN 0, FAIL 0, VERIFIED 122, N/A 7, DESCOPED 0"
+ },
+ {
+  "run": "E4-T3b-base4-r1",
+  "budget_end": 23.5,
+  "pressure_posts": [
+   {
+    "by": "a3",
+    "budget_min": 12.3,
+    "text": "a2 README claim accepted; thank you. I focus completing acceptance tests and browser capture. Current wall clock19:36, ~35min remaining from a1 start18:12; we n"
+   }
+  ],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {
+   "a1": [
+    22.3
+   ],
+   "a2": [
+    23.2
+   ],
+   "a3": [
+    23.1
+   ]
+  },
+  "ledger_calls": 0,
+  "premature_end": false
+ },
+ {
+  "run": "E4-T3b-solo-r1",
+  "budget_end": 31.2,
+  "pressure_posts": [],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {},
+  "ledger_calls": 0,
+  "premature_end": false
+ },
+ {
+  "run": "E4-T4b-K0-r1",
+  "budget_end": 48.1,
+  "pressure_posts": [
+   {
+    "by": "a3",
+    "budget_min": 42.9,
+    "text": "DONE a3 4f1c3ad final core hardening: large import reverts now use temporary ID table, avoiding SQLite parameter limits. Regression lowers SQLite variable limit"
+   }
+  ],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {
+   "a1": [
+    47.9
+   ],
+   "a2": [
+    47.0
+   ],
+   "a3": [
+    47.5
+   ]
+  },
+  "ledger_calls": 0,
+  "premature_end": true
+ },
+ {
+  "run": "E4-T4b-K0-r2",
+  "budget_end": 43.8,
+  "pressure_posts": [
+   {
+    "by": "a2",
+    "budget_min": 41.1,
+    "text": "FINAL a2 verified code48d16d7:51testsPASS9.172s; dedicated realdata1testPASS1.214s; HTTPsmokePASS bothalex/jo fullworkflow. Benchmark all<2s max1.101261; increm"
+   }
+  ],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {
+   "a1": [
+    43.6
+   ],
+   "a2": [
+    43.2
+   ],
+   "a3": [
+    43.1
+   ]
+  },
+  "ledger_calls": 0,
+  "premature_end": true
+ },
+ {
+  "run": "E4-T4b-K1-r1",
+  "budget_end": 32.3,
+  "pressure_posts": [],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {},
+  "ledger_calls": 10,
+  "premature_end": false,
+  "verify_posts": 9,
+  "verify_verbs": {
+   "VERIFIED": 3,
+   "FAIL": 0,
+   "N/A": 2,
+   "DESCOPED": 0,
+   "HANDOFF": 4
+  },
+  "ledger_final": "75 of 171 rows not closed: OPEN 75, FAIL 0, VERIFIED 83, N/A 13, DESCOPED 0"
+ },
+ {
+  "run": "E4-T4b-K1-r2",
+  "budget_end": 31.9,
+  "pressure_posts": [],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {},
+  "ledger_calls": 20,
+  "premature_end": false,
+  "verify_posts": 31,
+  "verify_verbs": {
+   "VERIFIED": 21,
+   "FAIL": 0,
+   "N/A": 3,
+   "DESCOPED": 0,
+   "HANDOFF": 7
+  },
+  "ledger_final": "2 of 171 rows not closed: OPEN 2, FAIL 0, VERIFIED 148, N/A 21, DESCOPED 0"
+ },
+ {
+  "run": "E4-T4b-base4-r1",
+  "budget_end": 29.1,
+  "pressure_posts": [
+   {
+    "by": "a3",
+    "budget_min": 23.0,
+    "text": "UI live wiring complete; committed and pulling atomicity fixes. Removing App duplicate BEGIN now. Hard cap approaching (17:36Z from 15:36Z start); adding compac"
+   },
+   {
+    "by": "a1",
+    "budget_min": 23.9,
+    "text": "a1 generating DATA_FINDINGS/IMPORT_SUMMARY now; writing compact README + DESIGN immediately. Need a3 owns smoke/API tests and actual outputs; a2 append benchmar"
+   },
+   {
+    "by": "a2",
+    "budget_min": 24.0,
+    "text": "DONE FINANCE.md pushed with formal rule format, transaction/job/undo semantics, FX and rollover decisions, report/ledger behavior, known limits, actual benchmar"
+   },
+   {
+    "by": "a3",
+    "budget_min": 25.7,
+    "text": "DONE HTTP app tests 4/4 pass (3.157s): all owner-only routes deny accountant, scoped list/detail/all report types/export exclude out-of-scope data, conflict 409"
+   },
+   {
+    "by": "a1",
+    "budget_min": 27.4,
+    "text": "DONE final a1 review latest main: full suite23 PASS6.614s, standalone HTTP smoke PASS.815s; benchmark all reports <1s selective250/250k. Updated PR final actual"
+   },
+   {
+    "by": "a3",
+    "budget_min": 28.6,
+    "text": "DONE independent a3 benchmark Python3.12.15, 250,000 rows: spending .3643s, year_compare .3222s, recurring .7380s, cashflow .2319s, merchants .8501s, budgets .0"
+   }
+  ],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {
+   "a1": [
+    27.6
+   ],
+   "a2": [
+    27.7
+   ],
+   "a3": [
+    28.9
+   ]
+  },
+  "ledger_calls": 0,
+  "premature_end": true
+ },
+ {
+  "run": "E4-T4b-solo-r1",
+  "budget_end": 55.9,
+  "pressure_posts": [],
+  "early_quits": [],
+  "to_root": 0,
+  "peer_ends": {},
+  "ledger_calls": 0,
+  "premature_end": false
+ }
+]

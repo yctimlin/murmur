@@ -41,7 +41,8 @@ def load_task(j):
     if not os.path.isfile(os.path.join(d, "TASK.json")): raise ValueError("task not frozen/unknown")
     t = json.load(open(os.path.join(d, "TASK.json")))
     j = dict(j); j["brief"] = os.path.join(d, "brief.md"); j["input"] = os.path.join(d, "input")
-    j.setdefault("setup", t.get("setup")); j["_scorer"] = os.path.join(d, "score.sh")
+    j.setdefault("setup", t.get("setup"))
+    if os.path.isfile(os.path.join(d, "score.sh")): j["_scorer"] = os.path.join(d, "score.sh")  # open tasks have no hidden tests
     return j
 
 def validate(j):
@@ -165,6 +166,7 @@ def run_job(name, j, port):
                         glob.glob(os.path.join(r.get("ws") or "/nonexistent", "logs", "*")) if os.path.isfile(f))
         if "503 Service" in logs or "empty model catalog" in logs or "must contain at least one model" in logs:
             r["infra"] = "provider unavailable (503 or empty model catalog)"
+        if exp and not j.get("_scorer"): r["score_na"] = "open task: no hidden tests by design (RUBRIC.md)"
         if exp and j.get("_scorer"):
             sd = os.path.join(LAB, "scoretmp", name)
             try:
@@ -179,8 +181,9 @@ def run_job(name, j, port):
             finally: shutil.rmtree(sd, ignore_errors=True)
         if exp:
             try:
-                m = subprocess.run([sys.executable, os.path.join(LAB, "bin", "mutation.py"), exp, "30", "3", ALLOWED_SETUP.get(j.get("setup") or "py")],
+                m = subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "mutation.py"), exp, "30", "3", ALLOWED_SETUP.get(j.get("setup") or "py")],
                                    capture_output=True, text=True, timeout=3600)
+                if not m.stdout.strip(): raise RuntimeError(f"mutation.py exit {m.returncode}, no output: {m.stderr[-300:]}")
                 r["mutation"] = json.loads(m.stdout.strip().splitlines()[-1])
             except Exception as e: r["mutation_error"] = repr(e)
         if r.get("ws"):
@@ -200,16 +203,26 @@ def tokens_used():
 def used():
     return sum(1 for _ in open(LEDGER)) if os.path.exists(LEDGER) else 0
 
+def inflight():
+    """Ledger jobs without a result.json whose `--one` child process is still alive."""
+    if not os.path.exists(LEDGER): return set()
+    names = {json.loads(l)["name"] for l in open(LEDGER) if l.strip()}
+    names = {n for n in names if not os.path.exists(os.path.join(RES, n, "result.json"))}
+    alive = subprocess.run(["pgrep", "-af", "runner.py --one"], capture_output=True, text=True).stdout
+    return {n for n in names if f"--one {n} " in alive}
+
 def main():
     for d in (Q, RES, BUILDS, WS, TASKS, os.path.join(LAB, "repos"), os.path.join(LAB, "scoretmp")): os.makedirs(d, exist_ok=True)
     running = {}; port = int(os.environ.get("MURMUR_LAB_PORT0", "47000"))
     while True:
         for n, p in list(running.items()):
             if p.poll() is not None: running.pop(n)
+        # jobs started by an earlier runner parent (restart) still count toward MAX_PAR
+        orphans = {n for n in inflight() if n not in running}
         if os.path.exists(os.path.join(LAB, "CLOSED")):
             for f in glob.glob(Q + "/*.json"): os.rename(f, f + ".rejected-lab-closed")
         for f in sorted(glob.glob(Q + "/*.json"), key=os.path.getmtime):
-            if len(running) >= MAX_PAR: break
+            if len(running) + len(orphans) >= MAX_PAR: break
             name = re.sub(r"[^A-Za-z0-9_-]", "_", os.path.basename(f)[:-5])[:80]
             claimed = f + ".claimed"
             try: os.rename(f, claimed)

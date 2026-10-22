@@ -1,0 +1,155 @@
+{
+ "n_rows": 24,
+ "judged": {
+  "base4": 4,
+  "K0": 8,
+  "K1": 8,
+  "solo": 4
+ },
+ "D1": {
+  "k_runs": 16,
+  "premature_end_runs": [
+   "E4-T1b-K0-r1",
+   "E4-T1b-K0-r2",
+   "E4-T1b-K1-r1",
+   "E4-T3b-K1-r2",
+   "E4-T4b-K0-r1",
+   "E4-T4b-K0-r2"
+  ],
+  "early_quit_runs": [],
+  "to_root": {
+   "E4-T1b-K0-r1": 0,
+   "E4-T1b-K0-r2": 0,
+   "E4-T1b-K1-r1": 0,
+   "E4-T1b-K1-r2": 0,
+   "E4-T2-K0-r1": 8,
+   "E4-T2-K0-r2": 0,
+   "E4-T2-K1-r1": 12,
+   "E4-T2-K1-r2": 0,
+   "E4-T3b-K0-r1": 0,
+   "E4-T3b-K0-r2": 7,
+   "E4-T3b-K1-r1": 0,
+   "E4-T3b-K1-r2": 0,
+   "E4-T4b-K0-r1": 0,
+   "E4-T4b-K0-r2": 0,
+   "E4-T4b-K1-r1": 0,
+   "E4-T4b-K1-r2": 0
+  },
+  "pass": false
+ },
+ "D2": {
+  "tasks": 4,
+  "mean_diff": -1.051875,
+  "collapse_rate_K0": 0.25,
+  "collapse_rate_base4": 0.0,
+  "pass": false
+ },
+ "D3": {
+  "pairs": 8,
+  "mean_diff": 0.43312499999999987,
+  "ci90": [
+   0.433,
+   -1.138,
+   2.005
+  ],
+  "collapses_K1": 1,
+  "collapses_K0": 2,
+  "geo_active_ratio": 0.8531561724485771,
+  "keep": true
+ },
+ "safety_stop": {
+  "block1_K1_judged": 4,
+  "collapses": 1,
+  "trigger": false
+ },
+ "per_task": {
+  "T1b": {
+   "base4": {
+    "q": 7.4,
+    "active_nf": 31.04,
+    "input_M": 7.293366
+   },
+   "K0": {
+    "q": 7.75,
+    "active_nf": 35.085,
+    "input_M": 17.1355555
+   },
+   "K1": {
+    "q": 7.3,
+    "active_nf": 35.275,
+    "input_M": 17.339126999999998
+   },
+   "solo": {
+    "q": 3.5,
+    "active_nf": 36.27,
+    "input_M": 3.37333
+   }
+  },
+  "T2": {
+   "base4": {
+    "q": 7.9,
+    "active_nf": 28.84,
+    "input_M": 19.554008
+   },
+   "K0": {
+    "q": 4.925,
+    "active_nf": 41.37,
+    "input_M": 10.087889
+   },
+   "K1": {
+    "q": 5.35,
+    "active_nf": 34.945,
+    "input_M": 14.874495499999998
+   },
+   "solo": {
+    "q": 8.585,
+    "active_nf": 36.09,
+    "input_M": 2.319914
+   }
+  },
+  "T3b": {
+   "base4": {
+    "q": 7.199999999999999,
+    "active_nf": 23.45,
+    "input_M": 12.453673
+   },
+   "K0": {
+    "q": 4.575,
+    "active_nf": 41.120000000000005,
+    "input_M": 20.310475
+   },
+   "K1": {
+    "q": 7.2749999999999995,
+    "active_nf": 36.72,
+    "input_M": 23.9347815
+   },
+   "solo": {
+    "q": 1.9,
+    "active_nf": 30.54,
+    "input_M": 2.383751
+   }
+  },
+  "T4b": {
+   "base4": {
+    "q": 6.449999999999999,
+    "active_nf": 29.13,
+    "input_M": 7.335866
+   },
+   "K0": {
+    "q": 7.4925,
+    "active_nf": 45.95,
+    "input_M": 29.193333000000003
+   },
+   "K1": {
+    "q": 6.55,
+    "active_nf": 32.1,
+    "input_M": 12.3695175
+   },
+   "solo": {
+    "q": 2.3499999999999996,
+    "active_nf": 55.93,
+    "input_M": 6.669626
+   }
+  }
+ }
+}

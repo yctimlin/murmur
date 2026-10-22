@@ -1,0 +1,24 @@
+{"run": "E4-T1b-K0-r1", "budget_end": 35.1, "pressure_posts": 2, "early_quits": 0, "to_root": 0, "ledger_calls": 0, "premature_end": true}
+{"run": "E4-T1b-K0-r2", "budget_end": 35.1, "pressure_posts": 1, "early_quits": 0, "to_root": 0, "ledger_calls": 0, "premature_end": true}
+{"run": "E4-T1b-K1-r1", "budget_end": 38.3, "pressure_posts": 2, "early_quits": 0, "to_root": 0, "ledger_calls": 29, "premature_end": true, "verify_posts": 26, "verify_verbs": {"VERIFIED": 14, "FAIL": 0, "N/A": 3, "DESCOPED": 1, "HANDOFF": 8}, "ledger_final": "0 of 84 rows not closed: OPEN 0, FAIL 0, VERIFIED 56, N/A 27, DESCOPED 1"}
+{"run": "E4-T1b-K1-r2", "budget_end": 32.2, "pressure_posts": 1, "early_quits": 0, "to_root": 0, "ledger_calls": 31, "premature_end": false, "verify_posts": 32, "verify_verbs": {"VERIFIED": 19, "FAIL": 0, "N/A": 5, "DESCOPED": 0, "HANDOFF": 8}, "ledger_final": "0 of 84 rows not closed: OPEN 0, FAIL 0, VERIFIED 54, N/A 30, DESCOPED 0"}
+{"run": "E4-T1b-base4-r1", "budget_end": 31.0, "pressure_posts": 6, "early_quits": 0, "to_root": 0, "ledger_calls": 0, "premature_end": true}
+{"run": "E4-T1b-solo-r1", "budget_end": 38.6, "pressure_posts": 0, "early_quits": 0, "to_root": 0, "ledger_calls": 0, "premature_end": false}
+{"run": "E4-T2-K0-r1", "budget_end": 53.7, "pressure_posts": 0, "early_quits": 0, "to_root": 8, "ledger_calls": 0, "premature_end": false}
+{"run": "E4-T2-K0-r2", "budget_end": 29.0, "pressure_posts": 1, "early_quits": 0, "to_root": 0, "ledger_calls": 0, "premature_end": false}
+{"run": "E4-T2-K1-r1", "budget_end": 45.0, "pressure_posts": 0, "early_quits": 0, "to_root": 12, "ledger_calls": 12, "premature_end": false, "verify_posts": 12, "verify_verbs": {"VERIFIED": 10, "FAIL": 2, "N/A": 0, "DESCOPED": 0, "HANDOFF": 0}, "ledger_final": "0 of 9 rows not closed: OPEN 0, FAIL 0, VERIFIED 9, N/A 0, DESCOPED 0"}
+{"run": "E4-T2-K1-r2", "budget_end": 24.9, "pressure_posts": 0, "early_quits": 0, "to_root": 0, "ledger_calls": 21, "premature_end": false, "verify_posts": 10, "verify_verbs": {"VERIFIED": 6, "FAIL": 0, "N/A": 1, "DESCOPED": 0, "HANDOFF": 3}, "ledger_final": "0 of 9 rows not closed: OPEN 0, FAIL 0, VERIFIED 8, N/A 1, DESCOPED 0"}
+{"run": "E4-T2-base4-r1", "budget_end": 28.8, "pressure_posts": 2, "early_quits": 0, "to_root": 0, "ledger_calls": 0, "premature_end": true}
+{"run": "E4-T2-solo-r1", "budget_end": 38.1, "pressure_posts": 0, "early_quits": 0, "to_root": 0, "ledger_calls": 0, "premature_end": false}
+{"run": "E4-T3b-K0-r1", "budget_end": 42.0, "pressure_posts": 0, "early_quits": 0, "to_root": 0, "ledger_calls": 0, "premature_end": false}
+{"run": "E4-T3b-K0-r2", "budget_end": 40.3, "pressure_posts": 0, "early_quits": 0, "to_root": 7, "ledger_calls": 0, "premature_end": false}
+{"run": "E4-T3b-K1-r1", "budget_end": 30.7, "pressure_posts": 0, "early_quits": 0, "to_root": 0, "ledger_calls": 19, "premature_end": false, "verify_posts": 33, "verify_verbs": {"VERIFIED": 18, "FAIL": 0, "N/A": 7, "DESCOPED": 0, "HANDOFF": 8}, "ledger_final": "19 of 129 rows not closed: OPEN 19, FAIL 0, VERIFIED 102, N/A 8, DESCOPED 0"}
+{"run": "E4-T3b-K1-r2", "budget_end": 42.7, "pressure_posts": 3, "early_quits": 0, "to_root": 0, "ledger_calls": 38, "premature_end": true, "verify_posts": 72, "verify_verbs": {"VERIFIED": 29, "FAIL": 0, "N/A": 6, "DESCOPED": 0, "HANDOFF": 37}, "ledger_final": "0 of 129 rows not closed: OPEN 0, FAIL 0, VERIFIED 122, N/A 7, DESCOPED 0"}
+{"run": "E4-T3b-base4-r1", "budget_end": 23.5, "pressure_posts": 1, "early_quits": 0, "to_root": 0, "ledger_calls": 0, "premature_end": false}
+{"run": "E4-T3b-solo-r1", "budget_end": 31.2, "pressure_posts": 0, "early_quits": 0, "to_root": 0, "ledger_calls": 0, "premature_end": false}
+{"run": "E4-T4b-K0-r1", "budget_end": 48.1, "pressure_posts": 1, "early_quits": 0, "to_root": 0, "ledger_calls": 0, "premature_end": true}
+{"run": "E4-T4b-K0-r2", "budget_end": 43.8, "pressure_posts": 1, "early_quits": 0, "to_root": 0, "ledger_calls": 0, "premature_end": true}
+{"run": "E4-T4b-K1-r1", "budget_end": 32.3, "pressure_posts": 0, "early_quits": 0, "to_root": 0, "ledger_calls": 10, "premature_end": false, "verify_posts": 9, "verify_verbs": {"VERIFIED": 3, "FAIL": 0, "N/A": 2, "DESCOPED": 0, "HANDOFF": 4}, "ledger_final": "75 of 171 rows not closed: OPEN 75, FAIL 0, VERIFIED 83, N/A 13, DESCOPED 0"}
+{"run": "E4-T4b-K1-r2", "budget_end": 31.9, "pressure_posts": 0, "early_quits": 0, "to_root": 0, "ledger_calls": 20, "premature_end": false, "verify_posts": 31, "verify_verbs": {"VERIFIED": 21, "FAIL": 0, "N/A": 3, "DESCOPED": 0, "HANDOFF": 7}, "ledger_final": "2 of 171 rows not closed: OPEN 2, FAIL 0, VERIFIED 148, N/A 21, DESCOPED 0"}
+{"run": "E4-T4b-base4-r1", "budget_end": 29.1, "pressure_posts": 6, "early_quits": 0, "to_root": 0, "ledger_calls": 0, "premature_end": true}
+{"run": "E4-T4b-solo-r1", "budget_end": 55.9, "pressure_posts": 0, "early_quits": 0, "to_root": 0, "ledger_calls": 0, "premature_end": false}

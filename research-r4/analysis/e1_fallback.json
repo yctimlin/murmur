@@ -1,0 +1,123 @@
+{
+ "n_rows": 36,
+ "per_task": {
+  "T4b": {
+   "base4": {
+    "n": 3,
+    "quality": 3.533333333333333,
+    "collapses": 2,
+    "active_nf_noncollapsed": 45.38
+   },
+   "C1": {
+    "n": 3,
+    "quality": 7.375,
+    "collapses": 0,
+    "active_nf_noncollapsed": 31.566666666666666
+   },
+   "C2": {
+    "n": 3,
+    "quality": 6.883333333333334,
+    "collapses": 0,
+    "active_nf_noncollapsed": 32.833333333333336
+   },
+   "solo": {
+    "n": 1,
+    "quality": 7.55,
+    "collapses": 0,
+    "active_nf_noncollapsed": 36.41
+   }
+  },
+  "T3b": {
+   "base4": {
+    "n": 3,
+    "quality": 7.725,
+    "collapses": 0,
+    "active_nf_noncollapsed": 33.39
+   },
+   "C1": {
+    "n": 3,
+    "quality": 7.416666666666666,
+    "collapses": 0,
+    "active_nf_noncollapsed": 30.836666666666666
+   },
+   "C2": {
+    "n": 2,
+    "quality": 7.475,
+    "collapses": 0,
+    "active_nf_noncollapsed": 24.509999999999998
+   },
+   "solo": {
+    "n": 1,
+    "quality": 7.9,
+    "collapses": 0,
+    "active_nf_noncollapsed": 47.49
+   }
+  },
+  "T1b": {
+   "base4": {
+    "n": 3,
+    "quality": 7.366666666666666,
+    "collapses": 0,
+    "active_nf_noncollapsed": 24.966666666666665
+   },
+   "C1": {
+    "n": 3,
+    "quality": 5.8,
+    "collapses": 1,
+    "active_nf_noncollapsed": 21.895
+   },
+   "C2": {
+    "n": 2,
+    "quality": 5.199999999999999,
+    "collapses": 1,
+    "active_nf_noncollapsed": 27.12
+   },
+   "solo": {
+    "n": 1,
+    "quality": 6.95,
+    "collapses": 0,
+    "active_nf_noncollapsed": 36.44
+   }
+  },
+  "T2": {
+   "base4": {
+    "n": 2,
+    "quality": 7.85,
+    "collapses": 0,
+    "active_nf_noncollapsed": 28.634999999999998
+   },
+   "C1": {
+    "n": 2,
+    "quality": 5.075,
+    "collapses": 1,
+    "active_nf_noncollapsed": 28.54
+   },
+   "C2": {
+    "n": 3,
+    "quality": 7.541666666666667,
+    "collapses": 0,
+    "active_nf_noncollapsed": 28.07
+   },
+   "solo": {
+    "n": 1,
+    "quality": 7.9,
+    "collapses": 0,
+    "active_nf_noncollapsed": 30.91
+   }
+  }
+ },
+ "C1": {
+  "ref": "base4",
+  "quality_diff": -0.202,
+  "active_ratio_vs_ref": 0.873,
+  "active_ratio_vs_solo": 0.76,
+  "fallback": "REJECT"
+ },
+ "C2": {
+  "ref": "base4",
+  "quality_diff": 0.156,
+  "active_ratio_vs_ref": 0.881,
+  "active_ratio_vs_solo": 0.768,
+  "fallback": "REJECT"
+ }
+}

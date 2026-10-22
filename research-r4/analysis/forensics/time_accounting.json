@@ -1,0 +1,1574 @@
+[
+ {
+  "run": "E1-T1b-C1-r1",
+  "run_active": 19.8,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 2.7
+   },
+   "a1": {
+    "final": 0.1,
+    "read": 0.0,
+    "gitw": 0.3,
+    "others": 6.9,
+    "edit": 3.8,
+    "smoke": 1.9,
+    "coord": 0.8,
+    "test": 5.0
+   },
+   "a2": {
+    "final": 0.0,
+    "read": 1.2,
+    "gitw": 0.4,
+    "edit": 2.5,
+    "others": 5.2,
+    "smoke": 2.5,
+    "coord": 2.1,
+    "test": 5.5
+   },
+   "a3": {
+    "final": 0.0,
+    "read": 0.8,
+    "gitw": 0.9,
+    "others": 4.0,
+    "edit": 1.2,
+    "coord": 2.7,
+    "smoke": 6.6,
+    "test": 2.9
+   }
+  },
+  "peer_total": {
+   "final": 0.1,
+   "read": 2.0,
+   "gitw": 1.7,
+   "others": 16.1,
+   "edit": 7.4,
+   "smoke": 10.9,
+   "coord": 5.6,
+   "test": 13.4
+  },
+  "main_commits": 22,
+  "main_added": 3664,
+  "last_big_main_commit_A": 14.7,
+  "tail_share": 0.26,
+  "q": 7.7
+ },
+ {
+  "run": "E1-T1b-C1-r2",
+  "run_active": 53.2,
+  "per_agent": {
+   "root": {
+    "final": 0.4,
+    "coord": 35.2
+   },
+   "a1": {
+    "final": 0.4,
+    "read": 2.7,
+    "coord": 19.8,
+    "others": 10.5,
+    "edit": 5.4,
+    "smoke": 1.8,
+    "test": 2.6,
+    "gitw": 0.5
+   },
+   "a2": {
+    "final": 0.4,
+    "read": 4.8,
+    "coord": 22.3,
+    "others": 5.3,
+    "smoke": 5.1,
+    "edit": 4.1,
+    "gitw": 2.0,
+    "test": 1.1
+   },
+   "a3": {
+    "final": 0.5,
+    "read": 3.8,
+    "coord": 29.2,
+    "others": 10.0,
+    "edit": 2.0,
+    "gitw": 0.7,
+    "smoke": 2.6,
+    "test": 2.1
+   }
+  },
+  "peer_total": {
+   "final": 1.3,
+   "read": 11.3,
+   "coord": 71.3,
+   "others": 25.8,
+   "edit": 11.6,
+   "smoke": 9.5,
+   "test": 5.8,
+   "gitw": 3.1
+  },
+  "main_commits": 26,
+  "main_added": 627,
+  "last_big_main_commit_A": 21.4,
+  "tail_share": 0.6,
+  "q": 2.45
+ },
+ {
+  "run": "E1-T1b-C2-r1",
+  "run_active": 27.1,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 3.0
+   },
+   "a1": {
+    "final": 0.1,
+    "read": 2.7,
+    "others": 3.2,
+    "smoke": 10.9,
+    "edit": 2.3,
+    "test": 5.5,
+    "gitw": 0.6,
+    "coord": 0.9
+   },
+   "a2": {
+    "final": 0.1,
+    "read": 2.9,
+    "gitw": 1.2,
+    "edit": 3.6,
+    "test": 6.4,
+    "coord": 4.0,
+    "others": 5.7,
+    "smoke": 2.2
+   },
+   "a3": {
+    "final": 0.2,
+    "read": 3.0,
+    "others": 6.5,
+    "smoke": 6.6,
+    "coord": 2.1,
+    "test": 6.6,
+    "gitw": 0.3,
+    "edit": 0.0
+   }
+  },
+  "peer_total": {
+   "final": 0.4,
+   "read": 8.5,
+   "others": 15.3,
+   "smoke": 19.7,
+   "edit": 5.9,
+   "test": 18.5,
+   "gitw": 2.1,
+   "coord": 7.1
+  },
+  "main_commits": 27,
+  "main_added": 5294,
+  "last_big_main_commit_A": 22.4,
+  "tail_share": 0.18,
+  "q": 7.85
+ },
+ {
+  "run": "E1-T1b-C2-r2",
+  "run_active": 35.5,
+  "per_agent": {
+   "root": {
+    "final": 0.2,
+    "coord": 9.8
+   },
+   "a1": {
+    "final": 0.2,
+    "read": 1.6,
+    "coord": 18.2,
+    "gitw": 1.8,
+    "smoke": 6.7,
+    "edit": 5.2,
+    "others": 0.2,
+    "test": 1.2
+   },
+   "a2": {
+    "final": 0.2,
+    "read": 4.9,
+    "coord": 14.4,
+    "others": 2.7,
+    "smoke": 5.1,
+    "edit": 2.7,
+    "gitw": 2.5,
+    "test": 2.0
+   },
+   "a3": {
+    "final": 0.2,
+    "read": 5.3,
+    "gitw": 0.9,
+    "coord": 14.4,
+    "others": 3.2,
+    "edit": 3.9,
+    "test": 1.3
+   }
+  },
+  "peer_total": {
+   "final": 0.6,
+   "read": 11.7,
+   "coord": 47.0,
+   "gitw": 5.2,
+   "smoke": 11.8,
+   "edit": 11.9,
+   "others": 6.0,
+   "test": 4.5
+  },
+  "main_commits": 13,
+  "main_added": 915,
+  "last_big_main_commit_A": 29.8,
+  "tail_share": 0.16,
+  "q": 2.55
+ },
+ {
+  "run": "E1-T1b-base4-r1",
+  "run_active": 21.2,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 3.2
+   },
+   "a1": {
+    "final": 0.1,
+    "read": 1.7,
+    "gitw": 1.0,
+    "others": 3.1,
+    "edit": 4.5,
+    "coord": 1.1,
+    "smoke": 2.0,
+    "test": 4.7
+   },
+   "a2": {
+    "final": 0.0,
+    "read": 1.6,
+    "gitw": 0.7,
+    "edit": 0.5,
+    "others": 3.2,
+    "smoke": 8.5,
+    "coord": 1.1,
+    "test": 4.0
+   },
+   "a3": {
+    "final": 0.0,
+    "read": 1.6,
+    "others": 5.0,
+    "edit": 2.2,
+    "smoke": 4.3,
+    "coord": 0.6,
+    "test": 6.2,
+    "gitw": 0.6
+   }
+  },
+  "peer_total": {
+   "final": 0.1,
+   "read": 4.8,
+   "gitw": 2.3,
+   "others": 11.3,
+   "edit": 7.3,
+   "coord": 2.7,
+   "smoke": 14.8,
+   "test": 14.8
+  },
+  "main_commits": 24,
+  "main_added": 2782,
+  "last_big_main_commit_A": 19.5,
+  "tail_share": 0.08,
+  "q": 7.6
+ },
+ {
+  "run": "E1-T1b-base4-r2",
+  "run_active": 24.1,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 3.9
+   },
+   "a1": {
+    "final": 0.4,
+    "read": 1.4,
+    "gitw": 0.9,
+    "others": 5.7,
+    "smoke": 3.6,
+    "edit": 5.8,
+    "coord": 0.6,
+    "test": 4.8
+   },
+   "a2": {
+    "final": 0.1,
+    "read": 2.8,
+    "gitw": 0.3,
+    "edit": 5.1,
+    "others": 6.0,
+    "smoke": 4.5,
+    "coord": 0.2,
+    "test": 0.9
+   },
+   "a3": {
+    "final": 0.0,
+    "read": 1.3,
+    "edit": 4.3,
+    "others": 6.0,
+    "coord": 1.6,
+    "smoke": 2.4,
+    "gitw": 0.3,
+    "test": 5.1
+   }
+  },
+  "peer_total": {
+   "final": 0.5,
+   "read": 5.5,
+   "gitw": 1.6,
+   "others": 17.6,
+   "smoke": 10.5,
+   "edit": 15.1,
+   "coord": 2.4,
+   "test": 10.8
+  },
+  "main_commits": 22,
+  "main_added": 2600,
+  "last_big_main_commit_A": 18.4,
+  "tail_share": 0.24,
+  "q": 7.65
+ },
+ {
+  "run": "E1-T1b-solo-r1",
+  "run_active": 36.4,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "read": 0.5,
+    "edit": 10.7,
+    "smoke": 10.2,
+    "test": 9.0,
+    "gitw": 3.0,
+    "others": 0.7
+   }
+  },
+  "peer_total": {
+   "final": 0.1,
+   "read": 0.5,
+   "edit": 10.7,
+   "smoke": 10.2,
+   "test": 9.0,
+   "gitw": 3.0,
+   "others": 0.7
+  },
+  "main_commits": 1,
+  "main_added": 2132,
+  "last_big_main_commit_A": 29.7,
+  "tail_share": 0.18,
+  "q": 6.95
+ },
+ {
+  "run": "E1-T2-C1-r1",
+  "run_active": 28.5,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 2.7
+   },
+   "a1": {
+    "final": 0.1,
+    "read": 2.8,
+    "others": 6.6,
+    "test": 4.5,
+    "smoke": 5.1,
+    "coord": 3.4,
+    "edit": 2.5,
+    "gitw": 0.5
+   },
+   "a2": {
+    "final": 0.0,
+    "read": 2.8,
+    "others": 5.6,
+    "smoke": 7.0,
+    "coord": 4.0,
+    "test": 7.2,
+    "edit": 0.5,
+    "gitw": 1.2
+   },
+   "a3": {
+    "final": 0.0,
+    "read": 4.4,
+    "gitw": 1.0,
+    "others": 5.4,
+    "smoke": 5.8,
+    "coord": 3.9,
+    "edit": 2.6,
+    "test": 4.8
+   }
+  },
+  "peer_total": {
+   "final": 0.1,
+   "read": 9.9,
+   "others": 17.7,
+   "test": 16.5,
+   "smoke": 17.8,
+   "coord": 11.3,
+   "edit": 5.6,
+   "gitw": 2.7
+  },
+  "main_commits": 16,
+  "main_added": 2229,
+  "last_big_main_commit_A": 24.2,
+  "tail_share": 0.15,
+  "q": 7.9
+ },
+ {
+  "run": "E1-T2-C1-r2",
+  "run_active": 21.0,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 20.7
+   },
+   "a1": {
+    "final": 0.1,
+    "read": 0.2,
+    "coord": 13.4,
+    "others": 2.1,
+    "smoke": 2.9,
+    "test": 1.3
+   },
+   "a2": {
+    "final": 0.1,
+    "read": 0.2,
+    "others": 2.2,
+    "coord": 16.9,
+    "smoke": 0.6,
+    "test": 0.6
+   },
+   "a3": {
+    "final": 0.1,
+    "read": 0.6,
+    "coord": 9.2,
+    "others": 0.6,
+    "test": 3.6,
+    "smoke": 4.3,
+    "gitw": 0.1,
+    "edit": 0.2
+   }
+  },
+  "peer_total": {
+   "final": 0.2,
+   "read": 0.9,
+   "coord": 39.6,
+   "others": 4.9,
+   "smoke": 7.8,
+   "test": 5.5,
+   "gitw": 0.1,
+   "edit": 0.2
+  },
+  "main_commits": 6,
+  "main_added": 205,
+  "last_big_main_commit_A": 7.3,
+  "tail_share": 0.65,
+  "q": 2.25
+ },
+ {
+  "run": "E1-T2-C2-r1",
+  "run_active": 27.9,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 2.9
+   },
+   "a1": {
+    "final": 0.1,
+    "read": 1.6,
+    "gitw": 2.2,
+    "others": 6.1,
+    "coord": 8.1,
+    "test": 7.1,
+    "edit": 2.0
+   },
+   "a2": {
+    "final": 0.1,
+    "read": 1.7,
+    "gitw": 0.3,
+    "others": 2.1,
+    "test": 5.4,
+    "coord": 1.9,
+    "edit": 2.6,
+    "smoke": 7.8
+   },
+   "a3": {
+    "final": 0.1,
+    "read": 1.1,
+    "gitw": 0.5,
+    "others": 2.1,
+    "smoke": 7.3,
+    "coord": 6.8,
+    "test": 7.1,
+    "edit": 1.9
+   }
+  },
+  "peer_total": {
+   "final": 0.4,
+   "read": 4.4,
+   "gitw": 3.0,
+   "others": 10.4,
+   "coord": 16.8,
+   "test": 19.6,
+   "edit": 6.5,
+   "smoke": 15.1
+  },
+  "main_commits": 23,
+  "main_added": 2952,
+  "last_big_main_commit_A": 23.5,
+  "tail_share": 0.16,
+  "q": 7.9
+ },
+ {
+  "run": "E1-T2-base4-r1",
+  "run_active": 31.2,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 3.5
+   },
+   "a1": {
+    "final": 0.0,
+    "read": 1.9,
+    "others": 8.3,
+    "smoke": 8.8,
+    "coord": 3.4,
+    "gitw": 1.2,
+    "test": 3.8,
+    "edit": 1.5
+   },
+   "a2": {
+    "final": 0.1,
+    "read": 1.0,
+    "others": 8.3,
+    "smoke": 6.5,
+    "coord": 2.5,
+    "edit": 4.7,
+    "test": 0.5
+   },
+   "a3": {
+    "final": 0.2,
+    "read": 3.4,
+    "gitw": 1.4,
+    "others": 6.9,
+    "coord": 4.5,
+    "smoke": 7.9,
+    "test": 5.5,
+    "edit": 0.4
+   }
+  },
+  "peer_total": {
+   "final": 0.4,
+   "read": 6.3,
+   "others": 23.5,
+   "smoke": 23.2,
+   "coord": 10.5,
+   "gitw": 2.6,
+   "test": 9.9,
+   "edit": 6.6
+  },
+  "main_commits": 21,
+  "main_added": 1818,
+  "last_big_main_commit_A": 20.6,
+  "tail_share": 0.34,
+  "q": 7.8
+ },
+ {
+  "run": "E1-T2-base4-r2",
+  "run_active": 26.1,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 5.0
+   },
+   "a1": {
+    "final": 0.1,
+    "read": 0.5,
+    "gitw": 0.9,
+    "others": 8.9,
+    "test": 4.5,
+    "smoke": 5.5,
+    "coord": 1.9,
+    "edit": 1.4
+   },
+   "a2": {
+    "final": 0.1,
+    "read": 2.4,
+    "gitw": 0.2,
+    "others": 6.3,
+    "smoke": 6.5,
+    "coord": 1.4,
+    "test": 4.5,
+    "edit": 1.1
+   },
+   "a3": {
+    "final": 0.2,
+    "read": 1.1,
+    "gitw": 0.4,
+    "others": 3.7,
+    "smoke": 6.1,
+    "coord": 2.5,
+    "test": 8.0,
+    "edit": 2.1
+   }
+  },
+  "peer_total": {
+   "final": 0.4,
+   "read": 4.1,
+   "gitw": 1.6,
+   "others": 18.8,
+   "test": 17.0,
+   "smoke": 18.1,
+   "coord": 5.8,
+   "edit": 4.6
+  },
+  "main_commits": 23,
+  "main_added": 2265,
+  "last_big_main_commit_A": 18.1,
+  "tail_share": 0.3,
+  "q": 7.9
+ },
+ {
+  "run": "E1-T2-solo-r1",
+  "run_active": 30.9,
+  "per_agent": {
+   "root": {
+    "final": 0.2,
+    "read": 2.5,
+    "test": 7.4,
+    "edit": 8.3,
+    "smoke": 8.5,
+    "others": 0.2
+   }
+  },
+  "peer_total": {
+   "final": 0.2,
+   "read": 2.5,
+   "test": 7.4,
+   "edit": 8.3,
+   "smoke": 8.5,
+   "others": 0.2
+  },
+  "main_commits": 1,
+  "main_added": 2385,
+  "last_big_main_commit_A": 30.7,
+  "tail_share": 0.01,
+  "q": 7.9
+ },
+ {
+  "run": "E1-T3b-C1-r1",
+  "run_active": 27.0,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 2.6
+   },
+   "a1": {
+    "final": 0.0,
+    "read": 2.3,
+    "others": 10.7,
+    "test": 4.4,
+    "smoke": 2.1,
+    "edit": 2.9,
+    "coord": 2.3,
+    "gitw": 1.1
+   },
+   "a2": {
+    "final": 0.2,
+    "read": 4.0,
+    "others": 3.9,
+    "test": 6.0,
+    "smoke": 2.9,
+    "coord": 3.5,
+    "edit": 5.1,
+    "gitw": 1.0
+   },
+   "a3": {
+    "final": 0.0,
+    "read": 1.8,
+    "others": 7.6,
+    "smoke": 6.2,
+    "test": 7.8,
+    "edit": 1.0,
+    "gitw": 0.5,
+    "coord": 1.5
+   }
+  },
+  "peer_total": {
+   "final": 0.2,
+   "read": 8.1,
+   "others": 22.2,
+   "test": 18.2,
+   "smoke": 11.2,
+   "edit": 9.1,
+   "coord": 7.3,
+   "gitw": 2.6
+  },
+  "main_commits": 31,
+  "main_added": 3907,
+  "last_big_main_commit_A": 23.2,
+  "tail_share": 0.14,
+  "q": 7.0
+ },
+ {
+  "run": "E1-T3b-C1-r3",
+  "run_active": 32.0,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 2.8
+   },
+   "a1": {
+    "final": 0.1,
+    "read": 3.1,
+    "others": 11.5,
+    "smoke": 3.2,
+    "coord": 3.0,
+    "gitw": 2.4,
+    "edit": 0.5,
+    "test": 7.5
+   },
+   "a2": {
+    "final": 0.1,
+    "read": 3.4,
+    "others": 5.0,
+    "edit": 0.5,
+    "coord": 5.9,
+    "gitw": 0.7,
+    "smoke": 6.8,
+    "test": 8.8
+   },
+   "a3": {
+    "final": 0.1,
+    "read": 1.9,
+    "gitw": 2.3,
+    "others": 7.9,
+    "smoke": 9.9,
+    "edit": 1.2,
+    "coord": 5.3,
+    "test": 2.7
+   }
+  },
+  "peer_total": {
+   "final": 0.4,
+   "read": 8.4,
+   "others": 24.3,
+   "smoke": 19.9,
+   "coord": 14.2,
+   "gitw": 5.4,
+   "edit": 2.2,
+   "test": 19.0
+  },
+  "main_commits": 29,
+  "main_added": 4277,
+  "last_big_main_commit_A": 22.9,
+  "tail_share": 0.29,
+  "q": 7.55
+ },
+ {
+  "run": "E1-T3b-C1-r4",
+  "run_active": 33.5,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 4.1
+   },
+   "a1": {
+    "final": 0.1,
+    "read": 2.5,
+    "others": 7.3,
+    "test": 5.8,
+    "gitw": 2.4,
+    "coord": 4.7,
+    "smoke": 8.7,
+    "edit": 1.3
+   },
+   "a2": {
+    "final": 0.1,
+    "read": 3.9,
+    "gitw": 0.9,
+    "others": 5.7,
+    "test": 10.5,
+    "smoke": 5.4,
+    "coord": 3.3,
+    "edit": 0.8
+   },
+   "a3": {
+    "final": 0.1,
+    "read": 4.0,
+    "gitw": 1.2,
+    "others": 7.2,
+    "test": 10.8,
+    "coord": 3.5,
+    "smoke": 4.4
+   }
+  },
+  "peer_total": {
+   "final": 0.4,
+   "read": 10.5,
+   "others": 20.2,
+   "test": 27.1,
+   "gitw": 4.5,
+   "coord": 11.5,
+   "smoke": 18.5,
+   "edit": 2.1
+  },
+  "main_commits": 27,
+  "main_added": 4292,
+  "last_big_main_commit_A": 26.5,
+  "tail_share": 0.21,
+  "q": 7.699999999999999
+ },
+ {
+  "run": "E1-T3b-C2-r1",
+  "run_active": 28.1,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 2.8
+   },
+   "a1": {
+    "final": 0.1,
+    "read": 2.2,
+    "others": 7.2,
+    "smoke": 4.3,
+    "coord": 0.5,
+    "edit": 2.9,
+    "test": 7.6,
+    "gitw": 0.7
+   },
+   "a2": {
+    "final": 0.2,
+    "read": 2.1,
+    "gitw": 2.3,
+    "others": 5.3,
+    "smoke": 4.0,
+    "coord": 1.5,
+    "test": 10.7,
+    "edit": 0.8
+   },
+   "a3": {
+    "final": 0.1,
+    "read": 1.8,
+    "gitw": 3.1,
+    "others": 6.1,
+    "smoke": 4.2,
+    "coord": 3.6,
+    "test": 6.2,
+    "edit": 2.0
+   }
+  },
+  "peer_total": {
+   "final": 0.4,
+   "read": 6.1,
+   "others": 18.7,
+   "smoke": 12.5,
+   "coord": 5.7,
+   "edit": 5.7,
+   "test": 24.6,
+   "gitw": 6.2
+  },
+  "main_commits": 31,
+  "main_added": 4559,
+  "last_big_main_commit_A": 22.2,
+  "tail_share": 0.21,
+  "q": 7.55
+ },
+ {
+  "run": "E1-T3b-C2-r2",
+  "run_active": 21.0,
+  "per_agent": {
+   "root": {
+    "final": 0.2,
+    "coord": 3.3
+   },
+   "a1": {
+    "final": 0.1,
+    "read": 2.2,
+    "gitw": 1.1,
+    "others": 4.4,
+    "smoke": 4.7,
+    "edit": 0.8,
+    "test": 5.1,
+    "coord": 1.4
+   },
+   "a2": {
+    "final": 0.1,
+    "read": 1.3,
+    "others": 7.7,
+    "smoke": 4.2,
+    "test": 4.6,
+    "coord": 2.2,
+    "gitw": 0.2
+   },
+   "a3": {
+    "final": 0.1,
+    "read": 3.1,
+    "others": 2.9,
+    "test": 5.3,
+    "coord": 2.5,
+    "smoke": 2.7,
+    "edit": 1.4,
+    "gitw": 1.7
+   }
+  },
+  "peer_total": {
+   "final": 0.3,
+   "read": 6.5,
+   "gitw": 3.0,
+   "others": 15.0,
+   "smoke": 11.6,
+   "edit": 2.2,
+   "test": 15.0,
+   "coord": 6.0
+  },
+  "main_commits": 27,
+  "main_added": 4050,
+  "last_big_main_commit_A": 18.4,
+  "tail_share": 0.12,
+  "q": 7.4
+ },
+ {
+  "run": "E1-T3b-base4-r1",
+  "run_active": 25.4,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 2.9
+   },
+   "a1": {
+    "final": 0.1,
+    "read": 2.3,
+    "gitw": 0.4,
+    "others": 7.7,
+    "edit": 2.6,
+    "smoke": 5.8,
+    "coord": 0.3,
+    "test": 5.4
+   },
+   "a2": {
+    "final": 0.0,
+    "read": 2.4,
+    "others": 5.2,
+    "edit": 1.7,
+    "coord": 1.4,
+    "smoke": 5.0,
+    "test": 8.5,
+    "gitw": 0.5
+   },
+   "a3": {
+    "final": 0.0,
+    "read": 2.1,
+    "others": 5.3,
+    "smoke": 8.5,
+    "coord": 0.1,
+    "edit": 1.8,
+    "test": 4.5,
+    "gitw": 0.4
+   }
+  },
+  "peer_total": {
+   "final": 0.1,
+   "read": 6.9,
+   "gitw": 1.3,
+   "others": 18.1,
+   "edit": 6.0,
+   "smoke": 19.3,
+   "coord": 1.8,
+   "test": 18.4
+  },
+  "main_commits": 34,
+  "main_added": 4136,
+  "last_big_main_commit_A": 17.6,
+  "tail_share": 0.31,
+  "q": 7.8
+ },
+ {
+  "run": "E1-T3b-base4-r2",
+  "run_active": 38.7,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 3.1
+   },
+   "a1": {
+    "final": 0.2,
+    "read": 2.3,
+    "gitw": 2.6,
+    "others": 8.8,
+    "smoke": 9.5,
+    "coord": 5.1,
+    "test": 7.7,
+    "edit": 1.2
+   },
+   "a2": {
+    "final": 0.0,
+    "read": 2.2,
+    "gitw": 1.6,
+    "others": 7.4,
+    "test": 19.7,
+    "coord": 1.5,
+    "smoke": 5.2,
+    "edit": 0.6
+   },
+   "a3": {
+    "final": 0.0,
+    "read": 2.2,
+    "gitw": 0.5,
+    "others": 13.1,
+    "test": 9.2,
+    "smoke": 8.0,
+    "coord": 2.1,
+    "edit": 2.3
+   }
+  },
+  "peer_total": {
+   "final": 0.2,
+   "read": 6.7,
+   "gitw": 4.8,
+   "others": 29.3,
+   "smoke": 22.7,
+   "coord": 8.7,
+   "test": 36.6,
+   "edit": 4.0
+  },
+  "main_commits": 45,
+  "main_added": 4302,
+  "last_big_main_commit_A": 34.5,
+  "tail_share": 0.11,
+  "q": 7.6
+ },
+ {
+  "run": "E1-T3b-base4-r3",
+  "run_active": 36.1,
+  "per_agent": {
+   "root": {
+    "final": 0.0,
+    "coord": 3.9
+   },
+   "a1": {
+    "final": 0.0,
+    "read": 2.6,
+    "others": 5.4,
+    "smoke": 7.3,
+    "gitw": 2.0,
+    "coord": 1.8,
+    "test": 7.7,
+    "edit": 3.8
+   },
+   "a2": {
+    "final": 0.0,
+    "read": 3.7,
+    "gitw": 2.4,
+    "others": 4.5,
+    "edit": 3.5,
+    "test": 13.3,
+    "smoke": 3.2,
+    "coord": 2.3
+   },
+   "a3": {
+    "final": 0.0,
+    "read": 1.1,
+    "gitw": 1.7,
+    "others": 9.2,
+    "smoke": 8.9,
+    "test": 6.3,
+    "coord": 2.2,
+    "edit": 3.9
+   }
+  },
+  "peer_total": {
+   "final": 0.0,
+   "read": 7.5,
+   "others": 19.2,
+   "smoke": 19.4,
+   "gitw": 6.0,
+   "coord": 6.4,
+   "test": 27.4,
+   "edit": 11.2
+  },
+  "main_commits": 32,
+  "main_added": 4411,
+  "last_big_main_commit_A": 30.0,
+  "tail_share": 0.17,
+  "q": 7.775
+ },
+ {
+  "run": "E1-T3b-solo-r1",
+  "run_active": 47.5,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "read": 4.3,
+    "gitw": 0.7,
+    "edit": 7.1,
+    "smoke": 9.5,
+    "others": 3.8,
+    "test": 15.5
+   }
+  },
+  "peer_total": {
+   "final": 0.1,
+   "read": 4.3,
+   "gitw": 0.7,
+   "edit": 7.1,
+   "smoke": 9.5,
+   "others": 3.8,
+   "test": 15.5
+  },
+  "main_commits": 1,
+  "main_added": 3608,
+  "last_big_main_commit_A": 46.8,
+  "tail_share": 0.01,
+  "q": 7.9
+ },
+ {
+  "run": "E1-T4b-C1-r2",
+  "run_active": 34.0,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 2.9
+   },
+   "a1": {
+    "final": 0.1,
+    "read": 2.4,
+    "others": 6.6,
+    "edit": 1.7,
+    "smoke": 4.9,
+    "coord": 4.4,
+    "test": 12.9,
+    "gitw": 0.4
+   },
+   "a2": {
+    "final": 0.0,
+    "read": 2.3,
+    "gitw": 2.4,
+    "others": 5.0,
+    "smoke": 5.7,
+    "edit": 2.4,
+    "coord": 3.6,
+    "test": 11.7
+   },
+   "a3": {
+    "final": 0.2,
+    "read": 1.2,
+    "gitw": 1.3,
+    "others": 6.8,
+    "smoke": 13.1,
+    "edit": 0.6,
+    "test": 6.2,
+    "coord": 3.1
+   }
+  },
+  "peer_total": {
+   "final": 0.3,
+   "read": 6.0,
+   "others": 18.4,
+   "edit": 4.7,
+   "smoke": 23.6,
+   "coord": 11.1,
+   "test": 30.8,
+   "gitw": 4.0
+  },
+  "main_commits": 28,
+  "main_added": 6055,
+  "last_big_main_commit_A": 27.0,
+  "tail_share": 0.21,
+  "q": 7.275
+ },
+ {
+  "run": "E1-T4b-C1-r3",
+  "run_active": 25.9,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 2.8
+   },
+   "a1": {
+    "final": 0.0,
+    "read": 3.9,
+    "gitw": 0.4,
+    "others": 4.5,
+    "edit": 3.4,
+    "smoke": 3.2,
+    "test": 7.7,
+    "coord": 0.7
+   },
+   "a2": {
+    "final": 0.0,
+    "read": 2.3,
+    "others": 4.6,
+    "smoke": 9.2,
+    "edit": 1.8,
+    "coord": 2.2,
+    "test": 4.6,
+    "gitw": 0.7
+   },
+   "a3": {
+    "final": 0.1,
+    "read": 1.6,
+    "others": 3.8,
+    "smoke": 5.1,
+    "edit": 4.0,
+    "gitw": 0.7,
+    "test": 5.6,
+    "coord": 2.4
+   }
+  },
+  "peer_total": {
+   "final": 0.1,
+   "read": 7.7,
+   "gitw": 1.8,
+   "others": 12.9,
+   "edit": 9.2,
+   "smoke": 17.5,
+   "test": 17.9,
+   "coord": 5.3
+  },
+  "main_commits": 27,
+  "main_added": 6675,
+  "last_big_main_commit_A": 20.3,
+  "tail_share": 0.22,
+  "q": 7.4
+ },
+ {
+  "run": "E1-T4b-C1-r4",
+  "run_active": 34.8,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 3.1
+   },
+   "a1": {
+    "final": 0.0,
+    "read": 1.8,
+    "gitw": 1.9,
+    "others": 10.6,
+    "edit": 1.3,
+    "coord": 2.6,
+    "smoke": 1.7,
+    "test": 13.5
+   },
+   "a2": {
+    "final": 0.0,
+    "read": 3.2,
+    "others": 6.2,
+    "smoke": 5.5,
+    "coord": 3.9,
+    "test": 12.3,
+    "edit": 0.8,
+    "gitw": 0.4
+   },
+   "a3": {
+    "final": 0.0,
+    "read": 2.4,
+    "others": 9.9,
+    "edit": 1.8,
+    "coord": 3.5,
+    "smoke": 8.0,
+    "test": 7.3
+   }
+  },
+  "peer_total": {
+   "final": 0.0,
+   "read": 7.3,
+   "gitw": 2.3,
+   "others": 26.7,
+   "edit": 4.0,
+   "coord": 10.0,
+   "smoke": 15.2,
+   "test": 33.1
+  },
+  "main_commits": 29,
+  "main_added": 7358,
+  "last_big_main_commit_A": 32.9,
+  "tail_share": 0.05,
+  "q": 7.449999999999999
+ },
+ {
+  "run": "E1-T4b-C2-r1",
+  "run_active": 31.9,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 2.6
+   },
+   "a1": {
+    "final": 0.2,
+    "read": 6.3,
+    "others": 4.4,
+    "smoke": 2.4,
+    "test": 13.0,
+    "edit": 3.3,
+    "gitw": 1.7
+   },
+   "a2": {
+    "final": 0.0,
+    "read": 6.6,
+    "gitw": 0.9,
+    "others": 4.2,
+    "edit": 4.7,
+    "smoke": 7.7,
+    "test": 5.7,
+    "coord": 0.9
+   },
+   "a3": {
+    "final": 0.0,
+    "read": 3.9,
+    "others": 4.9,
+    "edit": 2.1,
+    "smoke": 0.8,
+    "gitw": 0.8,
+    "test": 14.6,
+    "coord": 1.9
+   }
+  },
+  "peer_total": {
+   "final": 0.2,
+   "read": 16.7,
+   "others": 13.5,
+   "smoke": 11.0,
+   "test": 33.3,
+   "edit": 10.2,
+   "gitw": 3.4,
+   "coord": 2.8
+  },
+  "main_commits": 31,
+  "main_added": 9556,
+  "last_big_main_commit_A": 28.6,
+  "tail_share": 0.1,
+  "q": 7.2
+ },
+ {
+  "run": "E1-T4b-C2-r2",
+  "run_active": 24.6,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "coord": 2.5
+   },
+   "a1": {
+    "final": 0.1,
+    "read": 1.2,
+    "gitw": 0.9,
+    "smoke": 3.9,
+    "test": 6.1,
+    "others": 7.3,
+    "coord": 1.9,
+    "edit": 2.7
+   },
+   "a2": {
+    "final": 0.0,
+    "read": 1.3,
+    "gitw": 1.3,
+    "edit": 3.2,
+    "others": 5.6,
+    "coord": 3.0,
+    "test": 8.6,
+    "smoke": 1.2
+   },
+   "a3": {
+    "final": 0.1,
+    "read": 2.4,
+    "others": 3.7,
+    "smoke": 3.7,
+    "test": 3.8,
+    "edit": 2.3,
+    "coord": 4.4,
+    "gitw": 0.4
+   }
+  },
+  "peer_total": {
+   "final": 0.3,
+   "read": 4.9,
+   "gitw": 2.6,
+   "smoke": 8.9,
+   "test": 18.4,
+   "others": 16.6,
+   "coord": 9.3,
+   "edit": 8.2
+  },
+  "main_commits": 25,
+  "main_added": 5093,
+  "last_big_main_commit_A": 19.1,
+  "tail_share": 0.22,
+  "q": 6.8
+ },
+ {
+  "run": "E1-T4b-C2-r3",
+  "run_active": 42.0,
+  "per_agent": {
+   "root": {
+    "final": 0.5,
+    "coord": 16.3
+   },
+   "a1": {
+    "final": 1.0,
+    "read": 5.1,
+    "coord": 13.2,
+    "edit": 6.9,
+    "others": 2.5,
+    "smoke": 3.4,
+    "test": 8.3,
+    "gitw": 0.4
+   },
+   "a2": {
+    "final": 0.5,
+    "read": 4.1,
+    "gitw": 0.7,
+    "coord": 15.9,
+    "edit": 8.2,
+    "others": 2.5,
+    "smoke": 1.6,
+    "test": 6.9
+   },
+   "a3": {
+    "final": 0.4,
+    "read": 3.8,
+    "gitw": 1.7,
+    "others": 4.7,
+    "coord": 10.8,
+    "edit": 6.0,
+    "smoke": 3.6,
+    "test": 9.0
+   }
+  },
+  "peer_total": {
+   "final": 1.9,
+   "read": 13.0,
+   "coord": 39.9,
+   "edit": 21.1,
+   "others": 9.7,
+   "smoke": 8.7,
+   "test": 24.2,
+   "gitw": 2.9
+  },
+  "main_commits": 29,
+  "main_added": 5250,
+  "last_big_main_commit_A": 39.7,
+  "tail_share": 0.06,
+  "q": 6.65
+ },
+ {
+  "run": "E1-T4b-base4-r1",
+  "run_active": 26.9,
+  "per_agent": {
+   "root": {
+    "final": 0.2,
+    "coord": 8.4
+   },
+   "a1": {
+    "final": 0.3,
+    "read": 2.7,
+    "coord": 15.6,
+    "edit": 5.0,
+    "gitw": 0.4,
+    "others": 1.0,
+    "test": 1.1,
+    "smoke": 0.3
+   },
+   "a2": {
+    "final": 0.2,
+    "read": 1.3,
+    "coord": 9.6,
+    "edit": 2.6,
+    "smoke": 1.2,
+    "test": 0.6,
+    "gitw": 0.5,
+    "others": 3.4
+   },
+   "a3": {
+    "final": 0.2,
+    "read": 0.3
+   }
+  },
+  "peer_total": {
+   "final": 0.6,
+   "read": 4.3,
+   "coord": 25.2,
+   "edit": 7.6,
+   "gitw": 0.9,
+   "others": 4.4,
+   "test": 1.7,
+   "smoke": 1.5
+  },
+  "main_commits": 9,
+  "main_added": 441,
+  "last_big_main_commit_A": 20.1,
+  "tail_share": 0.25,
+  "q": 1.6
+ },
+ {
+  "run": "E1-T4b-base4-r2",
+  "run_active": 16.8,
+  "per_agent": {
+   "root": {
+    "final": 0.2,
+    "coord": 10.6
+   },
+   "a1": {
+    "final": 0.2,
+    "read": 2.4,
+    "coord": 6.3,
+    "others": 2.0,
+    "test": 1.9,
+    "edit": 2.3,
+    "gitw": 0.2
+   },
+   "a2": {
+    "final": 0.3
+   },
+   "a3": {
+    "final": 0.2,
+    "read": 3.1,
+    "gitw": 0.4,
+    "coord": 6.8,
+    "edit": 2.9,
+    "test": 0.7,
+    "others": 1.8
+   }
+  },
+  "peer_total": {
+   "final": 0.7,
+   "read": 5.5,
+   "coord": 13.2,
+   "others": 3.8,
+   "test": 2.6,
+   "edit": 5.2,
+   "gitw": 0.6
+  },
+  "main_commits": 3,
+  "main_added": 371,
+  "last_big_main_commit_A": 6.8,
+  "tail_share": 0.6,
+  "q": 1.7000000000000002
+ },
+ {
+  "run": "E1-T4b-solo-r1",
+  "run_active": 36.4,
+  "per_agent": {
+   "root": {
+    "final": 0.1,
+    "read": 5.3,
+    "gitw": 0.2,
+    "edit": 3.8,
+    "smoke": 12.3,
+    "test": 12.0,
+    "others": 1.4
+   }
+  },
+  "peer_total": {
+   "final": 0.1,
+   "read": 5.3,
+   "gitw": 0.2,
+   "edit": 3.8,
+   "smoke": 12.3,
+   "test": 12.0,
+   "others": 1.4
+  },
+  "main_commits": 1,
+  "main_added": 10191,
+  "last_big_main_commit_A": 35.7,
+  "tail_share": 0.02,
+  "q": 7.55
+ }
+]

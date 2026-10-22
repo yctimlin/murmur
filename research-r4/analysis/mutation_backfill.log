@@ -1,0 +1,16 @@
+E1-T1b-C1-r1 {'mutants': 30, 'killed': 19, 'timeouts': 0, 'score': 0.6333, 'baseline_green': True, 'deselected': 0}
+E1-T1b-C2-r1 {'mutants': 30, 'killed': 20, 'timeouts': 0, 'score': 0.6667, 'baseline_green': True, 'deselected': 0}
+E1-T1b-base4-r1 {'mutants': 30, 'killed': 19, 'timeouts': 0, 'score': 0.6333, 'baseline_green': True, 'deselected': 0}
+E1-T1b-solo-r1 {'mutants': 30, 'killed': 9, 'timeouts': 0, 'score': 0.3, 'baseline_green': True, 'deselected': 0}
+E1-T2-C1-r1 {'mutants': 30, 'killed': 13, 'timeouts': 0, 'score': 0.4333, 'baseline_green': True, 'deselected': 0}
+E1-T2-base4-r1 {'mutants': 30, 'killed': 19, 'timeouts': 1, 'score': 0.6552, 'baseline_green': True, 'deselected': 0}
+E1-T3b-C1-r1 {'mutants': 0, 'killed': 0, 'score': None, 'baseline_green': False}
+E1-T3b-C2-r1 {'mutants': 0, 'killed': 0, 'score': None, 'baseline_green': False}
+E1-T3b-base4-r1 {'mutants': 0, 'killed': 0, 'score': None, 'baseline_green': False}
+E1-T3b-solo-r1 {'mutants': 0, 'killed': 0, 'score': None, 'baseline_green': False}
+E1-T4b-C1-r2 {'mutants': 30, 'killed': 12, 'timeouts': 0, 'score': 0.4, 'baseline_green': True, 'deselected': 0}
+E1-T4b-C2-r1 {'mutants': 0, 'killed': 0, 'score': None, 'baseline_green': False}
+E1-T4b-base4-r1 {'mutants': 30, 'killed': 18, 'timeouts': 0, 'score': 0.6, 'baseline_green': True, 'deselected': 0}
+E1-T2-C2-r1 {'mutants': 30, 'killed': 10, 'timeouts': 0, 'score': 0.3333, 'baseline_green': True, 'deselected': 0}
+E1-T4b-C1-r3 {'mutants': 30, 'killed': 17, 'timeouts': 0, 'score': 0.5667, 'baseline_green': True, 'deselected': 0}
+E1-T4b-solo-r1 {'mutants': 30, 'killed': 18, 'timeouts': 0, 'score': 0.6, 'baseline_green': True, 'deselected': 0}

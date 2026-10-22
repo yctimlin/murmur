@@ -1,0 +1,98 @@
+##### E-T1b-base3-r1 30.55 26444821
+root/solo  end 54.4 done 54.4 calls 10 in 0.22M uncached 21K out 0K ctxmax 23K
+root/solo  end 53.4 done 53.4 calls 97 in 9.16M uncached 148K out 50K ctxmax 159K
+root/solo  end 54.3 done 54.3 calls 90 in 8.67M uncached 148K out 61K ctxmax 155K
+root/solo  end 54.0 done 54.0 calls 106 in 10.93M uncached 172K out 52K ctxmax 172K
+##### E-T1b-base3-r2 30.41 15892825
+root/solo  end 98.2 done 98.2 calls 10 in 0.23M uncached 23K out 0K ctxmax 23K
+root/solo  end 97.1 done 97.1 calls 69 in 5.67M uncached 232K out 49K ctxmax 144K
+root/solo  end 98.0 done 98.0 calls 64 in 5.63M uncached 247K out 46K ctxmax 161K
+root/solo  end 97.5 done 97.5 calls 63 in 4.86M uncached 215K out 44K ctxmax 142K
+##### E-T1b-orig-r1 29.06 12957070
+root/solo  end 115.7 done 115.7 calls 8 in 0.18M uncached 21K out 0K ctxmax 23K
+root/solo  end 115.7 done 115.3 calls 54 in 3.74M uncached 113K out 41K ctxmax 120K
+root/solo  end 115.3 done 115.3 calls 55 in 4.19M uncached 112K out 43K ctxmax 130K
+root/solo  end 115.6 done 115.6 calls 66 in 5.36M uncached 124K out 40K ctxmax 144K
+##### E-T1b-orig-r2 18.49 10755745
+root/solo  end 24.1 done 24.1 calls 62 in 1.61M uncached 50K out 2K ctxmax 31K
+/root/a1   end 14.4 done 14.4 calls 74 in 3.45M uncached 53K out 16K ctxmax 61K
+/root/a2   end 24.1 done 12.2 calls 64 in 2.72M uncached 50K out 11K ctxmax 60K
+/root/a3   end 24.0 done 24.0 calls 71 in 3.19M uncached 49K out 11K ctxmax 57K
+##### E-T1b-solo-r1 53.3 6174482
+root/solo  end 57.5 done 57.5 calls 59 in 6.21M uncached 174K out 130K ctxmax 179K
+##### E-T1b-solo-r2 47.38 3748853
+root/solo  end 180.6 done 180.6 calls 49 in 4.25M uncached 231K out 104K ctxmax 132K
+##### E-T3b-base3-r1 30.84 25478213
+root/solo  end 30.8 done 30.8 calls 8 in 0.18M uncached 21K out 0K ctxmax 23K
+root/solo  end 28.6 done 28.6 calls 84 in 8.04M uncached 159K out 59K ctxmax 165K
+root/solo  end 30.7 done 30.7 calls 81 in 8.21M uncached 163K out 65K ctxmax 171K
+root/solo  end 28.5 done 28.5 calls 79 in 9.04M uncached 190K out 59K ctxmax 197K
+##### E-T3b-base3-r2 27.75 13077371
+root/solo  end 118.5 done 118.5 calls 49 in 1.22M uncached 41K out 2K ctxmax 28K
+root/solo  end 92.3 done 92.3 calls 74 in 3.45M uncached 80K out 23K ctxmax 65K
+root/solo  end 118.5 done 118.2 calls 100 in 5.13M uncached 75K out 16K ctxmax 71K
+root/solo  end 95.4 done 95.4 calls 87 in 3.91M uncached 56K out 14K ctxmax 63K
+##### E-T3b-orig-r1 17.54 10579075
+root/solo  end 17.5 done 17.5 calls 69 in 1.80M uncached 50K out 2K ctxmax 32K
+/root/a1   end 17.3 done 17.3 calls 81 in 3.43M uncached 98K out 16K ctxmax 54K
+/root/a2   end 12.3 done 12.3 calls 66 in 2.77M uncached 89K out 14K ctxmax 56K
+/root/a3   end 13.8 done 13.8 calls 68 in 3.01M uncached 50K out 14K ctxmax 58K
+##### E-T3b-orig-r2 38.39 19085930
+root/solo  end 150.5 done 150.5 calls 8 in 0.18M uncached 3K out 0K ctxmax 23K
+root/solo  end 149.9 done 149.9 calls 76 in 6.99M uncached 156K out 53K ctxmax 170K
+root/solo  end 149.9 done 149.9 calls 71 in 6.92M uncached 152K out 59K ctxmax 171K
+root/solo  end 150.5 done 150.3 calls 65 in 5.98M uncached 147K out 63K ctxmax 160K
+##### E-T3b-solo-r1 57.48 5014458
+root/solo  end 67.4 done 67.4 calls 58 in 5.31M uncached 168K out 130K ctxmax 166K
+##### E-T3b-solo-r2 16.37 2790062
+root/solo  end 54.8 done 54.8 calls 59 in 2.83M uncached 74K out 28K ctxmax 67K
+##### E-T4b-base3-r1 17.9 13713329
+root/solo  end 17.9 done 17.9 calls 67 in 1.78M uncached 42K out 2K ctxmax 33K
+/root/a1   end 13.6 done 13.6 calls 75 in 3.60M uncached 54K out 17K ctxmax 60K
+/root/a2   end 12.5 done 12.5 calls 72 in 3.22M uncached 54K out 13K ctxmax 62K
+/root/a3   end 17.7 done 17.7 calls 100 in 5.45M uncached 123K out 17K ctxmax 75K
+##### E-T4b-base3-r2 29.54 12684805
+root/solo  end 130.0 done 130.0 calls 10 in 0.23M uncached 22K out 0K ctxmax 24K
+root/solo  end 130.0 done 129.5 calls 42 in 4.08M uncached 139K out 41K ctxmax 164K
+root/solo  end 129.3 done 129.3 calls 52 in 4.30M uncached 125K out 44K ctxmax 139K
+root/solo  end 129.8 done 129.8 calls 56 in 4.95M uncached 119K out 42K ctxmax 144K
+##### E-T4b-orig-r1 34.19 32755665
+root/solo  end 34.2 done 34.2 calls 8 in 0.18M uncached 21K out 0K ctxmax 23K
+root/solo  end 33.7 done 33.7 calls 91 in 12.73M uncached 236K out 67K ctxmax 246K
+root/solo  end 33.7 done 33.7 calls 84 in 11.33M uncached 216K out 72K ctxmax 225K
+root/solo  end 34.0 done 34.0 calls 76 in 8.52M uncached 177K out 66K ctxmax 187K
+##### E-T4b-orig-r2 26.97 15825438
+root/solo  end 119.3 done 119.3 calls 51 in 1.29M uncached 48K out 2K ctxmax 30K
+root/solo  end 64.4 done 64.4 calls 56 in 2.45M uncached 72K out 13K ctxmax 56K
+root/solo  end 119.1 done 119.1 calls 103 in 5.83M uncached 149K out 20K ctxmax 80K
+root/solo  end 117.0 done 117.0 calls 85 in 6.73M uncached 105K out 21K ctxmax 108K
+##### E-T4b-solo-r1 68.11 8435171
+root/solo  end 125.7 done 125.7 calls 74 in 9.11M uncached 215K out 143K ctxmax 203K
+##### E-T4b-solo-r2 37.5 2385763
+root/solo  end 154.6 done 154.6 calls 36 in 2.77M uncached 123K out 92K ctxmax 124K
+##### E-T5b-solo-r1 12.0 1447705
+root/solo  end 12.5 done 12.5 calls 35 in 1.50M uncached 48K out 25K ctxmax 55K
+##### E-T2-base3-r1 21.44 11582532
+root/solo  end 83.9 done 83.9 calls 57 in 1.45M uncached 40K out 2K ctxmax 30K
+/root/a1   end 60.7 done 60.7 calls 65 in 2.69M uncached 45K out 17K ctxmax 54K
+/root/a2   end 82.7 done 82.7 calls 80 in 3.88M uncached 61K out 19K ctxmax 66K
+/root/a3   end 83.8 done 83.8 calls 80 in 4.05M uncached 59K out 13K ctxmax 68K
+##### E-T2-base3-r2 29.5 17678252
+root/solo  end 60.2 done 60.2 calls 10 in 0.22M uncached 21K out 0K ctxmax 23K
+root/solo  end 60.0 done 60.0 calls 64 in 5.06M uncached 200K out 59K ctxmax 141K
+root/solo  end 59.7 done 59.7 calls 68 in 6.21M uncached 182K out 44K ctxmax 166K
+root/solo  end 32.7 done 32.7 calls 74 in 6.69M uncached 187K out 43K ctxmax 152K
+##### E-T2-orig-r1 30.48 17044469
+root/solo  end 117.1 done 117.1 calls 10 in 0.22M uncached 23K out 0K ctxmax 23K
+root/solo  end 116.7 done 116.7 calls 65 in 5.76M uncached 128K out 54K ctxmax 149K
+root/solo  end 117.0 done 117.0 calls 80 in 6.26M uncached 120K out 31K ctxmax 126K
+root/solo  end 117.1 done 115.5 calls 62 in 5.35M uncached 149K out 37K ctxmax 148K
+##### E-T2-orig-r2 24.92 13692585
+root/solo  end 30.7 done 30.7 calls 10 in 0.22M uncached 23K out 0K ctxmax 23K
+root/solo  end 30.7 done 30.1 calls 55 in 4.07M uncached 130K out 46K ctxmax 146K
+root/solo  end 30.7 done 30.6 calls 67 in 5.00M uncached 125K out 38K ctxmax 133K
+root/solo  end 30.4 done 30.4 calls 63 in 4.91M uncached 148K out 41K ctxmax 142K
+##### E-T2-solo-r1 51.32 5553710
+root/solo  end 53.7 done 53.7 calls 64 in 5.55M uncached 140K out 106K ctxmax 139K
+##### E-T2-solo-r2 4.53 940851
+root/solo  end 4.5 done 4.5 calls 26 in 0.94M uncached 74K out 21K ctxmax 48K

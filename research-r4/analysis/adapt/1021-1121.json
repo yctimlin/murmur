@@ -1,0 +1,67 @@
+{
+ "t": "2026-10-21 11:21",
+ "n_rows": 28,
+ "p_collapse_mean": {
+  "base4": 0.2991632230276865,
+  "C1": 0.29886537765923704,
+  "C2": 0.22129237632549448
+ },
+ "C1": {
+  "ref": "base4",
+  "P_keep": 0.24465,
+  "dq_mean": 0.001330441522442595,
+  "P_dq>0": 0.5013,
+  "P_dq>=0.5": 0.35815,
+  "tok_ratio_med(secondary)": 1.0952650938996888,
+  "act_ratio_med": 0.9771647814656337,
+  "act_ratio_vs_solo_med": 0.742193569835612,
+  "P_act<=1.10": 0.7206,
+  "n_judged": 8,
+  "paired_tasks": [
+   "T1b",
+   "T2",
+   "T3b",
+   "T4b"
+  ]
+ },
+ "C2": {
+  "ref": "C1",
+  "P_keep": 0.44855,
+  "dq_mean": 0.491255496916238,
+  "P_dq>0": 0.6503,
+  "P_dq>=0.5": 0.50315,
+  "tok_ratio_med(secondary)": 0.8700072044154759,
+  "act_ratio_med": 0.9431979382412554,
+  "act_ratio_vs_solo_med": 0.698676028957115,
+  "P_act<=1.10": 0.7883,
+  "n_judged": 7,
+  "paired_tasks": [
+   "T1b",
+   "T2",
+   "T3b",
+   "T4b"
+  ]
+ },
+ "decisions": {
+  "C1": "active",
+  "C2": "active"
+ },
+ "started": {
+  "T4b/base4": 3,
+  "T4b/C1": 3,
+  "T4b/C2": 3,
+  "T4b/solo": 1,
+  "T3b/base4": 3,
+  "T3b/C1": 3,
+  "T3b/C2": 2,
+  "T3b/solo": 1,
+  "T1b/base4": 2,
+  "T1b/C1": 2,
+  "T1b/C2": 2,
+  "T1b/solo": 1,
+  "T2/base4": 2,
+  "T2/C1": 2,
+  "T2/C2": 2,
+  "T2/solo": 1
+ }
+}
