@@ -1,14 +1,14 @@
-Updated: 2026-10-22 09:03 (Asia/Taipei)
-Phase: 3 — E4 RUNNING (prereg/E4.md committed+pushed 9828cd6 before any E4 run). Session 11 resumed 02:08.
-E1/E2 CLOSED (AMENDMENT-5 deterministic fallback, reported only, confounded by F-1 wallclock rush):
-- C1 vs base4: quality -0.20, active 0.87x base4, 0.76x solo -> REJECT. C2 vs base4: +0.16, 0.88x, 0.77x -> REJECT.
-- Mean quality base4/C1/C2/solo: T4b 3.53/7.38/6.88/7.55, T3b 7.72/7.42/7.47/7.90, T1b 7.37/5.80/5.20/6.95,
-  T2 7.85/5.08/7.54/7.90. 36 valid runs; E1-T2-C1-r3 = infra (provider-killed, AMENDMENT-6), not rerun.
+Updated: 2026-10-22 21:56 (Asia/Taipei)
+Phase: 3. E4 is running (prereg/E4.md, committed 9828cd6). Session 17 resumed at 18:06; all jobs alive, nothing relaunched.
+E1/E2 CLOSED (AMENDMENT-5 fallback, confounded by F-1): C1 REJECT (-0.20 vs base4), C2 REJECT (+0.16, active 0.88x).
 E4 (K0 = base4 + truthful budget clock + clean peer roles; K1 = K0 + verifier-closed requirements ledger):
-11/24 valid runs finished, 6 judged (judge backlog 5). Active min: base4 37-41 (still END at budget ~30 after false 'hard cap' posts),
-K0 66-75 (T3b K0 used 100/120 budget min), K1 T2 71 (ran to the cap, ledger 9/9 closed), base4 T2 47, solo 45-80 (E1 solos were 31-47: drift, flagged).
-AMENDMENT-9 (05:15, pushed 54e5052): a peer killed by relay 429 retry exhaustion = infra; E4-T1b-K1-r1 rerun.
-Open question: K peers end turns with open ledger rows and no END post; some still address 'Root'.
-Running: runner PAR 5 (pid 2754406), E4 judge loop (par 4), heartbeat. E1 judge loop and adapt loop stopped.
-Next: poll E4; signatures S1-S3 per finished run; safety stop if >=3/4 block-1 K1 runs collapse; D1-D3; then FINAL.
-Blockers: none (VM freezes ~75% of wall time, so E4 will take many wall hours).
+23/24 valid runs finished, 23 judged; last run E4-T4b-K0-r1 (2nd infra rerun) at budget 114/120.
+Judged: base4 T1b 7.4 / T2 7.9 / T3b 7.2 / T4b 6.45; K0 T1b 7.85, 7.65 / T2 2.0, 7.85 / T3b 7.85, 1.3 / T4b 7.39;
+K1 T1b 7.6, 7.0 / T2 2.85, 7.85 / T3b 7.2, 7.35 / T4b 6.6, 6.5; solo T1b 3.5 / T2 8.59 / T3b 1.9 / T4b 2.35.
+Quality is bimodal (about 7-8.6 or about 1.3-3.5 with many severe defects); collapse rates reported next to means.
+Safety stop: not triggered (1 of 4 block-1 K1 collapses).
+Infra (never scored, rerun under the same name): 7 E4 runs, all K0/K1 (relay overload). Newest: E4-T1b-K0-r2 (15:08).
+Running: runner PAR 5 (pid 2754406; in flight T4b-K0-r1 (2nd rerun)),
+E4 judge loop (pid 3181402), heartbeat. Poll: python3 tools/poll_e4.py.
+Next: after all 24: signatures, D1-D3 (analysis/e4_decide.py), then FINAL-CANDIDATE + held-out eval.
+Blockers: none.

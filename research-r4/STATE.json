@@ -1,5 +1,5 @@
 {
- "phase": "3-E4 running (K0/K1 vs base4/solo, prereg/E4.md)",
+ "phase": "3-E4 data complete (24/24 valid, 23 judged); D1 PASS (hand-check); awaiting last judgment (E4-T4b-K0-r1)",
  "completed": [
   "read BRIEF/CONTEXT/noam-brown",
   "session1 read r3/murmur/codex (died on Claude 403 daily limit)",
@@ -54,7 +54,21 @@
   "E1-T2-C1-r3 = infra (A6 provider-killed), not rerun (logged deviation from A8 item 1)",
   "E1/E2 fallback computed 02:15: C1 REJECT (-0.20), C2 REJECT (+0.16, act 0.88) -> analysis/e1_fallback.json; E1 judge loop stopped",
   "AMENDMENT-9 (429 retry exhaustion = infra) 54e5052 pushed; E4-T1b-K1-r1 rerun (old copy in lab/results-infra, judgments unread in judge/E4-infra)",
-  "analysis/e4_decide.py written (D1-D3, safety stop; run tools/signatures.py E4 first)"
+  "analysis/e4_decide.py written (D1-D3, safety stop; run tools/signatures.py E4 first)",
+  "session-12 resume 10-22 11:07 (all jobs alive)",
+  "bimodal-quality check 11:15: low E4 scores are genuine judgments, not tooling",
+  "session-13 resume 10-22 11:31 (all jobs alive)",
+  "safety stop resolved 11:51: cannot trigger (block-1 K1 <=2/4 collapse)",
+  "12:42 infra reruns re-queued: E4-T4b-K1-r2 (setup relay), E4-T2-K0-r2 (provider-killed A6)",
+  "14:10 infra reruns re-queued: E4-T1b-K0-r1, E4-T4b-K0-r1 (A6; were silently skipped by judge)",
+  "session-14 resume 10-22 15:07 (all jobs alive)",
+  "15:08 infra rerun re-queued: E4-T1b-K0-r2 (A6 overload)",
+  "16:32 E4-T4b-K0-r1 infra again -> re-queued (.infra2 copies)",
+  "session-15 resume 10-22 17:07 (all jobs alive; in-flight T1b-K0-r2, T4b-K0-r1 not provider-killed)",
+  "session-16 resume 10-22 17:39 (all jobs alive)",
+  "session-17 resume 10-22 18:06 (all jobs alive)",
+  "E4 24/24 valid 21:42 (T4b-K0-r1 2nd rerun valid)",
+  "signatures E4 + D1 hand-check 21:55: D1 PASS (0/16 S1, 0 early quits); freeze-clock confound found"
  ],
  "running_jobs": [
   {
@@ -79,14 +93,13 @@
   }
  ],
  "next_actions": [
-  "poll E4 with tools/wait_change.sh (background, <=1500 s)",
-  "when 16 block-1 runs judged: safety stop check (python3 analysis/e4_decide.py)",
-  "investigate: K peers end turns at budget 62-100 with open ledger rows and no END post; peers still address 'Root' (hand-check to_root)",
-  "after all 24: tools/signatures.py E4; hand-check S1; analysis/e4_decide.py; report D1-D3",
+  "wait for judge of E4-T4b-K0-r1 (judge loop)",
+  "python3 analysis/e4_decide.py with D1 overridden by hand-check -> analysis/e4_decision.json; report D1-D3 in LOG/PROGRESS",
+  "decide freeze-clock mitigation for FINAL (lab-side: lower PAR / freeze-aware cap) as a logged amendment BEFORE final runs",
   "then FINAL: prereg/FINAL-CANDIDATE.md per AMENDMENT-8 rule, commit+push, stop dev runner, tools/final_eval.py start"
  ],
  "budget": {
-  "runs_done": 45,
+  "runs_done": 48,
   "runs_queued": "adaptive (1 pending)",
   "tokens_input_M": 0,
   "start": "2026-10-19 22:35",
