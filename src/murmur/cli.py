@@ -192,22 +192,69 @@ def write_codex_home(home: Path, trusted: Path, catalog: Path) -> None:
         (home / "auth.json").symlink_to(auth)
 
 
-# The cap is enforced on the monotonic clock, which stops while the machine is suspended; agents
-# that read the wall clock across a suspension believe the cap is near long before it is. The
-# launcher therefore publishes the clock it enforces (closing.md points the agents at it).
+# The cap counts only time the machine actually runs. A VM that the host freezes (snapshots,
+# memory ballooning) comes back with its monotonic clock advanced by the whole freeze, so a
+# ticker leaves out any tick that arrives far later than scheduled. Agents that read the wall
+# clock across a freeze believe the cap is near long before it is, so the launcher publishes
+# the clock it enforces (closing.md points the agents at it).
 CLOCK_FILE = "budget-clock.txt"
+STALL_S = 10.0
+
+
+class _ActiveClock:
+    def __init__(self, tick_s: float = 1.0, stall_s: float = STALL_S, now=time.monotonic,
+                 start: bool = True) -> None:
+        self.tick_s, self.stall_s, self._now = tick_s, stall_s, now
+        self.started = self._last = now()
+        self.stalled = 0.0
+        self._lock = threading.Lock()
+        self._done = threading.Event()
+        if start:
+            threading.Thread(target=self._loop, daemon=True).start()
+
+    def sample(self) -> None:
+        with self._lock:
+            now = self._now()
+            gap = now - self._last
+            if gap > self.tick_s + self.stall_s:
+                self.stalled += gap - self.tick_s
+            self._last = now
+
+    def active(self) -> float:
+        self.sample()
+        return self._last - self.started - self.stalled
+
+    def _loop(self) -> None:
+        while not self._done.wait(self.tick_s):
+            self.sample()
+
+    def stop(self) -> None:
+        self._done.set()
+
+
+def _wait_active(proc, clock: _ActiveClock, cap_s: float) -> bool:
+    """Wait for proc until it exits (False) or the clock has run cap_s seconds (True)."""
+    while True:
+        left = cap_s - clock.active()
+        if left <= 0:
+            return True
+        try:
+            proc.wait(timeout=min(left, 5.0))
+            return False
+        except subprocess.TimeoutExpired:
+            pass
 
 
 class _BudgetClock:
-    def __init__(self, path: Path, started: float, cap_s: float, period_s: float = 30.0) -> None:
-        self.path, self.started, self.cap_s, self.period_s = path, started, cap_s, period_s
+    def __init__(self, path: Path, clock: _ActiveClock, cap_s: float, period_s: float = 30.0) -> None:
+        self.path, self.clock, self.cap_s, self.period_s = path, clock, cap_s, period_s
         self._done = threading.Event()
         self._write()
         self._thread = threading.Thread(target=self._loop, daemon=True)
         self._thread.start()
 
     def _write(self) -> None:
-        used = (time.monotonic() - self.started) / 60
+        used = self.clock.active() / 60
         left = max(self.cap_s / 60 - used, 0)
         text = (f"murmur budget clock: {used:.0f} of {self.cap_s / 60:.0f} min used, {left:.0f} min left "
                 f"(updated every {self.period_s:.0f} s; wall-clock time is not the budget)\n")
@@ -868,7 +915,8 @@ def run(args: argparse.Namespace) -> None:
         log_err = ws / "logs" / "session.err"
         started_at = now()
         started = time.monotonic()
-        clock = _BudgetClock(ws / CLOCK_FILE, started, seconds(meta["cap"]))
+        active = _ActiveClock()
+        clock = _BudgetClock(ws / CLOCK_FILE, active, seconds(meta["cap"]))
         capped = interrupted = False
         interruption_signal: int | None = None
         codex_exit: int | None = None
@@ -877,20 +925,20 @@ def run(args: argparse.Namespace) -> None:
                 cmd, stdin=stdin, stdout=out, stderr=err, env=env, start_new_session=True
             )
             try:
-                proc.wait(timeout=seconds(meta["cap"]))
-            except subprocess.TimeoutExpired:
-                capped = True
+                capped = _wait_active(proc, active, seconds(meta["cap"]))
             except KeyboardInterrupt as exc:
                 interrupted = True
                 if exc.args and exc.args[0] in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
                     interruption_signal = int(exc.args[0])
             finally:
                 clock.stop()
+                active.stop()
                 # Stop Codex with the signal the launcher got, so a Ctrl-C stays a Ctrl-C.
                 stop_process_group(proc, term_signal=interruption_signal or signal.SIGTERM)
                 codex_exit = proc.returncode
                 proc = None
         elapsed = round(time.monotonic() - started, 1)
+        active_s, stalled_s = round(active.active(), 1), round(active.stalled, 1)
         origin = ws / "work" / "origin.git"
         commits, drafts = _delivery(origin, meta["base"])
         delivered = None if commits is None else commits != "0"
@@ -901,6 +949,8 @@ def run(args: argparse.Namespace) -> None:
             "started_at": started_at,
             "ended_at": now(),
             "seconds": elapsed,
+            "active_seconds": active_s,
+            "stalled_seconds": stalled_s,
             "command": cmd,
             "exit_code": exit_code,
             "codex_exit_code": codex_exit,
