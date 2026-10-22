@@ -52,7 +52,9 @@
   "E4 queued 24 jobs 23:01 (lab/E4-plan.json), judge loop E4 started",
   "session-11 resume 10-22 02:08 (runner, E4 judge, heartbeat alive)",
   "E1-T2-C1-r3 = infra (A6 provider-killed), not rerun (logged deviation from A8 item 1)",
-  "E1/E2 fallback computed 02:15: C1 REJECT (-0.20), C2 REJECT (+0.16, act 0.88) -> analysis/e1_fallback.json; E1 judge loop stopped"
+  "E1/E2 fallback computed 02:15: C1 REJECT (-0.20), C2 REJECT (+0.16, act 0.88) -> analysis/e1_fallback.json; E1 judge loop stopped",
+  "AMENDMENT-9 (429 retry exhaustion = infra) 54e5052 pushed; E4-T1b-K1-r1 rerun (old copy in lab/results-infra, judgments unread in judge/E4-infra)",
+  "analysis/e4_decide.py written (D1-D3, safety stop; run tools/signatures.py E4 first)"
  ],
  "running_jobs": [
   {
@@ -77,16 +79,14 @@
   }
  ],
  "next_actions": [
-  "poll E4 with tools/wait_change.sh 540 (24 runs; 5 in flight at 02:08, 19 pending)",
-  "poll E4 (24 runs, PAR 5; runs may last up to 120 active min ~ several wall hours)",
-  "safety stop: if >=3 of 4 block-1 K1 runs collapse, withdraw block-2 K1 jobs",
-  "compute S1/S2/S3 mechanism signatures per E4 run (extend tools/forensics_extract.py); D1-D3 per prereg/E4.md",
-  "watch S3: builders verifying their own rows (seen in K1 smoke)",
-  "run tools/cleanup_ws.py after new judgments",
+  "poll E4 with tools/wait_change.sh (background, <=1500 s)",
+  "when 16 block-1 runs judged: safety stop check (python3 analysis/e4_decide.py)",
+  "investigate: K peers end turns at budget 62-100 with open ledger rows and no END post; peers still address 'Root' (hand-check to_root)",
+  "after all 24: tools/signatures.py E4; hand-check S1; analysis/e4_decide.py; report D1-D3",
   "then FINAL: prereg/FINAL-CANDIDATE.md per AMENDMENT-8 rule, commit+push, stop dev runner, tools/final_eval.py start"
  ],
  "budget": {
-  "runs_done": 37,
+  "runs_done": 45,
   "runs_queued": "adaptive (1 pending)",
   "tokens_input_M": 0,
   "start": "2026-10-19 22:35",
