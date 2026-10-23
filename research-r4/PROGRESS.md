@@ -1,12 +1,13 @@
-Updated: 2026-10-23 15:11 (Asia/Taipei)
-Phase: 5-FINAL. The held-out eval is running with the E5 winner (AMENDMENT-11, committed+pushed 664c435 before any held-out copy).
-Arms: cand = base4F a331d54 (current murmur + freeze-excluded clock), origF c583a63 (orig + same clock), solo codex exec.
-Design: 4 sealed tasks x 2 reps x 3 arms = 24 runs. Blind judging. Rule G1 (no regression vs origF), G2 (quality
-vs solo), G3 (faster than solo); G4 tokens is secondary.
-E5 (dev, block-1 interim): K1F was rejected because it is slower (2.09x active time; quality +0.30 n.s.), so base4F stays.
-Per arm mean quality / median active min / median tokens:
-  base4F 7.58 / 24.0 / 10.9M; K1F 7.88 / 58.1 / 37.4M; solo 7.90 / 35.4 / 3.2M. 0/12 collapses.
-Start-up tooling bug (now fixed, nothing scored): a symlinked repo failed the runner's lab-dir check, and 8 murmur jobs were re-queued.
-Running: eval runner PAR 4 (pid 77075; 4 solo runs in flight), watcher 77077, judge loop F, heartbeat, clock probe.
-Next: poll until all 24 runs are scored, then tools/final_decide.py, then FINAL-REPORT.md.
-Blockers: none. Expected duration ~1-1.5 days (the VM is frozen ~80-90% of wall time).
+Updated: 2026-10-23 15:43 (Asia/Taipei)
+Phase: 5 — held-out FINAL running (E5 winner only, per user directive).
+E5 (fixed clock): K1F STOP-REJECTed at the block-1 interim. Current murmur (base4F) stays.
+  K1F was 2.09x slower (90% CI 1.37-3.20x) and used 3.4x the tokens, for +0.30 quality (90% CI -0.06..+0.65).
+  Per arm mean quality / median active min: base4F 7.58 / 24.0; K1F 7.88 / 58.1; solo 7.90 / 35.4.
+  0/12 collapses.
+FINAL (AMENDMENT-11, pushed 664c435 before any held-out copy): base4F (a331d54) vs origF (c583a63, orig + same clock)
+vs solo, all under the freeze-excluded clock. H1-H4 x 2 reps = 24 runs, PAR 4, blind judging.
+G1 = no regression vs origF; G2 = quality on par with solo; G3 = faster than solo; G4 = tokens (secondary).
+Started 14:36. A tooling fault (repo symlink) failed 8 murmur jobs instantly; nothing ran. Fixed and re-queued 14:4x.
+Running: eval runner pid 77075 (4 solo runs in flight), watcher 77077, judge loop F, heartbeat, clock probe.
+Next: wait for all 24 runs to be judged (likely 1-2 days at ~80-90% VM freeze), then final_decide.py and FINAL-REPORT.md.
+Blockers: none.

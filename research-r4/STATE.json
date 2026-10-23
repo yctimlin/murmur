@@ -1,5 +1,5 @@
 {
- "phase": "5-FINAL: held-out eval running (AMENDMENT-11: cand=base4F a331d54, origF c583a63, solo; 24 runs)",
+ "phase": "5-FINAL: held-out eval running (AMENDMENT-11: cand=base4F vs origF vs solo, 24 runs)",
  "completed": [
   "read BRIEF/CONTEXT/noam-brown",
   "session1 read r3/murmur/codex (died on Claude 403 daily limit)",
@@ -81,9 +81,9 @@
   "E5 block 1 complete 14:04 (12/12 valid, judged)",
   "E5 interim 14:2x: STOP-REJECT K1F (active 2.09x), keep base4F; analysis/E5-RESULT.md; reported in LOG/PROGRESS",
   "origF c583a63 pushed",
-  "AMENDMENT-11 + FINAL-CANDIDATE committed+pushed 664c435",
-  "dev runner stopped 14:36",
-  "final_eval started 14:36; symlink tooling bug fixed 14:5x (8 jobs re-queued)"
+  "AMENDMENT-11 + FINAL-CANDIDATE(base4F) committed+pushed 664c435",
+  "final_eval started 14:36",
+  "14:4x repo-symlink tooling fault fixed, 8 murmur jobs re-queued"
  ],
  "running_jobs": [
   {
@@ -92,18 +92,17 @@
    "pid": 77075,
    "lab": "/workspace/r4/evallab",
    "par": 4,
-   "restart": "cd evallab && env from tools/final_eval.py start + runner.py r4-eval-runner (kill only the parent)"
+   "note": "restart: cd evallab && env as in tools/final_eval.py start (MURMUR_LAB=evallab NAME_RE ^F- BUDGET 50 PAR 4 PORT0 56000) python3 tools/runner.py r4-eval-runner; kill ONLY the parent pid"
   },
   {
-   "what": "FINAL watcher (infra re-queue)",
+   "what": "FINAL infra watcher",
    "find": "pgrep -af 'final_eval.py watch'",
-   "pid": 77077,
-   "log": "/workspace/r4/evallab/watch.log"
+   "pid": 77077
   },
   {
-   "what": "FINAL judge loop F",
+   "what": "FINAL judge loop",
    "pidfile": "/workspace/r4/judge/F.loop.pid",
-   "note": "N=24 par 4, R4_LAB=evallab"
+   "note": "R4_LAB=evallab, N=24, par 4"
   },
   {
    "what": "heartbeat",
@@ -115,18 +114,19 @@
   }
  ],
  "next_actions": [
-  "poll evallab (24 runs; never read task content); infra handled by watcher",
-  "when all 24 scored: python3 tools/final_decide.py -> results/FINAL.json (unblinding)",
-  "write FINAL-REPORT.md last (ends round)"
+  "poll FINAL (evallab/results/F-*, watch.log); never read task content",
+  "when 24 runs judged: python3 tools/final_decide.py -> results/FINAL.json (unblinding)",
+  "write FINAL-REPORT.md last (ends the round)"
  ],
  "budget": {
-  "runs_done": 48,
+  "runs_done": 60,
   "runs_queued": "adaptive (1 pending)",
   "tokens_input_M": 0,
   "start": "2026-10-19 22:35",
   "claude_403_events": 1,
   "claude_429_daily_events": 3,
   "input_tokens_M_lab": 93.4,
-  "e5_queued": 12
+  "e5_queued": 12,
+  "final_runs": 24
  }
 }
