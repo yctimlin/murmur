@@ -1,5 +1,5 @@
 {
- "phase": "4-FINAL-prep: E5 decided STOP-REJECT K1F (keep base4F); preparing AMENDMENT-11 + origF + final_eval for held-out",
+ "phase": "5-FINAL: held-out eval running (AMENDMENT-11: cand=base4F a331d54, origF c583a63, solo; 24 runs)",
  "completed": [
   "read BRIEF/CONTEXT/noam-brown",
   "session1 read r3/murmur/codex (died on Claude 403 daily limit)",
@@ -79,21 +79,31 @@
   "E5 block 1 queued 00:5x (12 jobs), runner PAR 4, judge loop E5",
   "analysis/e5_decide.py committed before any E5 result",
   "E5 block 1 complete 14:04 (12/12 valid, judged)",
-  "E5 interim 14:2x: STOP-REJECT K1F (active 2.09x), keep base4F; analysis/E5-RESULT.md; reported in LOG/PROGRESS"
+  "E5 interim 14:2x: STOP-REJECT K1F (active 2.09x), keep base4F; analysis/E5-RESULT.md; reported in LOG/PROGRESS",
+  "origF c583a63 pushed",
+  "AMENDMENT-11 + FINAL-CANDIDATE committed+pushed 664c435",
+  "dev runner stopped 14:36",
+  "final_eval started 14:36; symlink tooling bug fixed 14:5x (8 jobs re-queued)"
  ],
  "running_jobs": [
   {
-   "what": "r4 dev lab runner (E5)",
-   "find": "pgrep -af r4-lab-runner",
-   "pid": 3880552,
+   "what": "FINAL eval runner",
+   "find": "pgrep -af r4-eval-runner",
+   "pid": 77075,
+   "lab": "/workspace/r4/evallab",
    "par": 4,
-   "note": "restart: tools/start_runner.sh 4 after killing ONLY the parent pid"
+   "restart": "cd evallab && env from tools/final_eval.py start + runner.py r4-eval-runner (kill only the parent)"
   },
   {
-   "what": "E5 judge loop",
-   "pidfile": "/workspace/r4/judge/E5.loop.pid",
-   "log": "/workspace/r4/judge/E5.loop.log",
-   "note": "par 4, N=12 (block 1); relaunch with larger N for later blocks"
+   "what": "FINAL watcher (infra re-queue)",
+   "find": "pgrep -af 'final_eval.py watch'",
+   "pid": 77077,
+   "log": "/workspace/r4/evallab/watch.log"
+  },
+  {
+   "what": "FINAL judge loop F",
+   "pidfile": "/workspace/r4/judge/F.loop.pid",
+   "note": "N=24 par 4, R4_LAB=evallab"
   },
   {
    "what": "heartbeat",
@@ -105,10 +115,9 @@
   }
  ],
  "next_actions": [
-  "origF = eec78f8 + identical clock patch (experiment/r4-origf), tests, push",
-  "AMENDMENT-11: FINAL arms base4F(cand)/origF/solo, 24 runs, PAR, G rules restated; commit+push",
-  "update final_eval.py/final_decide.py for arms; FINAL-CANDIDATE update; start final_eval",
-  "stop dev runner + E5 judge loop when idle"
+  "poll evallab (24 runs; never read task content); infra handled by watcher",
+  "when all 24 scored: python3 tools/final_decide.py -> results/FINAL.json (unblinding)",
+  "write FINAL-REPORT.md last (ends round)"
  ],
  "budget": {
   "runs_done": 48,

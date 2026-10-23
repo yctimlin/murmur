@@ -25,7 +25,7 @@ def start():
     cand = candidate(); arms = {"cand": cand, **ARMS, "solo": None}
     pub = {t["slot"]: t["bundle_sha256"] for t in json.load(open(f"{R}/heldout/PUBLIC.json"))["tasks"]}
     for d in ("queue", "results", "tasks", "repos"): os.makedirs(f"{E}/{d}")
-    os.symlink(f"{R}/lab/heartbeat.log", f"{E}/heartbeat.log"); os.symlink(f"{R}/lab/repos/murmur.git", f"{E}/repos/murmur.git")
+    os.symlink(f"{R}/lab/heartbeat.log", f"{E}/heartbeat.log"); sh(f"git clone -q --bare {R}/lab/repos/murmur.git {E}/repos/murmur.git")  # a symlink fails the runner's realpath lab-dir check
     for a, rev in arms.items():
         if rev and sh(f"git -C {E}/repos/murmur.git cat-file -e {rev}^{{commit}}").returncode:
             sh(f"git -C {E}/repos/murmur.git fetch -q {R}/murmur '+refs/heads/*:refs/heads/*'")

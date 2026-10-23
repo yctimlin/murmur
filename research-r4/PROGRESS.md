@@ -1,15 +1,12 @@
-Updated: 2026-10-23 14:33 (Asia/Taipei)
-Phase: 4-E5 decided -> preparing held-out FINAL with the winner (current murmur, base4F).
-Clock fix (AMENDMENT-10): murmur's cap now counts only running time. On this VM, type-A freezes advance
-MONOTONIC, so murmur detects them as late ticks and leaves them out. Same patch on all arms; solo uses the runner clock.
-E5 RESULT (prereg rule, block-1 interim): STOP-REJECT K1F, so current murmur (base4F) stays.
-  K1F is 2.09x slower in active time (90% CI 1.37-3.20x) and uses 3.4x the tokens. Its quality gain is +0.30
-  (90% CI -0.06..+0.65), not significant. Collapses: 0 vs 0.
-  Per arm mean quality / median active min / median input tokens:
-    base4F 7.58 / 24.0 / 10.9M; K1F 7.88 / 58.1 / 37.4M; solo 7.90 / 35.4 / 3.2M.
-  With the fixed clock, 0 of 12 runs collapsed (E4 under the broken clock: 5 of 24). No run reached the cap.
-Details: analysis/E5-RESULT.md.
-Next: implement origF (orig eec78f8 + the identical clock patch), then AMENDMENT-11. It restates FINAL as
-base4F vs origF vs solo, all under the fixed clock. Commit and push, then start tools/final_eval.py.
-Running: heartbeat, clock probe, E5 judge loop (finishing), dev runner (idle).
-Blockers: none. Throughput is low: the VM is frozen ~80-90% of wall time, so a run takes 2-6 h wall.
+Updated: 2026-10-23 15:11 (Asia/Taipei)
+Phase: 5-FINAL. The held-out eval is running with the E5 winner (AMENDMENT-11, committed+pushed 664c435 before any held-out copy).
+Arms: cand = base4F a331d54 (current murmur + freeze-excluded clock), origF c583a63 (orig + same clock), solo codex exec.
+Design: 4 sealed tasks x 2 reps x 3 arms = 24 runs. Blind judging. Rule G1 (no regression vs origF), G2 (quality
+vs solo), G3 (faster than solo); G4 tokens is secondary.
+E5 (dev, block-1 interim): K1F was rejected because it is slower (2.09x active time; quality +0.30 n.s.), so base4F stays.
+Per arm mean quality / median active min / median tokens:
+  base4F 7.58 / 24.0 / 10.9M; K1F 7.88 / 58.1 / 37.4M; solo 7.90 / 35.4 / 3.2M. 0/12 collapses.
+Start-up tooling bug (now fixed, nothing scored): a symlinked repo failed the runner's lab-dir check, and 8 murmur jobs were re-queued.
+Running: eval runner PAR 4 (pid 77075; 4 solo runs in flight), watcher 77077, judge loop F, heartbeat, clock probe.
+Next: poll until all 24 runs are scored, then tools/final_decide.py, then FINAL-REPORT.md.
+Blockers: none. Expected duration ~1-1.5 days (the VM is frozen ~80-90% of wall time).
