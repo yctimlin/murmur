@@ -1,0 +1,112 @@
+{
+ "block": 1,
+ "n_pairs": 4,
+ "expected_pairs": 4,
+ "dq": [
+  0.295,
+  -0.059,
+  0.649
+ ],
+ "r": [
+  0.737,
+  0.312,
+  1.162
+ ],
+ "ratio": 2.09,
+ "collapses_K1F": 0,
+ "collapses_base4F": 0,
+ "pairs": [
+  {
+   "task": "T1b",
+   "rep": 1,
+   "K1F": [
+    7.965,
+    34.61,
+    true
+   ],
+   "base4F": [
+    7.51,
+    23.77,
+    true
+   ]
+  },
+  {
+   "task": "T2",
+   "rep": 1,
+   "K1F": [
+    8.05,
+    49.34,
+    true
+   ],
+   "base4F": [
+    8.2,
+    30.59,
+    true
+   ]
+  },
+  {
+   "task": "T3b",
+   "rep": 1,
+   "K1F": [
+    7.8,
+    66.85,
+    true
+   ],
+   "base4F": [
+    7.425,
+    24.18,
+    true
+   ]
+  },
+  {
+   "task": "T4b",
+   "rep": 1,
+   "K1F": [
+    7.699999999999999,
+    70.18,
+    true
+   ],
+   "base4F": [
+    7.199999999999999,
+    23.9,
+    true
+   ]
+  }
+ ],
+ "decision": "STOP-REJECT (keep base4F)",
+ "per_arm": {
+  "base4F": {
+   "n": 4,
+   "mean_q": [
+    7.584,
+    7.077,
+    8.091
+   ],
+   "collapses": 0,
+   "median_active_nf": 24.04,
+   "median_input_M": 10.896026500000001
+  },
+  "K1F": {
+   "n": 4,
+   "mean_q": [
+    7.879,
+    7.693,
+    8.065
+   ],
+   "collapses": 0,
+   "median_active_nf": 58.095,
+   "median_input_M": 37.429029
+  },
+  "solo": {
+   "n": 4,
+   "mean_q": [
+    7.9,
+    7.592,
+    8.208
+   ],
+   "collapses": 0,
+   "median_active_nf": 35.41,
+   "median_input_M": 3.1654935
+  }
+ }
+}
