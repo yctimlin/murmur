@@ -122,7 +122,7 @@ def judge(exp, par=2):
     todo = [n for n in finished(exp) if not os.path.exists(f"{J}/{exp}/{n}.score.json")]
     def one(n):
         s = score_run(exp, n)
-        if s is not None: os.makedirs(f"{J}/{exp}", exist_ok=True); json.dump(s, open(f"{J}/{exp}/{n}.score.json", "w"), indent=1); log(f"judged {n}: {s['overall']}")
+        if s is not None: os.makedirs(f"{J}/{exp}", exist_ok=True); json.dump(s, open(f"{J}/{exp}/{n}.score.json", "w"), indent=1); log(f"judged {n}" + ("" if exp == "F" else f": {s['overall']}"))   # FINAL: no labelled scores before final_decide.py
     with cf.ThreadPoolExecutor(par) as ex: list(ex.map(one, todo))
 
 # ---------- run diagnostics ----------
