@@ -4,7 +4,7 @@ usage: final_eval.py start   check preconditions, copy+verify sealed tasks, queu
        final_eval.py watch   (detached, started by `start`) rerun infra failures in place until 32 scored-able runs"""
 import json, os, random, re, subprocess, sys, time, glob
 R = "/workspace/r4"; E = f"{R}/evallab"; Q = f"{E}/queue"; SEALED = "/srv/murmur-sealed-r4/heldout/final"
-ARMS = {"base4": "146d476626b7b48928d9a44ee907571dd5f83dca", "orig": "eec78f8"}
+ARMS = {"orig": "c583a63c4c27f9245efde6937dbc576e83fb9347"}   # AMENDMENT-11: origF = orig eec78f8 + freeze-excluded cap clock
 SLOTS = ["H1", "H2", "H3", "H4"]; REPS = 2; SEED = 20261020
 
 def log(m): open(f"{R}/LOG.md", "a").write(f"- {time.strftime('%m-%d %H:%M')} [final_eval] {m}\n"); print(m, flush=True)
@@ -20,7 +20,7 @@ def candidate():
 
 def start():
     if os.path.exists(E): sys.exit(f"{E} exists: the final eval was already started (use watch)")
-    if subprocess.run(["pgrep", "-f", "^python3 /workspace/r4/tools/runner.py r4-lab-runner"], capture_output=True).returncode == 0: sys.exit("stop the dev lab runner first (<= 3 concurrent runs)")
+    if subprocess.run(["pgrep", "-f", "^python3 /workspace/r4/tools/runner.py r4-lab-runner"], capture_output=True).returncode == 0: sys.exit("stop the dev lab runner first")
     if "gpt-6-astra" not in sh("codex debug models", timeout=120).stdout: sys.exit("relay unhealthy: gpt-6-astra not listed")
     cand = candidate(); arms = {"cand": cand, **ARMS, "solo": None}
     pub = {t["slot"]: t["bundle_sha256"] for t in json.load(open(f"{R}/heldout/PUBLIC.json"))["tasks"]}
@@ -45,11 +45,11 @@ def start():
     json.dump({"arms": arms, "plan": plan}, open(f"{E}/plan.json", "w"), indent=1)
     for i, (n, spec) in enumerate(plan):
         json.dump(spec, open(f"{Q}/{n}.json", "w")); os.utime(f"{Q}/{n}.json", (1.8e9 + i, 1.8e9 + i))
-    env = f"MURMUR_LAB={E} MURMUR_LAB_NAME_RE='^F-' MURMUR_LAB_BUDGET=60 MURMUR_LAB_TOKEN_CAP=1500000000 MURMUR_LAB_MAX_CAP_MIN=120 MURMUR_LAB_PAR=3 MURMUR_LAB_PORT0=56000"
+    env = f"MURMUR_LAB={E} MURMUR_LAB_NAME_RE='^F-' MURMUR_LAB_BUDGET=50 MURMUR_LAB_TOKEN_CAP=1500000000 MURMUR_LAB_MAX_CAP_MIN=120 MURMUR_LAB_PAR=4 MURMUR_LAB_PORT0=56000"
     sh(f"cd {E} && {env} setsid nohup python3 {R}/tools/runner.py r4-eval-runner >> {E}/runner.log 2>&1 < /dev/null &")
     sh(f"setsid nohup python3 {__file__} watch >> {E}/watch.log 2>&1 < /dev/null &")
-    sh(f"cd {R} && R4_LAB={E} setsid nohup tools/judge_loop.sh F 32 1 > /dev/null 2>&1 < /dev/null &")
-    log(f"started: cand {cand[:8]}, 4 tasks verified against PUBLIC.json sha256, 32 runs queued in 8 randomized blocks (seed {SEED}), eval runner PAR 3, watcher, judge loop F")
+    sh(f"cd {R} && R4_LAB={E} setsid nohup tools/judge_loop.sh F {len(plan)} 4 > /dev/null 2>&1 < /dev/null &")
+    log(f"started: cand {cand[:8]}, arms {list(arms)}, 4 tasks verified against PUBLIC.json sha256, {len(plan)} runs queued in 8 randomized blocks (seed {SEED}), eval runner PAR 4, watcher, judge loop F (AMENDMENT-11)")
 
 def watch():
     sys.path.insert(0, f"{R}/tools"); os.environ["R4_LAB"] = E; import r4eval as ev
@@ -62,9 +62,10 @@ def watch():
             if ev.is_infra(json.load(open(p))):
                 k = len(glob.glob(f"{E}/results/{n}.infra*")) + 1; os.rename(f"{E}/results/{n}", f"{E}/results/{n}.infra{k}")
                 for f in glob.glob(f"{Q}/{n}.json*"): os.rename(f, f"{f}.infra{k}")
+                if os.path.exists(f"{E}/ws/{n}"): os.makedirs(f"{E}/ws-infra", exist_ok=True); os.rename(f"{E}/ws/{n}", f"{E}/ws-infra/{n}.infra{k}")
                 json.dump(spec, open(f"{Q}/{n}.json", "w")); log(f"{n}: infra failure #{k}, re-queued")
             else: done += 1
-        if done == len(plan): log("all 32 runs finished (non-infra); judging continues in the F judge loop"); return
+        if done == len(plan): log(f"all {len(plan)} runs finished (non-infra); judging continues in the F judge loop"); return
         time.sleep(300)
 
 if __name__ == "__main__": {"start": start, "watch": watch}[sys.argv[1]]()
