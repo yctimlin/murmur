@@ -1,4 +1,4 @@
-Updated: 2026-10-23 22:03 (Asia/Taipei)
+Updated: 2026-10-24 04:06 (Asia/Taipei)
 Phase: 5 — held-out FINAL running (E5 winner only, per user directive).
 E5 (fixed clock): K1F STOP-REJECTed at the block-1 interim. Current murmur (base4F) stays.
   K1F was 2.09x slower (90% CI 1.37-3.20x) and used 3.4x the tokens, for +0.30 quality (90% CI -0.06..+0.65).

@@ -284,3 +284,18 @@
 - 10-23 20:37 [r4eval] judged F-H4-solo-r1
 - 10-23 21:36 FINAL 7/24 valid: F-H1-orig-r1 delivered (active 31.9, stalled 3.3). In flight H1-cand-r1, H4-orig-r1, H4-cand-r1, H2-orig-r1. 3 judged.
 - 10-23 22:03 FINAL 8/24 valid: F-H1-cand-r1 delivered (active 28.8, stalled 3.2); task H1 complete (all 6 runs). In flight H4-orig-r1, H4-cand-r1, H2-orig-r1, H2-cand-r1. 3 judged.
+- 10-23 22:11 [r4eval] judged F-H1-solo-r1
+- 10-23 22:11 [r4eval] judged F-H1-orig-r1
+- 10-23 22:40 [r4eval] judged F-H1-orig-r2
+- 10-23 22:42 [r4eval] judged F-H1-cand-r2
+- 10-23 23:09 FINAL 9/24 valid: F-H4-cand-r1 delivered (active 28.3, stalled 3.1). In flight H4-orig-r1, H2-orig-r1, H2-cand-r1, H3-orig-r1. 7 judged.
+- 10-24 00:08 FINAL 10/24 valid: F-H4-orig-r1 delivered (active 39.6, stalled 3.6). In flight H2-orig-r1, H2-cand-r1, H3-orig-r1, H3-solo-r1. 7 judged.
+- 10-24 00:09 FINAL 11/24 valid: F-H2-orig-r1 delivered (active 33.0, stalled 1.1). In flight H2-cand-r1, H3-orig-r1, H3-solo-r1, H3-cand-r1.
+- 10-24 01:12 FINAL 12/24 valid: F-H2-cand-r1 delivered (active 30.1, stalled 0.6). In flight H3-orig-r1, H3-solo-r1, H3-cand-r1, H3-solo-r2. 7 judged (judge pass running).
+- 10-24 01:15 FINAL 13/24 valid: F-H3-orig-r1 delivered (active 25.3). In flight H3-solo-r1, H3-cand-r1, H3-solo-r2, H3-cand-r2.
+- 10-24 01:39 [r4eval] judged F-H1-cand-r1
+- 10-24 01:41 [r4eval] judged F-H4-cand-r1
+- 10-24 02:17 FINAL 14/24 valid: F-H3-cand-r1 delivered (active 23.3). In flight H3-solo-r1/r2, H3-cand-r2, H3-orig-r2; 6 queued. 9 judged.
+- 10-24 02:45 [r4eval] judged F-H3-orig-r1
+- 10-24 03:12 [r4eval] judged F-H3-cand-r1
+- 10-24 03:41 [r4eval] judged F-H4-orig-r1
