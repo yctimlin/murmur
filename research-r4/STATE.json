@@ -83,22 +83,11 @@
   "origF c583a63 pushed",
   "AMENDMENT-11 + FINAL-CANDIDATE(base4F) committed+pushed 664c435",
   "final_eval started 14:36",
-  "14:4x repo-symlink tooling fault fixed, 8 murmur jobs re-queued"
+  "14:4x repo-symlink tooling fault fixed, 8 murmur jobs re-queued",
+  "session-19 resume 10-24 06:39 (all jobs alive; FINAL 18/24 valid, 14 judged)",
+  "10-24 10:39 FINAL 24/24 runs finished (H2-orig-r2 genuine non-delivery, not infra); eval runner+watcher stopped"
  ],
  "running_jobs": [
-  {
-   "what": "FINAL eval runner",
-   "find": "pgrep -af r4-eval-runner",
-   "pid": 77075,
-   "lab": "/workspace/r4/evallab",
-   "par": 4,
-   "note": "restart: cd evallab && env as in tools/final_eval.py start (MURMUR_LAB=evallab NAME_RE ^F- BUDGET 50 PAR 4 PORT0 56000) python3 tools/runner.py r4-eval-runner; kill ONLY the parent pid"
-  },
-  {
-   "what": "FINAL infra watcher",
-   "find": "pgrep -af 'final_eval.py watch'",
-   "pid": 77077
-  },
   {
    "what": "FINAL judge loop",
    "pidfile": "/workspace/r4/judge/F.loop.pid",

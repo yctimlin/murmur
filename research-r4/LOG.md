@@ -299,3 +299,25 @@
 - 10-24 02:45 [r4eval] judged F-H3-orig-r1
 - 10-24 03:12 [r4eval] judged F-H3-cand-r1
 - 10-24 03:41 [r4eval] judged F-H4-orig-r1
+- 10-24 04:09 FINAL 15/24 valid: F-H3-cand-r2 delivered (active 31.8, stalled 1.5). In flight H3-solo-r1/r2, H3-orig-r2, H2-orig-r2. 12 judged.
+- 10-24 04:10 [r4eval] judged F-H2-orig-r1
+- 10-24 04:39 FINAL 16/24 valid: F-H3-orig-r2 delivered (active 23.4). In flight H3-solo-r1/r2, H2-orig-r2, H2-cand-r2. 13 judged.
+- 10-24 04:40 [r4eval] judged F-H2-cand-r1
+- 10-24 05:10 FINAL 17/24 valid: F-H3-solo-r2 delivered (active 43.8). In flight H3-solo-r1, H2-orig-r2, H2-cand-r2, H2-solo-r2. 14 judged.
+- 10-24 05:34 FINAL 18/24 valid: F-H3-solo-r1 delivered (active 54.0). In flight H2-orig-r2, H2-cand-r2, H2-solo-r2, H4-orig-r2; queued H4-cand-r2, H4-solo-r2. 14 judged.
+- 10-24 06:39 session-19 resume: all jobs alive (eval runner 77075, watcher 77077, judge loop F 71638, heartbeat, clock probe). Directives unchanged (newest 10-22 22:50, already satisfied). FINAL 18/24 valid, 14 judged; in flight H2-cand-r2, H2-orig-r2, H2-solo-r2, H4-orig-r2; queued H4-cand-r2, H4-solo-r2. Load 39.9 (freeze recovery). Continuing to poll; no relaunch.
+- 10-24 06:40 [r4eval] judged F-H3-cand-r2
+- 10-24 06:42 [r4eval] judged F-H3-solo-r2
+- 10-24 07:09 [r4eval] judged F-H3-orig-r2
+- 10-24 07:35 FINAL 18/24 valid, 17 judged; same 4 in flight, 2 queued; all jobs alive.
+- 10-24 07:59 FINAL 19/24 valid: F-H4-orig-r2 delivered (active 29.7, wall 123, 20 commits). In flight H2-cand-r2, H2-orig-r2, H2-solo-r2, H4-cand-r2; queued H4-solo-r2. 17 judged.
+- 10-24 08:01 FINAL 20/24 valid: F-H2-solo-r2 delivered (active 39.4, wall 171). In flight H2-cand-r2, H2-orig-r2, H4-cand-r2, H4-solo-r2; queue empty. 17 judged.
+- 10-24 08:08 [r4eval] judged F-H2-solo-r2
+- 10-24 08:17 [r4eval] judged F-H4-orig-r2
+- 10-24 08:18 [r4eval] judged F-H3-solo-r1
+- 10-24 09:10 FINAL 20/24 valid, 20 judged (all finished runs judged). Liveness check of F-H2-orig-r2 (no file writes 08:16-09:08): explained by VM freezes (clocklog gaps 1213 s at 08:39, 1416 s at 09:08); process tree healthy, not infra. Minor fairness note: during this check I printed the last git commit subjects of that run's peers, which incidentally show a few words of held-out task H2's domain. All arms, rules and code are frozen, and no decision remains before final_decide, so this cannot steer anything. From now on liveness checks use mtimes and process trees only, never git log of held-out workspaces.
+- 10-24 09:36 FINAL 21/24 valid: F-H4-cand-r2 delivered (active 35.4, wall 95, 30 commits). In flight H2-cand-r2, H2-orig-r2, H4-solo-r2. 20 judged.
+- 10-24 10:20 FINAL 22/24: F-H2-orig-r2 finished NOT delivered (swarm exit 0 after 84.7 runner min, active 32.9; 0 commits on origin main, 3 unmerged draft branches, 0 END posts). Infra check per A6/A9: is_infra False, provider_killed False, 0 '429' lines, no stream/reconnect errors in any of the 4 rollouts; all 4 sessions ended with a normal task_complete. => genuine non-delivery (the pre-r4 collapse mode: peers pushed drafts, nobody merged), scored as undelivered = 0 per FINAL.md/AMENDMENT-11, not rerun. (Delivery is run metadata, not a judge score, so this does not break blinding.) In flight H2-cand-r2, H4-solo-r2. 20 judged.
+- 10-24 10:18 FINAL 23/24: F-H4-solo-r2 delivered (runner clock active 33.2, stalled 2.0, wall 131). Only F-H2-cand-r2 in flight. 20 judged. (Note: the previous entry was stamped 10:20 but was written at ~10:16.)
+- 10-24 10:37 [final_eval] all 24 runs finished (non-infra); judging continues in the F judge loop
+- 10-24 10:39 FINAL 24/24 finished (watcher exited: all non-infra). F-H2-cand-r2 delivered (active 33.5, 26 commits). Eval runner 77075 stopped (idle). Waiting for the judge loop F to finish the 4 remaining judgments, then final_decide.py.
