@@ -1,0 +1,1477 @@
+{
+ "exp": "E1",
+ "n_runs": 36,
+ "freeze_windows": [
+  [
+   "2026-10-19T14:57:32+00:00",
+   2.1
+  ],
+  [
+   "2026-10-19T15:08:00+00:00",
+   12.2
+  ],
+  [
+   "2026-10-19T15:26:19+00:00",
+   31.3
+  ],
+  [
+   "2026-10-19T16:03:09+00:00",
+   26.1
+  ],
+  [
+   "2026-10-19T16:34:36+00:00",
+   22.2
+  ],
+  [
+   "2026-10-19T17:02:10+00:00",
+   2.8
+  ],
+  [
+   "2026-10-19T17:10:11+00:00",
+   29.4
+  ],
+  [
+   "2026-10-19T17:44:45+00:00",
+   21.9
+  ],
+  [
+   "2026-10-19T18:11:49+00:00",
+   28.1
+  ],
+  [
+   "2026-10-19T18:45:18+00:00",
+   16.4
+  ],
+  [
+   "2026-10-19T19:06:51+00:00",
+   29.6
+  ],
+  [
+   "2026-10-19T19:42:37+00:00",
+   21.1
+  ],
+  [
+   "2026-10-19T20:08:52+00:00",
+   30.4
+  ],
+  [
+   "2026-10-19T20:44:24+00:00",
+   21.4
+  ],
+  [
+   "2026-10-19T21:10:59+00:00",
+   29.1
+  ],
+  [
+   "2026-10-19T21:45:24+00:00",
+   18.2
+  ],
+  [
+   "2026-10-19T22:08:57+00:00",
+   22.5
+  ],
+  [
+   "2026-10-19T22:36:36+00:00",
+   26.6
+  ],
+  [
+   "2026-10-19T23:08:26+00:00",
+   28.3
+  ],
+  [
+   "2026-10-19T23:41:56+00:00",
+   2.1
+  ],
+  [
+   "2026-10-19T23:49:21+00:00",
+   11.3
+  ],
+  [
+   "2026-10-20T00:05:52+00:00",
+   2.5
+  ],
+  [
+   "2026-10-20T00:13:20+00:00",
+   25.4
+  ],
+  [
+   "2026-10-20T00:48:53+00:00",
+   11.9
+  ],
+  [
+   "2026-10-20T01:05:55+00:00",
+   32.5
+  ],
+  [
+   "2026-10-20T01:43:57+00:00",
+   24.9
+  ],
+  [
+   "2026-10-20T02:19:33+00:00",
+   1.7
+  ],
+  [
+   "2026-10-20T02:32:04+00:00",
+   3.5
+  ],
+  [
+   "2026-10-20T02:41:01+00:00",
+   24.3
+  ],
+  [
+   "2026-10-20T03:17:30+00:00",
+   7.5
+  ],
+  [
+   "2026-10-20T03:30:07+00:00",
+   4.1
+  ],
+  [
+   "2026-10-20T03:39:35+00:00",
+   28.1
+  ],
+  [
+   "2026-10-20T04:13:01+00:00",
+   21.2
+  ],
+  [
+   "2026-10-20T04:39:41+00:00",
+   25.4
+  ],
+  [
+   "2026-10-20T05:10:43+00:00",
+   19.7
+  ],
+  [
+   "2026-10-20T05:35:35+00:00",
+   26.5
+  ],
+  [
+   "2026-10-20T06:07:07+00:00",
+   20.8
+  ],
+  [
+   "2026-10-20T06:33:14+00:00",
+   4.7
+  ],
+  [
+   "2026-10-20T06:43:08+00:00",
+   1.2
+  ],
+  [
+   "2026-10-20T06:49:43+00:00",
+   15.4
+  ],
+  [
+   "2026-10-20T07:10:19+00:00",
+   29.0
+  ],
+  [
+   "2026-10-20T07:44:50+00:00",
+   19.2
+  ],
+  [
+   "2026-10-20T08:09:13+00:00",
+   17.3
+  ],
+  [
+   "2026-10-20T08:31:50+00:00",
+   1.8
+  ],
+  [
+   "2026-10-20T08:38:47+00:00",
+   23.9
+  ],
+  [
+   "2026-10-20T09:07:53+00:00",
+   2.5
+  ],
+  [
+   "2026-10-20T09:16:24+00:00",
+   20.9
+  ],
+  [
+   "2026-10-20T09:42:17+00:00",
+   22.4
+  ],
+  [
+   "2026-10-20T10:09:54+00:00",
+   9.0
+  ],
+  [
+   "2026-10-20T10:30:23+00:00",
+   9.2
+  ],
+  [
+   "2026-10-20T10:44:53+00:00",
+   20.2
+  ],
+  [
+   "2026-10-20T11:10:26+00:00",
+   29.3
+  ],
+  [
+   "2026-10-20T11:44:55+00:00",
+   19.0
+  ],
+  [
+   "2026-10-20T12:09:26+00:00",
+   22.1
+  ],
+  [
+   "2026-10-20T12:36:31+00:00",
+   34.6
+  ],
+  [
+   "2026-10-20T13:16:17+00:00",
+   19.5
+  ],
+  [
+   "2026-10-20T13:40:56+00:00",
+   21.6
+  ],
+  [
+   "2026-10-20T14:07:23+00:00",
+   28.9
+  ],
+  [
+   "2026-10-20T14:41:26+00:00",
+   6.9
+  ],
+  [
+   "2026-10-20T15:04:19+00:00",
+   3.4
+  ],
+  [
+   "2026-10-20T15:13:01+00:00",
+   22.6
+  ],
+  [
+   "2026-10-20T15:41:00+00:00",
+   22.0
+  ],
+  [
+   "2026-10-20T16:08:30+00:00",
+   27.4
+  ],
+  [
+   "2026-10-20T16:41:08+00:00",
+   22.1
+  ],
+  [
+   "2026-10-20T17:08:37+00:00",
+   25.2
+  ],
+  [
+   "2026-10-20T17:39:10+00:00",
+   24.9
+  ],
+  [
+   "2026-10-20T18:09:13+00:00",
+   23.5
+  ],
+  [
+   "2026-10-20T18:38:16+00:00",
+   26.4
+  ],
+  [
+   "2026-10-20T19:09:44+00:00",
+   23.1
+  ],
+  [
+   "2026-10-20T19:38:13+00:00",
+   29.2
+  ],
+  [
+   "2026-10-20T20:12:48+00:00",
+   24.2
+  ],
+  [
+   "2026-10-20T20:42:42+00:00",
+   18.9
+  ],
+  [
+   "2026-10-20T21:06:48+00:00",
+   27.9
+  ],
+  [
+   "2026-10-20T21:39:54+00:00",
+   24.4
+  ],
+  [
+   "2026-10-20T22:09:27+00:00",
+   21.2
+  ],
+  [
+   "2026-10-20T22:36:00+00:00",
+   31.5
+  ],
+  [
+   "2026-10-20T23:13:00+00:00",
+   21.1
+  ],
+  [
+   "2026-10-20T23:39:33+00:00",
+   5.4
+  ],
+  [
+   "2026-10-20T23:50:29+00:00",
+   16.4
+  ],
+  [
+   "2026-10-21T00:12:01+00:00",
+   28.1
+  ],
+  [
+   "2026-10-21T00:45:31+00:00",
+   24.6
+  ],
+  [
+   "2026-10-21T01:16:51+00:00",
+   17.4
+  ],
+  [
+   "2026-10-21T01:39:29+00:00",
+   21.3
+  ],
+  [
+   "2026-10-21T02:13:07+00:00",
+   18.0
+  ],
+  [
+   "2026-10-21T02:36:39+00:00",
+   2.4
+  ],
+  [
+   "2026-10-21T02:49:11+00:00",
+   17.1
+  ],
+  [
+   "2026-10-21T03:11:35+00:00",
+   5.0
+  ],
+  [
+   "2026-10-21T03:28:35+00:00",
+   5.5
+  ],
+  [
+   "2026-10-21T03:39:12+00:00",
+   23.1
+  ],
+  [
+   "2026-10-21T04:07:40+00:00",
+   28.1
+  ],
+  [
+   "2026-10-21T04:40:47+00:00",
+   20.0
+  ],
+  [
+   "2026-10-21T05:06:16+00:00",
+   27.8
+  ],
+  [
+   "2026-10-21T05:39:15+00:00",
+   2.0
+  ],
+  [
+   "2026-10-21T05:46:14+00:00",
+   8.1
+  ],
+  [
+   "2026-10-21T06:09:51+00:00",
+   1.7
+  ],
+  [
+   "2026-10-21T06:17:45+00:00",
+   18.7
+  ],
+  [
+   "2026-10-21T06:41:46+00:00",
+   24.2
+  ],
+  [
+   "2026-10-21T07:10:51+00:00",
+   27.6
+  ],
+  [
+   "2026-10-21T07:43:59+00:00",
+   17.0
+  ],
+  [
+   "2026-10-21T08:06:31+00:00",
+   29.5
+  ],
+  [
+   "2026-10-21T08:41:32+00:00",
+   26.3
+  ],
+  [
+   "2026-10-21T09:12:29+00:00",
+   10.5
+  ],
+  [
+   "2026-10-21T09:28:27+00:00",
+   11.6
+  ],
+  [
+   "2026-10-21T09:45:01+00:00",
+   6.6
+  ],
+  [
+   "2026-10-21T09:57:08+00:00",
+   4.8
+  ],
+  [
+   "2026-10-21T10:07:06+00:00",
+   31.9
+  ],
+  [
+   "2026-10-21T10:44:33+00:00",
+   25.8
+  ],
+  [
+   "2026-10-21T11:16:20+00:00",
+   21.7
+  ],
+  [
+   "2026-10-21T11:43:15+00:00",
+   22.5
+  ],
+  [
+   "2026-10-21T12:11:17+00:00",
+   23.4
+  ],
+  [
+   "2026-10-21T12:40:13+00:00",
+   25.8
+  ],
+  [
+   "2026-10-21T13:11:13+00:00",
+   16.8
+  ],
+  [
+   "2026-10-21T13:33:22+00:00",
+   5.6
+  ],
+  [
+   "2026-10-21T13:44:16+00:00",
+   24.1
+  ],
+  [
+   "2026-10-21T14:13:20+00:00",
+   17.2
+  ]
+ ],
+ "rows": [
+  {
+   "run": "E1-T1b-C1-r1",
+   "task": "T1b",
+   "arm": "C1",
+   "rep": 1,
+   "delivered": true,
+   "overall": 7.7,
+   "collapse": false,
+   "active_nf": 19.84,
+   "active_raw": 27.01,
+   "runner_active": 27.01,
+   "wall_min": 122.37,
+   "input": 12699849,
+   "uncached": 513993,
+   "output": 102636,
+   "guesses": [
+    "team",
+    "team"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 3602,
+   "end_posts": 3
+  },
+  {
+   "run": "E1-T1b-C1-r2",
+   "task": "T1b",
+   "arm": "C1",
+   "rep": 2,
+   "delivered": true,
+   "overall": 2.45,
+   "collapse": true,
+   "active_nf": 53.16,
+   "active_raw": 66.97,
+   "runner_active": 66.97,
+   "wall_min": 597.65,
+   "input": 18765618,
+   "uncached": 648370,
+   "output": 61870,
+   "guesses": [
+    "team",
+    "single"
+   ],
+   "run_exit": 124,
+   "unmerged_branches": 3,
+   "main_added_lines": 565,
+   "end_posts": 5
+  },
+  {
+   "run": "E1-T1b-C1-r3",
+   "task": "T1b",
+   "arm": "C1",
+   "rep": 3,
+   "delivered": true,
+   "overall": 7.25,
+   "collapse": false,
+   "active_nf": 23.95,
+   "active_raw": 32.62,
+   "runner_active": 32.62,
+   "wall_min": 141.08,
+   "input": 12625060,
+   "uncached": 419108,
+   "output": 93664,
+   "guesses": [
+    "team",
+    "team"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 2000,
+   "end_posts": 2
+  },
+  {
+   "run": "E1-T1b-C2-r1",
+   "task": "T1b",
+   "arm": "C2",
+   "rep": 1,
+   "delivered": true,
+   "overall": 7.85,
+   "collapse": false,
+   "active_nf": 27.12,
+   "active_raw": 33.99,
+   "runner_active": 33.99,
+   "wall_min": 98.16,
+   "input": 17233490,
+   "uncached": 409682,
+   "output": 125829,
+   "guesses": [
+    "single",
+    "single"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 0,
+   "main_added_lines": 5006,
+   "end_posts": 3
+  },
+  {
+   "run": "E1-T1b-C2-r2",
+   "task": "T1b",
+   "arm": "C2",
+   "rep": 2,
+   "delivered": true,
+   "overall": 2.55,
+   "collapse": true,
+   "active_nf": 35.45,
+   "active_raw": 44.92,
+   "runner_active": 44.92,
+   "wall_min": 143.42,
+   "input": 9781156,
+   "uncached": 413604,
+   "output": 45753,
+   "guesses": [
+    "single",
+    "team"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 0,
+   "main_added_lines": 840,
+   "end_posts": 3
+  },
+  {
+   "run": "E1-T1b-base4-r1",
+   "task": "T1b",
+   "arm": "base4",
+   "rep": 1,
+   "delivered": true,
+   "overall": 7.6,
+   "collapse": false,
+   "active_nf": 21.24,
+   "active_raw": 28.42,
+   "runner_active": 28.42,
+   "wall_min": 117.72,
+   "input": 12842133,
+   "uncached": 402709,
+   "output": 112697,
+   "guesses": [
+    "team",
+    "team"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 2724,
+   "end_posts": 0
+  },
+  {
+   "run": "E1-T1b-base4-r2",
+   "task": "T1b",
+   "arm": "base4",
+   "rep": 2,
+   "delivered": true,
+   "overall": 7.65,
+   "collapse": false,
+   "active_nf": 24.07,
+   "active_raw": 32.95,
+   "runner_active": 32.95,
+   "wall_min": 151.37,
+   "input": 13094237,
+   "uncached": 384093,
+   "output": 116242,
+   "guesses": [
+    "team",
+    "team"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 2537,
+   "end_posts": 0
+  },
+  {
+   "run": "E1-T1b-base4-r3",
+   "task": "T1b",
+   "arm": "base4",
+   "rep": 3,
+   "delivered": true,
+   "overall": 6.85,
+   "collapse": false,
+   "active_nf": 29.59,
+   "active_raw": 34.71,
+   "runner_active": 34.71,
+   "wall_min": 60.21,
+   "input": 16444170,
+   "uncached": 423946,
+   "output": 138949,
+   "guesses": [
+    "team",
+    "team"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 3,
+   "main_added_lines": 3112,
+   "end_posts": 0
+  },
+  {
+   "run": "E1-T1b-solo-r1",
+   "task": "T1b",
+   "arm": "solo",
+   "rep": 1,
+   "delivered": true,
+   "overall": 6.95,
+   "collapse": false,
+   "active_nf": 36.44,
+   "active_raw": 43.13,
+   "runner_active": 43.13,
+   "wall_min": 127.83,
+   "input": 1974072,
+   "uncached": 110776,
+   "output": 45044,
+   "guesses": [
+    "single",
+    "single"
+   ],
+   "run_exit": 0,
+   "end_posts": 0
+  },
+  {
+   "run": "E1-T2-C1-r1",
+   "task": "T2",
+   "arm": "C1",
+   "rep": 1,
+   "delivered": true,
+   "overall": 7.9,
+   "collapse": false,
+   "active_nf": 28.54,
+   "active_raw": 39.05,
+   "runner_active": 39.05,
+   "wall_min": 117.37,
+   "input": 16881574,
+   "uncached": 407846,
+   "output": 113376,
+   "guesses": [
+    "team",
+    "team"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 2156,
+   "end_posts": 3
+  },
+  {
+   "run": "E1-T2-C1-r2",
+   "task": "T2",
+   "arm": "C1",
+   "rep": 2,
+   "delivered": true,
+   "overall": 2.25,
+   "collapse": true,
+   "active_nf": 21.04,
+   "active_raw": 27.96,
+   "runner_active": 27.96,
+   "wall_min": 100.26,
+   "input": 16056002,
+   "uncached": 230594,
+   "output": 53228,
+   "guesses": [
+    "single",
+    "single"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 202,
+   "end_posts": 4
+  },
+  {
+   "run": "E1-T2-C2-r1",
+   "task": "T2",
+   "arm": "C2",
+   "rep": 1,
+   "delivered": true,
+   "overall": 7.9,
+   "collapse": false,
+   "active_nf": 27.88,
+   "active_raw": 35.04,
+   "runner_active": 35.04,
+   "wall_min": 95.6,
+   "input": 16330694,
+   "uncached": 630726,
+   "output": 106302,
+   "guesses": [
+    "single",
+    "single"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 0,
+   "main_added_lines": 2595,
+   "end_posts": 3
+  },
+  {
+   "run": "E1-T2-C2-r3",
+   "task": "T2",
+   "arm": "C2",
+   "rep": 3,
+   "delivered": true,
+   "overall": 7.375,
+   "collapse": false,
+   "active_nf": 31.09,
+   "active_raw": 38.02,
+   "runner_active": 38.02,
+   "wall_min": 89.02,
+   "input": 14203868,
+   "uncached": 649820,
+   "output": 95739,
+   "guesses": [
+    "team",
+    "single"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 0,
+   "main_added_lines": 2000,
+   "end_posts": 3
+  },
+  {
+   "run": "E1-T2-C2-r4",
+   "task": "T2",
+   "arm": "C2",
+   "rep": 4,
+   "delivered": true,
+   "overall": 7.35,
+   "collapse": false,
+   "active_nf": 25.24,
+   "active_raw": 33.63,
+   "runner_active": 33.63,
+   "wall_min": 149.96,
+   "input": 9339966,
+   "uncached": 330174,
+   "output": 68183,
+   "guesses": [
+    "single",
+    "single"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 0,
+   "main_added_lines": 1659,
+   "end_posts": 3
+  },
+  {
+   "run": "E1-T2-base4-r1",
+   "task": "T2",
+   "arm": "base4",
+   "rep": 1,
+   "delivered": true,
+   "overall": 7.8,
+   "collapse": false,
+   "active_nf": 31.18,
+   "active_raw": 40.62,
+   "runner_active": 40.62,
+   "wall_min": 109.95,
+   "input": 18085976,
+   "uncached": 425432,
+   "output": 114507,
+   "guesses": [
+    "single",
+    "team"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 1770,
+   "end_posts": 0
+  },
+  {
+   "run": "E1-T2-base4-r2",
+   "task": "T2",
+   "arm": "base4",
+   "rep": 2,
+   "delivered": true,
+   "overall": 7.9,
+   "collapse": false,
+   "active_nf": 26.09,
+   "active_raw": 32.99,
+   "runner_active": 32.99,
+   "wall_min": 100.54,
+   "input": 13374159,
+   "uncached": 340943,
+   "output": 121667,
+   "guesses": [
+    "single",
+    "single"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 2143,
+   "end_posts": 0
+  },
+  {
+   "run": "E1-T2-solo-r1",
+   "task": "T2",
+   "arm": "solo",
+   "rep": 1,
+   "delivered": true,
+   "overall": 7.9,
+   "collapse": false,
+   "active_nf": 30.91,
+   "active_raw": 36.24,
+   "runner_active": 36.24,
+   "wall_min": 133.77,
+   "input": 1823862,
+   "uncached": 67190,
+   "output": 59503,
+   "guesses": [
+    "single",
+    "single"
+   ],
+   "run_exit": 0,
+   "end_posts": 0
+  },
+  {
+   "run": "E1-T3b-C1-r1",
+   "task": "T3b",
+   "arm": "C1",
+   "rep": 1,
+   "delivered": true,
+   "overall": 7.0,
+   "collapse": false,
+   "active_nf": 27.0,
+   "active_raw": 34.44,
+   "runner_active": 34.44,
+   "wall_min": 118.9,
+   "input": 18316845,
+   "uncached": 444973,
+   "output": 117683,
+   "guesses": [
+    "single",
+    "single"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 3675,
+   "end_posts": 5
+  },
+  {
+   "run": "E1-T3b-C1-r3",
+   "task": "T3b",
+   "arm": "C1",
+   "rep": 3,
+   "delivered": true,
+   "overall": 7.55,
+   "collapse": false,
+   "active_nf": 32.01,
+   "active_raw": 39.02,
+   "runner_active": 39.02,
+   "wall_min": 113.47,
+   "input": 21109406,
+   "uncached": 412446,
+   "output": 131614,
+   "guesses": [
+    "team",
+    "team"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 3950,
+   "end_posts": 8
+  },
+  {
+   "run": "E1-T3b-C1-r4",
+   "task": "T3b",
+   "arm": "C1",
+   "rep": 4,
+   "delivered": true,
+   "overall": 7.699999999999999,
+   "collapse": false,
+   "active_nf": 33.5,
+   "active_raw": 42.66,
+   "runner_active": 42.66,
+   "wall_min": 115.22,
+   "input": 18795837,
+   "uncached": 399933,
+   "output": 133039,
+   "guesses": [
+    "single",
+    "single"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 4152,
+   "end_posts": 3
+  },
+  {
+   "run": "E1-T3b-C2-r1",
+   "task": "T3b",
+   "arm": "C2",
+   "rep": 1,
+   "delivered": true,
+   "overall": 7.55,
+   "collapse": false,
+   "active_nf": 28.06,
+   "active_raw": 36.76,
+   "runner_active": 36.76,
+   "wall_min": 97.73,
+   "input": 17307762,
+   "uncached": 761586,
+   "output": 148816,
+   "guesses": [
+    "single",
+    "team"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 0,
+   "main_added_lines": 4239,
+   "end_posts": 3
+  },
+  {
+   "run": "E1-T3b-C2-r2",
+   "task": "T3b",
+   "arm": "C2",
+   "rep": 2,
+   "delivered": true,
+   "overall": 7.4,
+   "collapse": false,
+   "active_nf": 20.96,
+   "active_raw": 28.0,
+   "runner_active": 28.0,
+   "wall_min": 116.47,
+   "input": 12712961,
+   "uncached": 450433,
+   "output": 109680,
+   "guesses": [
+    "single",
+    "single"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 0,
+   "main_added_lines": 3756,
+   "end_posts": 3
+  },
+  {
+   "run": "E1-T3b-base4-r1",
+   "task": "T3b",
+   "arm": "base4",
+   "rep": 1,
+   "delivered": true,
+   "overall": 7.8,
+   "collapse": false,
+   "active_nf": 25.37,
+   "active_raw": 33.91,
+   "runner_active": 33.91,
+   "wall_min": 124.09,
+   "input": 15019628,
+   "uncached": 380012,
+   "output": 128009,
+   "guesses": [
+    "team",
+    "team"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 4053,
+   "end_posts": 0
+  },
+  {
+   "run": "E1-T3b-base4-r2",
+   "task": "T3b",
+   "arm": "base4",
+   "rep": 2,
+   "delivered": true,
+   "overall": 7.6,
+   "collapse": false,
+   "active_nf": 38.74,
+   "active_raw": 47.03,
+   "runner_active": 47.03,
+   "wall_min": 141.69,
+   "input": 21334048,
+   "uncached": 472480,
+   "output": 161483,
+   "guesses": [
+    "single",
+    "single"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 4052,
+   "end_posts": 0
+  },
+  {
+   "run": "E1-T3b-base4-r3",
+   "task": "T3b",
+   "arm": "base4",
+   "rep": 3,
+   "delivered": true,
+   "overall": 7.775,
+   "collapse": false,
+   "active_nf": 36.06,
+   "active_raw": 46.43,
+   "runner_active": 46.43,
+   "wall_min": 145.52,
+   "input": 19594558,
+   "uncached": 442942,
+   "output": 151092,
+   "guesses": [
+    "team",
+    "single"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 4113,
+   "end_posts": 0
+  },
+  {
+   "run": "E1-T3b-solo-r1",
+   "task": "T3b",
+   "arm": "solo",
+   "rep": 1,
+   "delivered": true,
+   "overall": 7.9,
+   "collapse": false,
+   "active_nf": 47.49,
+   "active_raw": 58.07,
+   "runner_active": 58.07,
+   "wall_min": 233.24,
+   "input": 4336042,
+   "uncached": 111786,
+   "output": 86943,
+   "guesses": [
+    "single",
+    "single"
+   ],
+   "run_exit": 0,
+   "end_posts": 0
+  },
+  {
+   "run": "E1-T4b-C1-r2",
+   "task": "T4b",
+   "arm": "C1",
+   "rep": 2,
+   "delivered": true,
+   "overall": 7.275,
+   "collapse": false,
+   "active_nf": 34.01,
+   "active_raw": 43.98,
+   "runner_active": 43.98,
+   "wall_min": 124.42,
+   "input": 21168555,
+   "uncached": 432811,
+   "output": 153664,
+   "guesses": [
+    "team",
+    "team"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 5901,
+   "end_posts": 7
+  },
+  {
+   "run": "E1-T4b-C1-r3",
+   "task": "T4b",
+   "arm": "C1",
+   "rep": 3,
+   "delivered": true,
+   "overall": 7.4,
+   "collapse": false,
+   "active_nf": 25.94,
+   "active_raw": 34.99,
+   "runner_active": 34.99,
+   "wall_min": 125.78,
+   "input": 18559117,
+   "uncached": 520333,
+   "output": 114284,
+   "guesses": [
+    "team",
+    "team"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 6579,
+   "end_posts": 3
+  },
+  {
+   "run": "E1-T4b-C1-r4",
+   "task": "T4b",
+   "arm": "C1",
+   "rep": 4,
+   "delivered": true,
+   "overall": 7.449999999999999,
+   "collapse": false,
+   "active_nf": 34.75,
+   "active_raw": 41.46,
+   "runner_active": 41.46,
+   "wall_min": 93.54,
+   "input": 19877897,
+   "uncached": 945801,
+   "output": 140997,
+   "guesses": [
+    "team",
+    "single"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 7218,
+   "end_posts": 3
+  },
+  {
+   "run": "E1-T4b-C2-r1",
+   "task": "T4b",
+   "arm": "C2",
+   "rep": 1,
+   "delivered": true,
+   "overall": 7.2,
+   "collapse": false,
+   "active_nf": 31.86,
+   "active_raw": 42.63,
+   "runner_active": 42.63,
+   "wall_min": 120.75,
+   "input": 18347411,
+   "uncached": 417299,
+   "output": 138361,
+   "guesses": [
+    "team",
+    "team"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 0,
+   "main_added_lines": 9177,
+   "end_posts": 3
+  },
+  {
+   "run": "E1-T4b-C2-r2",
+   "task": "T4b",
+   "arm": "C2",
+   "rep": 2,
+   "delivered": true,
+   "overall": 6.8,
+   "collapse": false,
+   "active_nf": 24.6,
+   "active_raw": 33.83,
+   "runner_active": 33.83,
+   "wall_min": 136.12,
+   "input": 12517047,
+   "uncached": 326071,
+   "output": 97138,
+   "guesses": [
+    "team",
+    "single"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 0,
+   "main_added_lines": 4882,
+   "end_posts": 5
+  },
+  {
+   "run": "E1-T4b-C2-r3",
+   "task": "T4b",
+   "arm": "C2",
+   "rep": 3,
+   "delivered": true,
+   "overall": 6.65,
+   "collapse": false,
+   "active_nf": 42.04,
+   "active_raw": 52.78,
+   "runner_active": 52.78,
+   "wall_min": 140.8,
+   "input": 25676773,
+   "uncached": 418149,
+   "output": 116421,
+   "guesses": [
+    "single",
+    "single"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 0,
+   "main_added_lines": 5046,
+   "end_posts": 2
+  },
+  {
+   "run": "E1-T4b-base4-r1",
+   "task": "T4b",
+   "arm": "base4",
+   "rep": 1,
+   "delivered": true,
+   "overall": 1.6,
+   "collapse": true,
+   "active_nf": 26.88,
+   "active_raw": 30.17,
+   "runner_active": 30.17,
+   "wall_min": 109.39,
+   "input": 7297332,
+   "uncached": 278580,
+   "output": 30124,
+   "guesses": [
+    "single",
+    "single"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 1,
+   "main_added_lines": 425,
+   "end_posts": 0
+  },
+  {
+   "run": "E1-T4b-base4-r2",
+   "task": "T4b",
+   "arm": "base4",
+   "rep": 2,
+   "delivered": true,
+   "overall": 1.7000000000000002,
+   "collapse": true,
+   "active_nf": 16.84,
+   "active_raw": 22.26,
+   "runner_active": 22.26,
+   "wall_min": 92.57,
+   "input": 5295441,
+   "uncached": 195537,
+   "output": 22906,
+   "guesses": [
+    "single",
+    "team"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 371,
+   "end_posts": 0
+  },
+  {
+   "run": "E1-T4b-base4-r4",
+   "task": "T4b",
+   "arm": "base4",
+   "rep": 4,
+   "delivered": true,
+   "overall": 7.3,
+   "collapse": false,
+   "active_nf": 45.38,
+   "active_raw": 56.93,
+   "runner_active": 56.93,
+   "wall_min": 155.57,
+   "input": 17516927,
+   "uncached": 820223,
+   "output": 118266,
+   "guesses": [
+    "team",
+    "team"
+   ],
+   "run_exit": 0,
+   "unmerged_branches": 2,
+   "main_added_lines": 4203,
+   "end_posts": 0
+  },
+  {
+   "run": "E1-T4b-solo-r1",
+   "task": "T4b",
+   "arm": "solo",
+   "rep": 1,
+   "delivered": true,
+   "overall": 7.55,
+   "collapse": false,
+   "active_nf": 36.41,
+   "active_raw": 45.35,
+   "runner_active": 45.35,
+   "wall_min": 174.03,
+   "input": 3700235,
+   "uncached": 474251,
+   "output": 70849,
+   "guesses": [
+    "single",
+    "single"
+   ],
+   "run_exit": 0,
+   "end_posts": 0
+  }
+ ],
+ "per_task": {
+  "T1b": {
+   "C1": {
+    "overall": 5.8,
+    "active_nf": 32.31666666666666,
+    "active_raw": 42.2,
+    "wall_min": 287.0333333333333,
+    "input": 14696842.333333334
+   },
+   "base4": {
+    "overall": 7.366666666666666,
+    "active_nf": 24.966666666666665,
+    "active_raw": 32.02666666666667,
+    "wall_min": 109.76666666666667,
+    "input": 14126846.666666666
+   },
+   "solo": {
+    "overall": 6.95,
+    "active_nf": 36.44,
+    "active_raw": 43.13,
+    "wall_min": 127.83,
+    "input": 1974072
+   }
+  },
+  "T2": {
+   "C1": {
+    "overall": 5.075,
+    "active_nf": 24.79,
+    "active_raw": 33.504999999999995,
+    "wall_min": 108.815,
+    "input": 16468788
+   },
+   "base4": {
+    "overall": 7.85,
+    "active_nf": 28.634999999999998,
+    "active_raw": 36.805,
+    "wall_min": 105.245,
+    "input": 15730067.5
+   },
+   "solo": {
+    "overall": 7.9,
+    "active_nf": 30.91,
+    "active_raw": 36.24,
+    "wall_min": 133.77,
+    "input": 1823862
+   }
+  },
+  "T3b": {
+   "C1": {
+    "overall": 7.416666666666666,
+    "active_nf": 30.836666666666666,
+    "active_raw": 38.70666666666666,
+    "wall_min": 115.86333333333333,
+    "input": 19407362.666666668
+   },
+   "base4": {
+    "overall": 7.725,
+    "active_nf": 33.39,
+    "active_raw": 42.45666666666666,
+    "wall_min": 137.1,
+    "input": 18649411.333333332
+   },
+   "solo": {
+    "overall": 7.9,
+    "active_nf": 47.49,
+    "active_raw": 58.07,
+    "wall_min": 233.24,
+    "input": 4336042
+   }
+  },
+  "T4b": {
+   "C1": {
+    "overall": 7.375,
+    "active_nf": 31.566666666666666,
+    "active_raw": 40.14333333333333,
+    "wall_min": 114.58,
+    "input": 19868523
+   },
+   "base4": {
+    "overall": 3.533333333333333,
+    "active_nf": 29.7,
+    "active_raw": 36.45333333333333,
+    "wall_min": 119.17666666666666,
+    "input": 10036566.666666666
+   },
+   "solo": {
+    "overall": 7.55,
+    "active_nf": 36.41,
+    "active_raw": 45.35,
+    "wall_min": 174.03,
+    "input": 3700235
+   }
+  }
+ },
+ "quality_diff_pairs": [
+  -0.712,
+  -3.072,
+  1.647
+ ],
+ "n_pairs": 8,
+ "quality_diff_tasks": [
+  -0.202,
+  -3.588,
+  3.184
+ ],
+ "collapses_C1": 2,
+ "mean_quality_C1": [
+  6.539,
+  5.406,
+  7.671
+ ],
+ "C1_active_nf_ratio_vs_solo": [
+  0.801,
+  0.675,
+  0.928
+ ],
+ "C1_input_ratio_vs_solo": [
+  6.58,
+  4.165,
+  8.995
+ ],
+ "collapses_base4": 2,
+ "mean_quality_base4": [
+  6.507,
+  5.194,
+  7.82
+ ],
+ "base4_active_nf_ratio_vs_solo": [
+  0.783,
+  0.651,
+  0.914
+ ],
+ "base4_input_ratio_vs_solo": [
+  5.699,
+  2.545,
+  8.852
+ ],
+ "mean_quality_solo": [
+  7.575,
+  7.048,
+  8.102
+ ],
+ "C1_input_ratio_vs_base4": [
+  1.277,
+  0.726,
+  1.828
+ ],
+ "C1_active_ratio_vs_base4": [
+  1.037,
+  0.812,
+  1.261
+ ],
+ "arm_guess_accuracy": 0.5694444444444444
+}

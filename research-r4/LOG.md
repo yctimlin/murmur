@@ -321,3 +321,20 @@
 - 10-24 10:18 FINAL 23/24: F-H4-solo-r2 delivered (runner clock active 33.2, stalled 2.0, wall 131). Only F-H2-cand-r2 in flight. 20 judged. (Note: the previous entry was stamped 10:20 but was written at ~10:16.)
 - 10-24 10:37 [final_eval] all 24 runs finished (non-infra); judging continues in the F judge loop
 - 10-24 10:39 FINAL 24/24 finished (watcher exited: all non-infra). F-H2-cand-r2 delivered (active 33.5, 26 commits). Eval runner 77075 stopped (idle). Waiting for the judge loop F to finish the 4 remaining judgments, then final_decide.py.
+- 10-24 11:06 [r4eval] judged F-H4-cand-r2
+- 10-24 11:35 [r4eval] judged F-H2-orig-r2
+- 10-24 12:09 session-20 resume: judge loop F 71638 alive (r4eval 424145, 2 judge claude procs), heartbeat 1462275, clock probe child 3843667 alive (pidfile holds the parent pid). Directives unchanged (newest 10-22 22:50, satisfied). FINAL 24/24 finished, 22 judged; remaining F-H2-cand-r2, F-H4-solo-r2 (j1 done) being judged. No relaunch. Next: final_decide.py when 24 are judged.
+- 10-24 12:14 Started a background subagent to draft the non-held-out report sections into analysis/FINAL-REPORT.draft.md. It is forbidden to read judge/F, evallab, results/FINAL.json and /srv, so blinding is preserved. A waiter will trigger final_decide when 24/24 are judged.
+- 10-24 12:33 [r4eval] judged F-H2-cand-r2
+- 10-24 13:09 [r4eval] judged F-H4-solo-r2
+- 10-24 13:09 Report draft done (analysis/FINAL-REPORT.draft.md, no held-out scores). The draft agent flagged record inconsistencies, which will be disclosed in the report: E4 infra count 7 vs 8; held-out solo active range is 31.6-74.8 (4/8 <40), not 32-54; E1-T1b-C1-r2 active_nf is 53.2, not 67 (67 = raw); the RUBRIC analysis paragraph still names r3 arms; the kept clock commit a331d54 lives on experiment/r4-base4f, not on experiment/self-improve-r4 (to be cherry-picked there at close). FINAL judged 23/24.
+- 10-24 13:09 FINAL 24/24 judged; judge loop F exited normally. UNBLINDING: running tools/final_decide.py (frozen, AMENDMENT-11).
+- 10-24 13:15 FINAL RESULT (tools/final_decide.py sha256 de8a0ac7 = AMENDMENT-11 value; results/FINAL.json). Verdict NO-REGRESSION-VS-ORIG.
+  G1 PASS: q(cand - origF) = +1.27 (90% CI -0.46..+3.00, n=8 blocks), collapses cand 0 vs origF 2 (H2-r2 undelivered = 0; H4-r1 2.05).
+  G2 FAIL: q(cand - solo) = -0.004 (90% CI -0.995..+0.986). The lower bound -0.995 is below -0.75. Solo had 1 collapse (H2-r2 2.4).
+  G3 PASS: active_nf ratio cand/solo 0.728 (90% CI 0.58..0.91).
+  G4 FAIL (secondary): input ratio cand/solo 4.12 (90% CI 3.09..5.49).
+  Means q / active_nf / input M: cand 6.76 [6.31, 7.21] / 27.2 / 12.2; origF 5.49 [3.58, 7.40] / 27.9 / 11.3; solo 6.76 [5.46, 8.06] / 39.1 / 3.1.
+  Descriptive sensitivities (not gating): excluding blocks with any collapse, cand - origF = -0.12 [-0.30, +0.07] (n=6) and cand - solo = -0.49 [-0.92, -0.06] (n=7). Medians: cand - solo -0.40, cand - origF 0.00. cand/origF active 0.99 [0.87, 1.13], input 1.09 [0.96, 1.24].
+  Reading: the swarm's gain over orig comes entirely from reliability (0 vs 2 collapses). When neither arm collapses, base4F ~ origF on quality and time. Swarm is faster than solo (~0.73x) at ~4x tokens. On non-collapsed blocks it is ~0.5 below solo.
+  Blinding: judges' solo/team guess correct 73.9% (r3: 82%). Judge |j1-j2| mean 0.28, max 1.0, no third judgment.
