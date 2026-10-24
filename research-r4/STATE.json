@@ -1,5 +1,5 @@
 {
- "phase": "5-FINAL: decided NO-REGRESSION-VS-ORIG; writing report",
+ "phase": "DONE (FINAL-REPORT.md written)",
  "completed": [
   "read BRIEF/CONTEXT/noam-brown",
   "session1 read r3/murmur/codex (died on Claude 403 daily limit)",
@@ -88,25 +88,13 @@
   "10-24 10:39 FINAL 24/24 runs finished (H2-orig-r2 genuine non-delivery, not infra); eval runner+watcher stopped",
   "session-20 resume 10-24 12:09 (all jobs alive; FINAL 24/24 finished, 22 judged)",
   "FINAL 24/24 judged 13:09",
-  "final_decide 13:15 -> results/FINAL.json: NO-REGRESSION-VS-ORIG (G1 T, G2 F, G3 T, G4 F)"
+  "final_decide 13:15 -> results/FINAL.json: NO-REGRESSION-VS-ORIG (G1 T, G2 F, G3 T, G4 F)",
+  "clock fix cherry-picked to self-improve-r4 740cba6 (44 tests pass)",
+  "heartbeat+clock probe stopped",
+  "FINAL-REPORT.md written, synced, pushed"
  ],
- "running_jobs": [
-  {
-   "what": "heartbeat",
-   "find": "pgrep -f tools/heartbeat.sh"
-  },
-  {
-   "what": "clock probe",
-   "pidfile": "/workspace/r4/analysis/clock/clocklog.pid",
-   "note": "actual process tools/clocklog.py pid 3843667 (child)"
-  }
- ],
- "next_actions": [
-  "sync-commit records incl results/",
-  "cherry-pick clock fix a331d54 onto experiment/self-improve-r4 + tests",
-  "stop heartbeat/clock probe",
-  "write FINAL-REPORT.md from analysis/FINAL-REPORT.draft.md, push"
- ],
+ "running_jobs": [],
+ "next_actions": [],
  "budget": {
   "runs_done": 60,
   "runs_queued": "adaptive (1 pending)",
@@ -116,6 +104,7 @@
   "claude_429_daily_events": 3,
   "input_tokens_M_lab": 93.4,
   "e5_queued": 12,
-  "final_runs": 24
+  "final_runs": 24,
+  "final_runs_valid": 24
  }
 }
