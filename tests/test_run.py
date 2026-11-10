@@ -170,6 +170,107 @@ def test_second_run_is_rejected(tmp_path: Path):
     again = run_cli("run", str(workspace))
     assert again.returncode == EXIT_LAUNCHER
     assert "already run" in again.stderr
+    assert not (workspace / "logs" / "run.lock").exists()
+    assert not (workspace / "logs" / "run.json.partial").exists()
+
+
+def _start_hanging_run(workspace: Path, received: Path) -> subprocess.Popen:
+    proc = subprocess.Popen(
+        [sys.executable, "-m", "murmur", "run", str(workspace)],
+        env={**os.environ, "MURMUR_FAKE_CODEX_MODE": "hang", "MURMUR_FAKE_CODEX_SIGNAL_FILE": str(received)},
+        start_new_session=True,
+    )
+    deadline = time.monotonic() + 10
+    while not (received.exists() and received.read_text() == "ready\n"):
+        assert time.monotonic() < deadline
+        assert proc.poll() is None
+        time.sleep(0.05)
+    return proc
+
+
+def test_concurrent_run_on_one_workspace_is_refused(tmp_path: Path):
+    workspace = setup_workspace(tmp_path, "--solo", "--cap", "30s")
+    logs = workspace / "logs"
+    first = _start_hanging_run(workspace, tmp_path / "child-signal")
+    try:
+        assert (logs / "run.lock").read_text().strip() == str(first.pid)
+        (logs / "session.err").write_text("first run's log\n")
+        second = run_cli("run", str(workspace), extra_env={"MURMUR_FAKE_CODEX_MODE": "commit"})
+        assert second.returncode == EXIT_LAUNCHER, second.stderr
+        assert f"run1 is already running (murmur pid {first.pid})" in second.stderr
+        assert (logs / "session.err").read_text() == "first run's log\n"  # not reopened
+        assert not (logs / "run.json").exists()
+        assert (logs / "run.lock").read_text().strip() == str(first.pid)
+    finally:
+        os.kill(first.pid, signal.SIGINT)
+        first.wait(timeout=10)
+    assert first.returncode == EXIT_INTERRUPTED
+    assert not (logs / "run.lock").exists()
+    assert json.loads((logs / "run.json").read_text())["interrupted"] is True
+
+
+def _dead_pid() -> int:
+    child = subprocess.Popen([sys.executable, "-c", "pass"])
+    child.wait()
+    return child.pid
+
+
+@pytest.mark.parametrize("content", ["dead", "", "garbage\n"])
+def test_stale_run_lock_is_cleared(tmp_path: Path, content: str):
+    workspace = setup_workspace(tmp_path, "--solo")
+    lock = workspace / "logs" / "run.lock"
+    lock.write_text(f"{_dead_pid()}\n" if content == "dead" else content)
+    result = run_cli("run", str(workspace), extra_env={"MURMUR_FAKE_CODEX_MODE": "commit"})
+    assert result.returncode == EXIT_OK, result.stderr
+    assert "removing a stale run lock" in result.stderr
+    assert not lock.exists()
+
+
+def test_run_lock_is_released_when_codex_fails(tmp_path: Path):
+    workspace = setup_workspace(tmp_path, "--solo")
+    result = run_cli("run", str(workspace), extra_env={"MURMUR_FAKE_CODEX_MODE": "fail"})
+    assert result.returncode == EXIT_CODEX_FAILED, result.stderr
+    assert not (workspace / "logs" / "run.lock").exists()
+
+
+def test_printed_commands_work_with_spaces_and_quotes_in_paths(tmp_path: Path):
+    repo, brief = init_repo(tmp_path / "my src")
+    into = tmp_path / "it's my runs"
+    done = run_cli("setup", str(brief), "--repo", str(repo), "--into", str(into), "--id", "run1", "--solo")
+    assert done.returncode == 0, done.stderr
+    workspace = into / "run1"
+    result = run_cli("run", str(workspace), extra_env={"MURMUR_FAKE_CODEX_MODE": "draft-only"})
+    assert result.returncode == EXIT_NO_WORK, result.stderr
+    drafts = _printed_command(result.stderr, "murmur: recover the drafts:")
+    meta = json.loads((workspace / "murmur.json").read_text())
+    clone = Path(meta["agents"][0]["clone"])
+    git(clone, "commit", "-q", "--allow-empty", "-m", "integrated")
+    git(clone, "push", "-q", "origin", "HEAD:main")
+    from murmur.cli import _review_command
+
+    for command in (drafts, _review_command(workspace, meta, workspace / "work" / "origin.git")):
+        ran = subprocess.run(command, shell=True, capture_output=True, text=True)
+        assert ran.returncode == 0, (command, ran.stderr)
+    assert git(repo, "rev-parse", "--verify", "murmur/run1")
+    assert git(repo, "rev-parse", "--verify", "murmur/run1-drafts/a1")
+
+
+def test_folder_draft_clone_hint_works_with_spaces(tmp_path: Path):
+    folder = tmp_path / "my docs"
+    folder.mkdir()
+    (folder / "notes.md").write_text("hello\n")
+    brief = tmp_path / "brief.md"
+    brief.write_text("Do the thing.\n")
+    into = tmp_path / "my runs"
+    done = run_cli("setup", str(brief), "--repo", str(folder), "--into", str(into), "--id", "run1", "--solo")
+    assert done.returncode == 0, done.stderr
+    result = run_cli("run", str(into / "run1"), extra_env={"MURMUR_FAKE_CODEX_MODE": "draft-only"})
+    assert result.returncode == EXIT_NO_WORK, result.stderr
+    line = next(line for line in result.stderr.splitlines() if "to look at one:" in line)
+    command = line.split("to look at one:", 1)[1].strip()
+    ran = subprocess.run(command, shell=True, capture_output=True, text=True)
+    assert ran.returncode == 0, (command, ran.stderr)
+    assert (tmp_path / "my docs.murmur-run1-draft-a1" / "notes.md").read_text() == "hello\n"
 
 
 def test_normal_exit_kills_resistant_descendant(tmp_path: Path):

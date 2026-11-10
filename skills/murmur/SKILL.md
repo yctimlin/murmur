@@ -12,12 +12,17 @@ fetch the result into the user's repo as a branch.
 
 ## When to use it
 
-- **Good fit:** broad work that splits into parts, such as a feature spanning API, UI, docs and
-  tests, or many independent changes. In a pilot on a real UI feature, 4 peers finished in 46 min
-  where a single agent took 120 min.
-- **Weigh it:** for work where craft matters more than speed, especially visual polish. In the same
-  pilot the single agent's UI was richer and better on mobile; the swarm's was safer but plainer.
-- **Poor fit:** small or tightly coupled changes. Use one agent, for example the `codex` skill.
+- **What it trades:** in the latest blind held-out evaluation (round 4, 3 peers vs one agent on
+  large tasks), the swarm took about 0.73x the active time and about 4.1x the input tokens. Mean
+  quality tied, but on runs where neither side failed outright the swarm scored about 0.5 lower
+  (0-10). See "What we have measured" in the murmur README.
+- **Good fit:** large, broad work that splits into parts, such as a feature spanning API, UI, docs
+  and tests, when finishing sooner matters more than tokens.
+- **Weigh it:** for work where craft matters more than speed, especially visual polish. A single
+  agent scored higher on 5 of the 8 evaluated task runs, and in an early pilot its UI was richer
+  and better on mobile; the swarm's was safer but plainer.
+- **Poor fit:** small or tightly coupled changes, or a tight token budget. Use one agent, for
+  example the `codex` skill.
 - `murmur setup --solo` runs one agent with the same isolation, as a baseline.
 
 ## Prerequisites
@@ -71,8 +76,9 @@ murmur setup brief.md --repo <repo> --peers 4 \
   hard-code `NODE_PATH` to `a1`'s `node_modules`. Pass `--setup-per-agent` when the install embeds
   absolute paths (virtualenvs, node shebangs).
 - Setup uses the environment you launched murmur with, including your pnpm store. Never pass secrets.
-- `--peers 2` is often as good as 4. `--cap` defaults to `3h` and counts only running time;
-  ticks more than 10 s late count as stalled.
+- The evaluation used `--peers 3`; peer counts have not been compared in a controlled test.
+  `--cap` defaults to `3h` and counts only running time; ticks more than 10 s late count as
+  stalled.
 - Each agent's `PORT_BASE` is exported for zsh started in its clone. Commands that start outside
   the clone, such as in `work/`, do not export it; the prompt tells the agent to export it there.
   You do not paste it into the setup command. `HOME` is not changed.

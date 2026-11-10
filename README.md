@@ -8,10 +8,28 @@ git, and stop when they agree they are done. No agent is in charge. You get the 
 branch to review.
 
 ```bash
-murmur setup brief.md --repo . --peers 4 --setup "npm ci"
+murmur setup brief.md --repo . --peers 3 --setup "npm ci"
 murmur run ~/.murmur/runs/3f9a1c2e
 git fetch ~/.murmur/runs/3f9a1c2e/work/origin.git main:murmur/3f9a1c2e
 ```
+
+**What it buys you, measured:** murmur trades tokens for wall-clock time. In the latest blind,
+held-out evaluation, a 3-peer swarm finished in about **0.73×** the active time of a single Codex
+agent, used about **4.1×** the input tokens, and did not beat it on quality: the mean score tied,
+and on the runs where nobody failed outright the swarm scored about **0.5 points lower** (0–10
+scale). See [What we have measured](#what-we-have-measured).
+
+## When to use it
+
+- **Use murmur** when finishing sooner matters more than tokens, on large work that splits into
+  parts (a feature spanning API, UI, docs and tests; many independent changes), and you will
+  review the result before merging anyway. The evaluated tasks took a single agent 26–67 active
+  minutes.
+- **Use one agent** when token cost matters, when you want the best typical quality, or for small
+  or tightly coupled changes. A single agent scored higher on 5 of the 8 evaluated task runs, and
+  the evaluation found no quality gain from the swarm.
+- **Compare on your own task:** `murmur setup --solo` builds the same isolated workspace for one
+  agent, so you can run both and look at the results side by side.
 
 ## How it works
 
@@ -64,6 +82,8 @@ Requires Python 3.11+, git, and Codex CLI 0.162 or later, logged in.
 uv tool install --editable .   # or: pipx install .
 ```
 
+The Python package is named `codex-swarm`, because `murmur` and `murmur-swarm` are already taken on PyPI. The command it installs is still `murmur`.
+
 ## Usage
 
 ```text
@@ -78,13 +98,17 @@ murmur run WORKSPACE
 |--------|---------|-------|
 | `BRIEF` | — | Markdown with the objective. The agents cannot ask questions; they record their decisions in `PR.md`. |
 | `--repo` | current repo | Agents start from one commit; uncommitted changes are not included. A plain folder also works (see below) |
-| `--max-file-mb` | see `--help` | Plain-folder input only: larger files are shared read-only links instead of git content |
+| `--max-file-mb` | `50` | Plain-folder input only: larger files are shared read-only links instead of git content |
 | `--base` | `HEAD` | Commit or ref to start from |
-| `--peers` / `--solo` | 4 peers | Two peers are often as good as four |
+| `--peers` / `--solo` | 4 peers | The evaluation used 3 peers; peer counts have not been compared in a controlled test |
 | `--setup` | none | Shell command run once, in the first clone, before the clock starts (repeatable) |
 | `--setup-per-agent` | off | Run `--setup` in every clone. Use this when the install embeds absolute paths |
+| `--model` | `gpt-6-astra` | Codex model. The swarm is tuned for this one |
+| `--effort` | `high` | Reasoning effort, also pinned for the peers |
 | `--cap` | `3h` | Running-time limit, e.g. `90m`; ticks more than 10 s late count as stalled |
 | `--port-base` | `40000` | Each agent gets 100 ports. Shells started in its clone export `PORT_BASE` |
+| `--into` | `~/.murmur/runs` | Parent directory for workspaces |
+| `--id` | random | Workspace id |
 | `--config` | none | TOML with any of the above, plus `setup_per_agent` and `agent_env` templates (`$agent`, `$index`, `$port_base`, `$run`). Flags override it. |
 
 `murmur run` prints how long the run took, how many commits it made, and the `git fetch` command.
@@ -96,7 +120,7 @@ the root of the result is the agents' summary.
 |------|---------|
 | 0 | Codex exited 0 and `main` in `origin.git` has new commits |
 | 1 | Codex exited non-zero |
-| 3 | Launcher error (bad arguments, setup failed, workspace already run or missing) |
+| 3 | Launcher error (bad arguments or config, setup failed, workspace missing, already run or still running) |
 | 4 | No work delivered: Codex exited 0 but `main` did not advance. Any `draft/*` branches are listed with a fetch command |
 | 124 | The running-time cap was reached |
 | 130 | Interrupted (`SIGINT` / `SIGTERM` / `SIGHUP`) |
@@ -215,17 +239,59 @@ strict isolation, run murmur as a separate OS user.
 
 ## What we have measured
 
-One pilot so far: a customer-facing UI feature in a large TypeScript monorepo, 4 peers versus one
-agent, the same model and brief.
+The numbers below come from the round-4 final report,
+[`research-r4/FINAL-REPORT.md`](https://github.com/yctimlin/murmur/blob/experiment/self-improve-r4/research-r4/FINAL-REPORT.md)
+on the `experiment/self-improve-r4` branch (written 2026-10-24), and its data in
+`research-r4/results/FINAL.json`. The swarm arm there, `base4F` (a331d54), runs the same `src/`
+code as `main` today.
 
-| | Swarm (4 peers) | Solo |
+**Setup.** 4 sealed tasks written by a separate author and never seen by the developer, 2 runs
+each, so 8 runs per arm. Each run was large, open-ended design-and-build work. Swarms used 3 peers;
+every run used `gpt-6-astra` at effort `high` with a 120-minute cap. A blind Claude judge scored
+each delivered tree from 0 to 10 without knowing which arm produced it. A run that scored below 3
+or delivered nothing counts as a collapse. Brackets are 90% confidence intervals.
+
+| | Swarm (3 peers) | Solo Codex |
 |---|---|---|
-| Time to done | 46 min | 120 min |
-| Uncached input / output tokens | 1.5M / 0.13M | 0.9M / 0.11M |
-| Review | Native look, safer integration, plainer UI, weak mobile layout | Richer UI and motion, one unreachable state, a risky product change |
+| Mean quality | 6.76 [6.31, 7.21] | 6.76 [5.46, 8.06] |
+| Median quality | 6.97 | 7.58 |
+| Collapses | 0 of 8 | 1 of 8 |
+| Mean active minutes | 27.2 | 39.1 |
+| Mean input tokens (uncached) | 12.2M (0.46M) | 3.1M (0.09M) |
+| Mean output tokens | 0.10M | 0.06M |
 
-The swarm was 2.6× faster; the single agent's result was narrowly better. One run each is a
-first read, not a conclusion.
+Paired swarm-versus-solo contrasts over the 8 task runs:
+
+- **Time:** active time ratio 0.73 [0.58, 0.91]. The swarm was faster.
+- **Quality:** mean difference −0.004 [−0.99, +0.99]. The mean ties only because solo collapsed
+  once. On the 7 task runs where nobody collapsed, the swarm was 0.49 lower [−0.92, −0.06].
+- **Tokens:** input token ratio 4.12× [3.09, 5.49]. Most of it is cached input. The project's
+  target was 1.5–2×.
+
+Against the original murmur design (`origF`), the current one did not regress: +1.27 [−0.46, +3.00]
+in quality and 0 collapses against 2, with about the same time (0.99×) and input tokens (1.09×).
+Its gain is reliability, not speed or peak quality.
+
+Round 4 also tried four new collaboration mechanisms on development tasks: consensus termination,
+a shared spine with independent acceptance checks, a truthful budget clock with clean roles, and a
+cross-verification ledger. None passed its pre-registered test against the design on `main` (the
+ledger scored about 0.3 higher but took about 2.1× as long), so none was merged. The report's
+diagnosis is that a healthy swarm spends 2.3–2.5× a single agent's agent-time for about 1.5× its
+build time, mostly on verification duplicated across peers, on reading each other's work, and on
+the draft-and-rank step. The extra tokens come mainly from peers re-reading each other's code in
+large contexts, not from messaging.
+
+**Limits.** Eight task runs per arm is a small sample, and the intervals are wide. There was one
+judge family and one rubric. Judges guessed correctly whether a result came from one agent or a
+team 74% of the time, so blinding was partial. Half of the solo runs took under the intended 40
+active minutes. The VM was frozen for much of the wall time; active time excludes those freezes,
+so do not read the wall-clock numbers in the report as speed.
+
+Round 3 found the same trade with a larger quality gap. Its report
+([`REPORT-r3.md`](https://github.com/yctimlin/murmur/blob/experiment/self-improve-r3/REPORT-r3.md))
+measured 3-peer swarms at about 0.63× solo's active time and about 4× its input tokens, scoring
+1.3–1.7 points lower. The very first pilot (one swarm run and one solo run on a UI feature,
+46 versus 120 minutes) is superseded by these controlled results.
 
 ## Tests
 
@@ -243,3 +309,11 @@ checks the `murmur` entry point and the packaged prompts, then runs the same sui
 
 Experimental. It depends on Codex features that are still marked under development (the agent
 message board) and on behaviour of Codex 0.162.
+
+## Contributing
+
+Bug reports, run reports and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+[MIT](LICENSE)

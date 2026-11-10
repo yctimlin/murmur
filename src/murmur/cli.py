@@ -12,6 +12,8 @@ launches Codex and stops its whole process group on the way out.
 from __future__ import annotations
 
 import argparse
+import difflib
+import fcntl
 import json
 import os
 import re
@@ -29,11 +31,13 @@ from datetime import datetime, timezone
 from importlib.resources import files
 from pathlib import Path
 from string import Template
+from typing import NoReturn
 
 from murmur import doctor, tokens
 from murmur.cow import CowCopyError, cow_copy
 from murmur.procutil import (
     install_interrupt_handlers,
+    pid_alive,
     restore_interrupt_handlers,
     stop_process_group,
 )
@@ -59,6 +63,12 @@ DEFAULTS = {
     "agent_env": {},
     "max_file_mb": 50,
 }
+CONFIG_KEYS = {*DEFAULTS, "repo", "brief", "base"}
+MAX_PEERS = 16
+MAX_PORT = 65535
+# A workspace id names a directory and the review branch murmur/<id>.
+RUN_ID = re.compile(r"^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*$")
+TEMPLATE_KEYS = ("agent", "index", "port_base", "run")
 
 # Agents get network access but no way to reach GitHub through git: no credential
 # helper, and these GitHub URL prefixes are rewritten to a path that does not exist.
@@ -74,7 +84,7 @@ GITCONFIG = """\
 """
 
 
-def fail(message: str) -> None:
+def fail(message: str) -> NoReturn:
     print(f"murmur: {message}", file=sys.stderr)
     raise SystemExit(EXIT_LAUNCHER)
 
@@ -101,6 +111,17 @@ def git(*args: str, cwd: Path | None = None, env: dict | None = None) -> str:
         detail = (result.stderr or result.stdout or "git failed").strip()
         fail(detail.splitlines()[-1] if detail else "git failed")
     return result.stdout.strip()
+
+
+def _git_bytes(*args: str, cwd: Path | None = None, env: dict | None = None,
+               input: bytes | None = None) -> bytes:
+    """git() for binary input and output."""
+    result = subprocess.run(["git", *args], cwd=cwd, env=env, input=input, check=False,
+                            capture_output=True)
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout).decode(errors="replace").strip()
+        fail(detail.splitlines()[-1] if detail else "git failed")
+    return result.stdout
 
 
 def toml_value(value) -> str:
@@ -155,15 +176,34 @@ def write_model_catalog(path: Path, model: str, effort: str, solo: bool) -> None
     leaves the model with `exec`, and the board tools are called from inside it. An
     explicit catalog value is left alone. Solo runs do not use the board.
     """
-    out = subprocess.run(["codex", "debug", "models"], check=True, capture_output=True, text=True)
-    catalog = json.loads(out.stdout)
+    out = subprocess.run(["codex", "debug", "models"], check=False, capture_output=True, text=True)
+    if out.returncode != 0:
+        detail = (out.stderr or out.stdout).strip().splitlines()
+        fail(f"`codex debug models` failed ({out.returncode})" + (f": {detail[-1]}" if detail else ""))
+    try:
+        catalog = json.loads(out.stdout)
+    except json.JSONDecodeError:
+        fail("`codex debug models` did not print JSON; murmur needs Codex CLI 0.162 or later")
     models = catalog.get("models") if isinstance(catalog, dict) else None
     if not isinstance(models, list) or not models:
         fail("`codex debug models` returned no models; refusing to write an empty model catalog")
+    models = [entry for entry in models if isinstance(entry, dict)]  # edited in place
+    chosen = next((entry for entry in models if entry.get("slug") == model), None)
+    if chosen is None:
+        slugs = ", ".join(str(entry.get("slug")) for entry in models)
+        if not solo:
+            # Without its entry the swarm's board tools cannot be fixed up (see above).
+            fail(f"model {model!r} is not in Codex's model catalog; a swarm needs one that is: {slugs}")
+        print(f"murmur: model {model!r} is not in Codex's model catalog ({slugs})", file=sys.stderr)
+    else:
+        levels = [level.get("effort") for level in chosen.get("supported_reasoning_levels") or []
+                  if isinstance(level, dict)]
+        if levels and effort not in levels:
+            fail(f"{model} does not support effort {effort!r}; use one of: {', '.join(map(str, levels))}")
     for entry in models:
         if solo:
             entry["multi_agent_version"] = None
-        elif entry.get("slug") == model:
+        elif entry is chosen:
             entry["multi_agent_reasoning_effort"] = effort
             if entry.get("tool_mode") is None:
                 entry["tool_mode"] = "code_mode_only"
@@ -174,7 +214,10 @@ def write_codex_home(home: Path, trusted: Path, catalog: Path) -> None:
     """A minimal CODEX_HOME that carries over only the user's model provider and auth."""
     source = user_codex_home()
     config_file = source / "config.toml"
-    user = tomllib.loads(config_file.read_text()) if config_file.exists() else {}
+    try:
+        user = tomllib.loads(config_file.read_text()) if config_file.exists() else {}
+    except (OSError, tomllib.TOMLDecodeError) as exc:
+        fail(f"cannot read Codex's config {config_file}: {exc}")
     provider = user.get("model_provider")
     lines = [f"model_catalog_json = {toml_value(str(catalog))}"]
     if provider:
@@ -327,16 +370,59 @@ def _as_string_list(value, name: str) -> list[str]:
     return list(value)
 
 
+def _is_int(value) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _load_config(path: str) -> dict:
+    config_path = Path(path).expanduser().resolve()
+    try:
+        config = tomllib.loads(config_path.read_text())
+    except OSError as exc:
+        fail(f"cannot read config {config_path}: {exc.strerror or exc}")
+    except tomllib.TOMLDecodeError as exc:
+        fail(f"{config_path} is not valid TOML: {exc}")
+    for key in sorted(set(config) - CONFIG_KEYS):
+        close = difflib.get_close_matches(key, CONFIG_KEYS, n=1)
+        hint = f"did you mean {close[0]!r}?" if close else f"known keys: {', '.join(sorted(CONFIG_KEYS))}"
+        fail(f"unknown key {key!r} in {config_path} ({hint})")
+    for key in ("repo", "brief", "base"):
+        if key in config and not isinstance(config[key], str):
+            fail(f"{key} in {config_path} must be a string")
+    for key in ("repo", "brief"):
+        if key in config:
+            config[key] = str((config_path.parent / config[key]).resolve())
+    return config
+
+
+def _substitute(key: str, template: str, values: dict[str, str]) -> str:
+    try:
+        return Template(template).substitute(values)
+    except KeyError as exc:
+        fail(f"agent_env {key}: unknown placeholder ${exc.args[0]} "
+             f"(use {', '.join('$' + name for name in TEMPLATE_KEYS)})")
+    except ValueError:
+        fail(f"agent_env {key}: bad '$' in {template!r} (write $$ for a literal $)")
+
+
+def _check_agent_env(agent_env) -> dict:
+    if not isinstance(agent_env, dict):
+        fail("agent_env must be a table of string templates")
+    sample = dict.fromkeys(TEMPLATE_KEYS, "0")
+    for key, template in agent_env.items():
+        if not isinstance(template, str):
+            fail(f"agent_env {key}: the value must be a string")
+        if not ENV_NAME.fullmatch(key):
+            fail(f"invalid environment variable name {key!r} in agent_env")
+        _substitute(key, template, sample)
+    return agent_env
+
+
 def resolve_options(args: argparse.Namespace) -> dict:
     """Defaults, then the optional config file, then flags."""
     options = dict(DEFAULTS)
     if args.config:
-        config_path = Path(args.config).expanduser().resolve()
-        config = tomllib.loads(config_path.read_text())
-        for key in ("repo", "brief"):
-            if key in config:
-                config[key] = str((config_path.parent / str(config[key])).resolve())
-        options |= config
+        options |= _load_config(args.config)
     flags = {
         "brief": args.brief,
         "repo": args.repo,
@@ -352,26 +438,36 @@ def resolve_options(args: argparse.Namespace) -> dict:
     options |= {key: value for key, value in flags.items() if value is not None}
     if args.solo:
         options["peers"] = 1
-    elif not isinstance(options["peers"], int) or isinstance(options["peers"], bool) or options["peers"] < 2:
+    elif not _is_int(options["peers"]) or options["peers"] < 2:
         fail("a swarm needs at least 2 peers; use --solo for a single agent")
+    elif options["peers"] > MAX_PEERS:
+        fail(f"at most {MAX_PEERS} peers are supported (got {options['peers']})")
     if args.setup_per_agent:
         options["setup_per_agent"] = True
     elif not isinstance(options["setup_per_agent"], bool):
         fail("setup_per_agent must be a boolean")
     options["setup"] = _as_string_list(options.get("setup"), "setup")
-    agent_env = options.get("agent_env") or {}
-    if not isinstance(agent_env, dict):
-        fail("agent_env must be a table of string templates")
-    options["agent_env"] = agent_env
+    options["agent_env"] = _check_agent_env(options.get("agent_env") or {})
     if not options.get("brief"):
         fail("give a brief file (or a config with `brief`)")
+    for key in ("model", "effort"):
+        if not isinstance(options[key], str) or not options[key].strip():
+            fail(f"{key} must be a non-empty string")
     if not isinstance(options["cap"], str):
         fail("cap must be a duration string such as 45m or 3h")
-    seconds(options["cap"])
-    if not isinstance(options["port_base"], int) or isinstance(options["port_base"], bool):
-        fail("port_base must be an integer")
-    if not isinstance(options["port_stride"], int) or isinstance(options["port_stride"], bool):
-        fail("port_stride must be an integer")
+    if seconds(options["cap"]) <= 0:
+        fail(f"cap must be longer than 0 (got {options['cap']!r})")
+    if not _is_int(options["port_base"]) or not 1 <= options["port_base"] <= MAX_PORT:
+        fail(f"port_base must be an integer from 1 to {MAX_PORT}")
+    if not _is_int(options["port_stride"]) or options["port_stride"] < 1:
+        fail("port_stride must be a positive integer")
+    last_port = options["port_base"] + options["peers"] * options["port_stride"] - 1
+    if last_port > MAX_PORT:
+        fail(f"the agents' ports would run from {options['port_base']} to {last_port}, past {MAX_PORT}; "
+             "lower --port-base")
+    limit = options["max_file_mb"]
+    if not isinstance(limit, (int, float)) or isinstance(limit, bool) or not limit > 0:
+        fail("max_file_mb must be a number greater than 0")
     return options
 
 
@@ -419,9 +515,7 @@ def _agent_env(options: dict, run_id: str, agent_id: str, index: int) -> dict[st
     values = {"run": run_id, "agent": agent_id, "index": str(index), "port_base": port_base}
     env = {"PORT_BASE": port_base, "MURMUR_AGENT": agent_id}
     for key, template in options["agent_env"].items():
-        if not isinstance(key, str) or not isinstance(template, str):
-            fail("agent_env keys and values must be strings")
-        env[key] = Template(template).substitute(values)
+        env[key] = _substitute(key, template, values)
     return env
 
 
@@ -522,11 +616,11 @@ def _folder_files(folder: Path, env: dict, prefix: str = "") -> list[str]:
     expanded into its own tracked and untracked files, without its .git, so it comes in as
     normal files rather than an empty submodule pointer.
     """
-    listed = subprocess.run(["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
-                            cwd=folder, env=env, capture_output=True, check=True)
+    listed = _git_bytes("ls-files", "-z", "--cached", "--others", "--exclude-standard",
+                        cwd=folder, env=env)
     nested = {k: v for k, v in env.items() if k not in ("GIT_DIR", "GIT_WORK_TREE")}
     files: list[str] = []
-    for rel in filter(None, listed.stdout.decode().split("\0")):
+    for rel in filter(None, listed.decode().split("\0")):
         if rel.endswith("/"):
             files += _folder_files(folder / rel, nested, f"{prefix}{rel}")
         elif not (folder / rel).is_dir() or (folder / rel).is_symlink():
@@ -535,8 +629,7 @@ def _folder_files(folder: Path, env: dict, prefix: str = "") -> list[str]:
 
 
 def _hash_bytes(data: bytes, repo: Path, env: dict) -> str:
-    return subprocess.run(["git", "hash-object", "-w", "--stdin"], input=data, cwd=repo, env=env,
-                          capture_output=True, check=True).stdout.decode().strip()
+    return _git_bytes("hash-object", "-w", "--stdin", input=data, cwd=repo, env=env).decode().strip()
 
 
 def _user_excludes() -> str | None:
@@ -583,16 +676,15 @@ def snapshot_folder(folder: Path, dest: Path, env: dict, max_mb: float) -> tuple
         else:
             plain.append(rel)
     # One process hashes every regular file; one per file is ~50x slower on large trees.
-    hashed = subprocess.run(
-        ["git", "hash-object", "-w", "--no-filters", "--stdin-paths"], cwd=dest, env=env,
-        input="".join(f"{folder / rel}\n" for rel in plain).encode(), capture_output=True,
-        check=True).stdout.decode().split()
+    hashed = _git_bytes(
+        "hash-object", "-w", "--no-filters", "--stdin-paths", cwd=dest, env=env,
+        input="".join(f"{folder / rel}\n" for rel in plain).encode()).decode().split()
     for rel, sha in zip(plain, hashed, strict=True):
         mode = "100755" if os.access(folder / rel, os.X_OK) else "100644"
         entries.append((mode, sha, rel))
     entries = [f"{mode} {sha}\t{rel}" for mode, sha, rel in entries]
-    subprocess.run(["git", "update-index", "--add", "-z", "--index-info"], cwd=dest, env=env,
-                   input="".join(e + "\0" for e in entries).encode(), check=True)
+    _git_bytes("update-index", "--add", "-z", "--index-info", cwd=dest, env=env,
+               input="".join(e + "\0" for e in entries).encode())
     note = f" ({len(big)} large file(s) linked read-only from shared/)" if big else ""
     git("-c", "user.name=murmur", "-c", "user.email=murmur@murmur.local",
         "commit", "-q", "--allow-empty", "-m", f"Snapshot of {folder}{note}", cwd=dest, env=env)
@@ -665,12 +757,31 @@ def _fill_result(ws: Path, out: Path) -> int:
 
 
 def setup(args: argparse.Namespace) -> None:
-    if not shutil.which("codex"):
-        fail("the `codex` CLI is not on PATH")
+    for tool in ("git", "codex"):
+        if not shutil.which(tool):
+            fail(f"the `{tool}` CLI is not on PATH")
     options = resolve_options(args)
     solo = options["peers"] == 1
+    # Check everything the user typed before the slow steps (catalog, snapshot, clones).
     brief_file = Path(options["brief"]).expanduser().resolve()
+    if not brief_file.is_file():
+        fail(f"brief not found: {brief_file}")
+    try:
+        brief = brief_file.read_text().strip()
+    except (OSError, UnicodeDecodeError) as exc:
+        fail(f"cannot read the brief {brief_file}: {exc}")
+    run_id = args.id or secrets.token_hex(4)
+    if not RUN_ID.fullmatch(run_id) or run_id.endswith(".lock"):
+        fail(f"bad --id {run_id!r}: use letters, digits, '-', '_' and single dots")
+    into = Path(args.into).expanduser().resolve()
+    if into.exists() and not into.is_dir():
+        fail(f"--into {into} is not a directory")
+    ws = into / run_id
+    if ws.exists():
+        fail(f"{ws} already exists")
     start = Path(options.get("repo") or ".").expanduser().resolve()
+    if not start.exists():
+        fail(f"{start} does not exist")
     folder = None if in_git_repo(start) else start
     if folder is not None and (not folder.is_dir() or options.get("base")):
         fail(f"{start} is not a git repository" + (" (--base needs one)" if folder.is_dir() else ""))
@@ -683,10 +794,6 @@ def setup(args: argparse.Namespace) -> None:
             file=sys.stderr,
         )
     ids = ["solo"] if solo else [f"a{i}" for i in range(1, options["peers"] + 1)]
-    run_id = args.id or secrets.token_hex(4)
-    ws = Path(args.into).expanduser().resolve() / run_id
-    if ws.exists():
-        fail(f"{ws} already exists")
 
     previous = install_interrupt_handlers()
     procs = _SetupProcs()
@@ -716,9 +823,6 @@ def setup(args: argparse.Namespace) -> None:
                 cwd=origin, env=isolated)
         if folder:
             shutil.rmtree(repo)  # origin.git holds the snapshot now; do not keep a second copy
-        if not brief_file.is_file():
-            fail(f"brief not found: {brief_file}")
-        brief = brief_file.read_text().strip()
         agents, strategy = _prepare_clones(ws, origin, options, run_id, ids, procs)
         closing = render("closing.md", cap=options["cap"])
         draft_minutes = max(10, seconds(options["cap"]) // 600)
@@ -840,8 +944,13 @@ def _delivery(origin: Path, base: str) -> tuple[str | None, list[str]]:
     return commits, drafts
 
 
+def _shell(*words) -> str:
+    """A command line the user can paste, whatever spaces or quotes the paths contain."""
+    return " ".join(shlex.quote(str(word)) for word in words)
+
+
 def _review_command(ws: Path, meta: dict, origin: Path) -> str:
-    return f"git -C {meta['repo']} fetch {origin} main:murmur/{ws.name}"
+    return _shell("git", "-C", meta["repo"], "fetch", origin, f"main:murmur/{ws.name}")
 
 
 def _draft_hint(ws: Path, meta: dict, origin: Path, drafts: list[str]) -> str:
@@ -851,18 +960,59 @@ def _draft_hint(ws: Path, meta: dict, origin: Path, drafts: list[str]) -> str:
         first = drafts[0]
         target = f"{meta['folder']}.murmur-{ws.name}-{first.replace('/', '-')}"
         return (f"murmur: the drafts are branches of {origin}: {', '.join(drafts)}; "
-                f"to look at one: git clone -b {first} {origin} {target}")
+                f"to look at one: {_shell('git', 'clone', '-b', first, origin, target)}")
     return f"murmur: recover the drafts: {_drafts_command(ws, meta, origin)}"
 
 
 def _drafts_command(ws: Path, meta: dict, origin: Path) -> str:
-    return (f"git -C {meta['repo']} fetch {origin} "
-            f"'refs/heads/draft/*:refs/heads/murmur/{ws.name}-drafts/*'")
+    return _shell("git", "-C", meta["repo"], "fetch", origin,
+                  f"refs/heads/draft/*:refs/heads/murmur/{ws.name}-drafts/*")
+
+
+# Keys `murmur run` reads from murmur.json.
+META_KEYS = ("mode", "peers", "model", "effort", "cap", "base", "repo")
+
+
+def _take_run_lock(ws: Path, meta_path: Path) -> Path:
+    """Claim the workspace for this launcher, so a second `murmur run` refuses to start.
+
+    logs/run.lock holds the launcher's PID. A lock whose PID is gone (the launcher was
+    killed with SIGKILL, or the machine restarted) is stale and is replaced. The check and
+    the O_EXCL create run under flock on murmur.json, so two launchers clearing the same
+    stale lock cannot both win; the kernel drops that flock if a launcher dies.
+    """
+    lock = ws / "logs" / "run.lock"
+    with meta_path.open("rb") as guard:
+        fcntl.flock(guard, fcntl.LOCK_EX)
+        try:
+            text = lock.read_text().strip()
+        except FileNotFoundError:
+            pass
+        else:
+            holder = int(text) if text.isdigit() else None
+            if holder is not None and holder != os.getpid() and pid_alive(holder):
+                fail(f"{ws.name} is already running (murmur pid {holder}); "
+                     f"if that process is not murmur, delete {lock}")
+            print(f"murmur: removing a stale run lock (pid {holder or '?'} is gone)", file=sys.stderr)
+            lock.unlink()
+        fd = os.open(lock, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+        with os.fdopen(fd, "w") as handle:
+            handle.write(f"{os.getpid()}\n")
+    return lock
+
+
+def _drop_run_lock(lock: Path) -> None:
+    try:
+        if lock.read_text().strip() == str(os.getpid()):
+            lock.unlink()
+    except FileNotFoundError:
+        pass
 
 
 def run(args: argparse.Namespace) -> None:
     previous = install_interrupt_handlers()
     proc: subprocess.Popen | None = None
+    lock: Path | None = None
     try:
         ws = Path(args.workspace).expanduser().resolve()
         meta_path = ws / "murmur.json"
@@ -872,6 +1022,13 @@ def run(args: argparse.Namespace) -> None:
             meta = json.loads(meta_path.read_text())
         except json.JSONDecodeError as exc:
             fail(f"unreadable {meta_path}: {exc}")
+        missing = [key for key in META_KEYS if key not in meta] if isinstance(meta, dict) else META_KEYS
+        if missing:
+            fail(f"{meta_path} is not a murmur workspace file (missing {', '.join(missing)})")
+        if not shutil.which("codex"):
+            fail("the `codex` CLI is not on PATH")
+        # Take the lock before the run.json check, so a run finishing meanwhile is seen.
+        lock = _take_run_lock(ws, meta_path)
         if (ws / "logs" / "run.json").exists():
             fail(f"{ws.name} has already run; set up a new workspace")
         if problem := doctor.preflight(ws / "codex-home"):
@@ -931,7 +1088,10 @@ def run(args: argparse.Namespace) -> None:
             "diagnostic": diagnostic,
             "tokens": usage,
         }
-        (ws / "logs" / "run.json").write_text(json.dumps(record, indent=2) + "\n")
+        # Written whole and renamed into place, so `status` never reads half a record.
+        partial = ws / "logs" / "run.json.partial"
+        partial.write_text(json.dumps(record, indent=2) + "\n")
+        partial.replace(ws / "logs" / "run.json")
         label = "capped" if capped else "interrupted" if interrupted else f"exit {codex_exit}"
         suffix = f", {commits} new commit(s)" if commits is not None else ""
         print(f"{ws.name}: {meta['mode']} finished in {elapsed / 60:.1f} min ({label}){suffix}")
@@ -954,6 +1114,8 @@ def run(args: argparse.Namespace) -> None:
     finally:
         if proc is not None:
             stop_process_group(proc)
+        if lock is not None:
+            _drop_run_lock(lock)
         restore_interrupt_handlers(previous)
 
 
@@ -1019,7 +1181,11 @@ def main() -> None:
     p_doctor.set_defaults(func=doctor_command)
 
     args = parser.parse_args()
-    args.func(args)
+    try:
+        args.func(args)
+    except OSError as exc:
+        # A file, directory or program the run needs is missing or unusable: say which, briefly.
+        fail(str(exc))
 
 
 if __name__ == "__main__":

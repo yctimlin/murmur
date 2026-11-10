@@ -16,6 +16,7 @@ for a solo run, or one for the root plus one per peer (see TOKENS). Set
 MURMUR_FAKE_CODEX_ROLLOUTS=none to write none, or =partial to end each with a half-written
 line. `--version` prints MURMUR_FAKE_CODEX_VERSION (default 0.163.0); `features list` prints
 the swarm features unless MURMUR_FAKE_CODEX_NO_FEATURES is set.
+MURMUR_FAKE_CODEX_MODELS=fail makes `codex debug models` exit 5.
 """
 
 from __future__ import annotations
@@ -39,6 +40,9 @@ def main() -> int:
         print(f"codex-cli {os.environ.get('MURMUR_FAKE_CODEX_VERSION', '0.163.0')}")
         return 0
     if args[:2] == ["debug", "models"]:
+        if os.environ.get("MURMUR_FAKE_CODEX_MODELS") == "fail":
+            print("error: simulated catalog failure", file=sys.stderr)
+            return 5
         json.dump(_catalog(), sys.stdout)
         sys.stdout.write("\n")
         return 0
@@ -78,6 +82,9 @@ def _catalog() -> dict:
                 "slug": "gpt-6-astra",
                 "multi_agent_reasoning_effort": "xhigh",
                 "multi_agent_version": "v2",
+                "supported_reasoning_levels": [
+                    {"effort": effort} for effort in ("low", "medium", "high", "xhigh")
+                ],
             }
         ]
     }
