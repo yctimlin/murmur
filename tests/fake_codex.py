@@ -10,6 +10,12 @@ Modes (MURMUR_FAKE_CODEX_MODE):
   hang             sleep until SIGTERM or SIGINT; with MURMUR_FAKE_CODEX_SIGNAL_FILE, write
                    "ready" there once the handlers are installed and the signal name on exit
   resistant        exit 0 after forking a SIGTERM-ignoring child
+
+Every exec writes Codex-style rollouts with token counts under $CODEX_HOME/sessions: one
+for a solo run, or one for the root plus one per peer (see TOKENS). Set
+MURMUR_FAKE_CODEX_ROLLOUTS=none to write none, or =partial to end each with a half-written
+line. `--version` prints MURMUR_FAKE_CODEX_VERSION (default 0.163.0); `features list` prints
+the swarm features unless MURMUR_FAKE_CODEX_NO_FEATURES is set.
 """
 
 from __future__ import annotations
@@ -22,17 +28,31 @@ import sys
 import time
 from pathlib import Path
 
+# (input, cached input, output) per session: the root, then peer number n gets n times PEER.
+ROOT_TOKENS = (1000, 400, 50)
+PEER_TOKENS = (10000, 6000, 700)
+
 
 def main() -> int:
     args = sys.argv[1:]
+    if args == ["--version"]:
+        print(f"codex-cli {os.environ.get('MURMUR_FAKE_CODEX_VERSION', '0.163.0')}")
+        return 0
     if args[:2] == ["debug", "models"]:
         json.dump(_catalog(), sys.stdout)
         sys.stdout.write("\n")
+        return 0
+    if args[:2] == ["features", "list"]:
+        if not os.environ.get("MURMUR_FAKE_CODEX_NO_FEATURES"):
+            print("agent_message_board                      under development  false")
+            print("multi_agent_v2                           stable             false")
+        print("memories                                 stable             true")
         return 0
     if "exec" not in args:
         print(f"fake codex: unexpected args {args}", file=sys.stderr)
         return 2
     mode = os.environ.get("MURMUR_FAKE_CODEX_MODE", "ok")
+    _write_rollouts(args)
     _write_final(args, None if mode == "hang" else "done\n")
     if mode == "hang":
         return _hang()
@@ -61,6 +81,48 @@ def _catalog() -> dict:
             }
         ]
     }
+
+
+def _event(kind: str, payload: dict) -> str:
+    return json.dumps({"timestamp": "2026-11-10T00:00:00.000Z", "type": kind, "payload": payload})
+
+
+def _token_count(tokens: tuple[int, int, int], fraction: float) -> str:
+    inp, cached, out = (int(value * fraction) for value in tokens)
+    usage = {"input_tokens": inp, "cached_input_tokens": cached, "output_tokens": out,
+             "reasoning_output_tokens": 0, "total_tokens": inp + out}
+    return _event("event_msg", {"type": "token_count",
+                                "info": {"total_token_usage": usage, "last_token_usage": usage}})
+
+
+def _call(name: str, arguments: str) -> str:
+    return _event("response_item", {"type": "function_call", "name": name, "arguments": arguments})
+
+
+def _write_rollouts(args: list[str]) -> None:
+    style = os.environ.get("MURMUR_FAKE_CODEX_ROLLOUTS", "full")
+    if style == "none":
+        return
+    ws = _workspace(args)
+    meta = json.loads((ws / "murmur.json").read_text())
+    sessions = Path(os.environ["CODEX_HOME"]) / "sessions" / "2026" / "11" / "10"
+    sessions.mkdir(parents=True, exist_ok=True)
+    rollouts = []
+    if meta["mode"] == "solo":
+        rollouts.append(("solo", [_call("exec_command", '{"cmd": "git status"}')], PEER_TOKENS))
+    else:
+        spawn = _call("spawn_agent", json.dumps({"task_name": "a1", "message": "prompts/a1.md"}))
+        rollouts.append(("root", [spawn], ROOT_TOKENS))
+        for number, agent in enumerate(meta["agents"], start=1):
+            read = _call("exec_command", json.dumps({"cmd": f"cat {ws}/prompts/{agent['id']}.md"}))
+            rollouts.append((agent["id"], [read], tuple(n * number for n in PEER_TOKENS)))
+    for name, calls, tokens in rollouts:
+        lines = [_event("session_meta", {"id": name}), _token_count(tokens, 0.5), *calls,
+                 _token_count(tokens, 1.0)]
+        text = "\n".join(lines) + "\n"
+        if style == "partial":
+            text += _token_count(tokens, 2.0)[:40]
+        (sessions / f"rollout-2026-11-10T00-00-00-{name}.jsonl").write_text(text)
 
 
 def _write_final(args: list[str], text: str | None) -> None:

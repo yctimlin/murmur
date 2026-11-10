@@ -106,6 +106,32 @@ printed when `main` in `origin.git` has new commits, whatever the exit code. Whe
 prints no fetch command and instead lists any unmerged `draft/*` branches with a command that
 fetches them to `murmur/<id>-drafts/*`.
 
+### Preflight check and token report
+
+```text
+murmur doctor [--repo DIR] [--model M] [--into DIR] [--solo] [--config FILE]
+```
+
+`murmur doctor` prints one line per check, with a fix hint for anything that is not ok:
+
+- the Codex CLI version (0.162 or later);
+- the model is in `codex debug models`;
+- Codex has the swarm features `agent_message_board` and `multi_agent_v2` (skipped with `--solo`);
+- git, and the repo or plain folder;
+- copy-on-write support and free space where workspaces go (`--into`);
+- a Codex login exists: `auth.json`, your provider's `env_key` variable, or
+  `CODEX_API_KEY`/`OPENAI_API_KEY`. It checks only that one exists and never reads its contents.
+
+It exits 0 when no check failed and 1 otherwise. A missing copy-on-write filesystem and low disk
+space are warnings, not failures: murmur still works, and runs `--setup` in every clone instead.
+
+`murmur run` repeats the quick checks (Codex version, git, login) before it starts Codex. If one
+fails it exits 3 with the hint, and the workspace can still be run once that is fixed.
+
+At the end, `murmur run` prints the tokens the run used, in total and per agent (root and each
+peer): input, of which cached, and output. `logs/run.json` records the same numbers under
+`tokens`, summed from the Codex session logs in `codex-home/sessions/` (`null` when there are none).
+
 ### Plain-folder input
 
 `--repo` may be a folder that is not a git repository. murmur snapshots it into the run's
