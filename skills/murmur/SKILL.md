@@ -70,7 +70,8 @@ murmur setup brief.md --repo <repo> --peers 4 \
   hard-code `NODE_PATH` to `a1`'s `node_modules`. Pass `--setup-per-agent` when the install embeds
   absolute paths (virtualenvs, node shebangs).
 - Setup uses the environment you launched murmur with, including your pnpm store. Never pass secrets.
-- `--peers 2` is often as good as 4. `--cap` defaults to `3h`.
+- `--peers 2` is often as good as 4. `--cap` defaults to `3h` and counts only running time;
+  ticks more than 10 s late count as stalled.
 - Each agent's `PORT_BASE` is exported for zsh started in its clone. Commands that start outside
   the clone, such as in `work/`, do not export it; the prompt tells the agent to export it there.
   You do not paste it into the setup command. `HOME` is not changed.
@@ -95,7 +96,7 @@ board posts and new commits on `origin/main`.
 
 - `murmur run` exits 0 only when Codex exits 0 and `main` in `origin.git` has new commits. Exit 4
   means no work was delivered: Codex exited 0 but `main` did not advance. Exit 1 is a Codex
-  failure, 124 is the time cap, 3 is a launcher error, and 130 means the run was interrupted. Exit 2
+  failure, 124 is the running-time cap, 3 is a launcher error, and 130 means the run was interrupted. Exit 2
   is argparse's usage error. A non-zero exit prints a diagnostic and the log path. The fetch command
   (or, for a plain folder, the result folder) comes only when `main` advanced. When it did not,
   murmur lists any unmerged `draft/*` branches instead, with
@@ -158,7 +159,7 @@ that touch paths outside the workspace, credential files, `~/.codex` or GitHub.
 |---|---|
 | `murmur.json` | Run settings, base commit, agents, ports |
 | `prompts/` | The exact prompt each agent received |
-| `logs/run.json` | Start, end, duration, exit code, Codex's exit code, capped or interrupted, `commits` (new on `main`), `delivered`, `drafts` (`draft/*` branches left in `origin.git`), `diagnostic` |
+| `logs/run.json` | Start, end, duration, `active_seconds`, `stalled_seconds`, exit code, Codex's exit code, capped or interrupted, `commits` (new on `main`), `delivered`, `drafts` (`draft/*` branches left in `origin.git`), `diagnostic` |
 | `logs/session.jsonl` | The root (or solo) session's event stream |
 | `codex-home/sessions/` | One rollout per agent: commands, edits, tokens |
 | `codex-home/agent_message_board_1.sqlite` | Board posts (`posts` table, plain text) |

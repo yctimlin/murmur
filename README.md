@@ -83,13 +83,14 @@ murmur run WORKSPACE
 | `--peers` / `--solo` | 4 peers | Two peers are often as good as four |
 | `--setup` | none | Shell command run once, in the first clone, before the clock starts (repeatable) |
 | `--setup-per-agent` | off | Run `--setup` in every clone. Use this when the install embeds absolute paths |
-| `--cap` | `3h` | Hard time limit, e.g. `90m` |
+| `--cap` | `3h` | Running-time limit, e.g. `90m`; ticks more than 10 s late count as stalled |
 | `--port-base` | `40000` | Each agent gets 100 ports. Shells started in its clone export `PORT_BASE` |
 | `--config` | none | TOML with any of the above, plus `setup_per_agent` and `agent_env` templates (`$agent`, `$index`, `$port_base`, `$run`). Flags override it. |
 
 `murmur run` prints how long the run took, how many commits it made, and the `git fetch` command.
 A non-zero exit also prints a short diagnostic and the log path (`logs/session.err`). `PR.md` at
 the root of the result is the agents' summary.
+`logs/run.json` records `active_seconds` and `stalled_seconds`; only running time counts against the cap.
 
 | Code | Meaning |
 |------|---------|
@@ -97,7 +98,7 @@ the root of the result is the agents' summary.
 | 1 | Codex exited non-zero |
 | 3 | Launcher error (bad arguments, setup failed, workspace already run or missing) |
 | 4 | No work delivered: Codex exited 0 but `main` did not advance. Any `draft/*` branches are listed with a fetch command |
-| 124 | The time cap was reached |
+| 124 | The running-time cap was reached |
 | 130 | Interrupted (`SIGINT` / `SIGTERM` / `SIGHUP`) |
 
 Argparse usage errors still exit 2, so the time cap does not use that code. The fetch command is
