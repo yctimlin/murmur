@@ -10,6 +10,8 @@ Modes (MURMUR_FAKE_CODEX_MODE):
   hang             sleep until SIGTERM or SIGINT; with MURMUR_FAKE_CODEX_SIGNAL_FILE, write
                    "ready" there once the handlers are installed and the signal name on exit
   resistant        exit 0 after forking a SIGTERM-ignoring child
+
+MURMUR_FAKE_CODEX_MODELS=fail makes `codex debug models` exit 5.
 """
 
 from __future__ import annotations
@@ -26,6 +28,9 @@ from pathlib import Path
 def main() -> int:
     args = sys.argv[1:]
     if args[:2] == ["debug", "models"]:
+        if os.environ.get("MURMUR_FAKE_CODEX_MODELS") == "fail":
+            print("error: simulated catalog failure", file=sys.stderr)
+            return 5
         json.dump(_catalog(), sys.stdout)
         sys.stdout.write("\n")
         return 0
@@ -58,6 +63,9 @@ def _catalog() -> dict:
                 "slug": "gpt-6-astra",
                 "multi_agent_reasoning_effort": "xhigh",
                 "multi_agent_version": "v2",
+                "supported_reasoning_levels": [
+                    {"effort": effort} for effort in ("low", "medium", "high", "xhigh")
+                ],
             }
         ]
     }
