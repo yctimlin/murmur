@@ -241,12 +241,13 @@ Paired swarm-versus-solo contrasts over the 8 task runs:
   target was 1.5–2×.
 
 Against the original murmur design (`origF`), the current one did not regress: +1.27 [−0.46, +3.00]
-in quality, 0 collapses against 2, with about the same time (0.99×) and input tokens (1.09×). Its gain is reliability, not
-speed or peak quality.
+in quality and 0 collapses against 2, with about the same time (0.99×) and input tokens (1.09×).
+Its gain is reliability, not speed or peak quality.
 
 Round 4 also tried four new collaboration mechanisms on development tasks: consensus termination,
 a shared spine with independent acceptance checks, a truthful budget clock with clean roles, and a
-cross-verification ledger. None beat the design on `main`, so none was merged. The report's
+cross-verification ledger. None passed its pre-registered test against the design on `main` (the
+ledger scored about 0.3 higher but took about 2.1× as long), so none was merged. The report's
 diagnosis is that a healthy swarm spends 2.3–2.5× a single agent's agent-time for about 1.5× its
 build time, mostly on verification duplicated across peers, on reading each other's work, and on
 the draft-and-rank step. The extra tokens come mainly from peers re-reading each other's code in
@@ -258,9 +259,9 @@ team 74% of the time, so blinding was partial. Half of the solo runs took under 
 active minutes. The VM was frozen for much of the wall time; active time excludes those freezes,
 so do not read the wall-clock numbers in the report as speed.
 
-Earlier rounds point the same way. Round 3
+Round 3 found the same trade with a larger quality gap. Its report
 ([`REPORT-r3.md`](https://github.com/yctimlin/murmur/blob/experiment/self-improve-r3/REPORT-r3.md))
-found 3-peer swarms at about 0.63× solo's active time and about 4× its input tokens, scoring
+measured 3-peer swarms at about 0.63× solo's active time and about 4× its input tokens, scoring
 1.3–1.7 points lower. The very first pilot (one swarm run and one solo run on a UI feature,
 46 versus 120 minutes) is superseded by these controlled results.
 
