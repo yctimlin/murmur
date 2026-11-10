@@ -1,0 +1,64 @@
+name: Bug report
+description: murmur crashed, exited with the wrong code, or did something the README says it should not.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please do not paste anything from `codex-home/` (its `auth.json` links to your Codex login), API keys, or private code from your brief or repository.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: commands
+    attributes:
+      label: Commands you ran
+      description: The `murmur setup` and `murmur run` commands, with private paths shortened if you like.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output and exit code
+      description: The end of murmur's output, the exit code (`echo $?`), and the diagnostic it printed, if any. A traceback, if there was one.
+      render: text
+  - type: textarea
+    id: run-json
+    attributes:
+      label: logs/run.json and murmur.json
+      description: From the workspace (`~/.murmur/runs/<id>`). Leave this empty if setup failed before writing them.
+      render: json
+  - type: input
+    id: murmur-version
+    attributes:
+      label: murmur version or commit
+      description: The installed version (from `uv tool list` or `pip show`), or the commit you installed from.
+    validations:
+      required: true
+  - type: input
+    id: codex-version
+    attributes:
+      label: codex --version
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Model and effort
+      placeholder: gpt-6-astra, high
+  - type: input
+    id: platform
+    attributes:
+      label: OS and filesystem of the workspace
+      description: For example "macOS 16, APFS" or "Ubuntu 24.04, ext4". Copy-on-write setup depends on it.
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: Python version
