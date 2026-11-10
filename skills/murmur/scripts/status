@@ -25,13 +25,25 @@ def ago(ts: datetime) -> str:
     return f"{secs // 60}m{secs % 60:02d}s ago"
 
 
+def events(path: Path):
+    """The JSON objects in a JSONL file. A run in progress may have written half its last line."""
+    with path.open(errors="replace") as lines:
+        for line in lines:
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(event, dict):
+                yield event
+
+
 def agents(ws: Path) -> tuple[list[dict], datetime | None, list[str]]:
     rows, first, spawns = [], None, []
     for rollout in sorted((ws / "codex-home" / "sessions").rglob("*.jsonl")):
         name, calls, tokens, last = "root?", 0, 0, None
-        for line in rollout.open():
-            event = json.loads(line)
-            payload = event.get("payload", {})
+        for event in events(rollout):
+            payload = event.get("payload")
+            payload = payload if isinstance(payload, dict) else {}
             if event.get("timestamp"):
                 last = datetime.fromisoformat(event["timestamp"].replace("Z", "+00:00"))
                 first = min(first or last, last)
@@ -62,7 +74,10 @@ def main() -> None:
     parser.add_argument("--posts", type=int, default=8)
     args = parser.parse_args()
     ws = Path(args.workspace).expanduser().resolve()
-    meta = json.loads((ws / "murmur.json").read_text())
+    try:
+        meta = json.loads((ws / "murmur.json").read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"status: no readable murmur workspace at {ws} ({exc})") from None
 
     run_file = ws / "logs" / "run.json"
     session_log = ws / "logs" / "session.jsonl"
