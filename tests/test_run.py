@@ -19,6 +19,8 @@ from murmur.cli import (
     EXIT_LAUNCHER,
     EXIT_NO_WORK,
     EXIT_OK,
+    _ActiveClock,
+    _wait_active,
 )
 from murmur.procutil import pid_alive
 
@@ -193,3 +195,63 @@ def test_setup_failure_removes_the_workspace(tmp_path: Path):
     assert result.returncode == EXIT_LAUNCHER
     assert "setup command failed" in result.stderr
     assert not (tmp_path / "runs" / "run1").exists()
+
+
+class _FakeTime:
+    def __init__(self) -> None:
+        self.t = 1000.0
+
+    def __call__(self) -> float:
+        return self.t
+
+
+def test_active_clock_leaves_out_stalls():
+    now = _FakeTime()
+    clock = _ActiveClock(now=now, start=False)
+    for _ in range(30):
+        now.t += 1
+        clock.sample()
+    now.t += 600  # the VM was frozen: one tick arrives ten minutes late
+    clock.sample()
+    for _ in range(5):
+        now.t += 1
+        clock.sample()
+    assert clock.stalled == 599
+    assert clock.active() == 36
+
+
+def test_cap_wait_does_not_spend_budget_on_a_stall():
+    now = _FakeTime()
+    clock = _ActiveClock(now=now, start=False)
+
+    class Proc:
+        calls = 0
+
+        def wait(self, timeout):
+            self.calls += 1
+            now.t += timeout
+            if self.calls == 3:
+                now.t += 3600  # frozen for an hour in the middle of the run
+            raise subprocess.TimeoutExpired("codex", timeout)
+
+    started = now.t
+    assert _wait_active(Proc(), clock, 60) is True
+    assert now.t - started >= 3600 + 60
+    assert 60 <= clock.active() < 61
+
+
+def test_suspended_launcher_is_not_capped_early(tmp_path: Path):
+    workspace = setup_workspace(tmp_path, "--solo", "--cap", "4s")
+    proc = subprocess.Popen(
+        [sys.executable, "-m", "murmur", "run", str(workspace)],
+        env={**os.environ, "MURMUR_FAKE_CODEX_MODE": "hang"},
+        start_new_session=True,
+    )
+    time.sleep(1)
+    os.kill(proc.pid, signal.SIGSTOP)  # stands in for a VM freeze of the launcher
+    time.sleep(15)
+    os.kill(proc.pid, signal.SIGCONT)
+    assert proc.wait(timeout=30) == EXIT_CAPPED
+    record = json.loads((workspace / "logs" / "run.json").read_text())
+    assert record["capped"] and record["seconds"] >= 18
+    assert record["stalled_seconds"] >= 10 and record["active_seconds"] < 8
