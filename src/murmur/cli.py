@@ -2,6 +2,7 @@
 
   murmur setup BRIEF [--repo DIR] [--peers N | --solo] [--setup CMD]... [options]
   murmur run WORKSPACE
+  murmur doctor [--repo DIR] [--model M] [--into DIR] [--solo] [--config FILE]
 
 `setup` builds an isolated workspace for one run. Setup commands run once in the
 first clone; the other clones are copy-on-write copies of that tree. `run`
@@ -32,6 +33,7 @@ from pathlib import Path
 from string import Template
 from typing import NoReturn
 
+from murmur import doctor, tokens
 from murmur.cow import CowCopyError, cow_copy
 from murmur.procutil import (
     install_interrupt_handlers,
@@ -1029,6 +1031,9 @@ def run(args: argparse.Namespace) -> None:
         lock = _take_run_lock(ws, meta_path)
         if (ws / "logs" / "run.json").exists():
             fail(f"{ws.name} has already run; set up a new workspace")
+        if problem := doctor.preflight(ws / "codex-home"):
+            fail(f"{problem.name}: {problem.detail}; fix: {problem.hint} "
+                 "(`murmur doctor` runs every check)")
         injected = shell_env(ws)
         cmd = codex_command(ws, meta, injected)
         env = {**os.environ, **injected, "CODEX_HOME": str(ws / "codex-home")}
@@ -1064,6 +1069,8 @@ def run(args: argparse.Namespace) -> None:
         exit_code, diagnostic = _choose_exit(capped, interrupted, codex_exit, delivered)
         if delivered is False and drafts:
             diagnostic += f"; unmerged draft branches in {origin}: {', '.join(drafts)}"
+        usage = tokens.run_usage(ws, solo=meta["mode"] == "solo",
+                                 order=[agent["id"] for agent in meta.get("agents", [])])
         record = {
             "started_at": started_at,
             "ended_at": now(),
@@ -1079,6 +1086,7 @@ def run(args: argparse.Namespace) -> None:
             "delivered": delivered,
             "drafts": drafts,
             "diagnostic": diagnostic,
+            "tokens": usage,
         }
         # Written whole and renamed into place, so `status` never reads half a record.
         partial = ws / "logs" / "run.json.partial"
@@ -1087,6 +1095,7 @@ def run(args: argparse.Namespace) -> None:
         label = "capped" if capped else "interrupted" if interrupted else f"exit {codex_exit}"
         suffix = f", {commits} new commit(s)" if commits is not None else ""
         print(f"{ws.name}: {meta['mode']} finished in {elapsed / 60:.1f} min ({label}){suffix}")
+        print("\n".join(tokens.summary_lines(usage)))
         if exit_code != EXIT_OK:
             print(f"murmur: {diagnostic}", file=sys.stderr)
             print(f"murmur: log: {log_err}", file=sys.stderr)
@@ -1108,6 +1117,24 @@ def run(args: argparse.Namespace) -> None:
         if lock is not None:
             _drop_run_lock(lock)
         restore_interrupt_handlers(previous)
+
+
+def doctor_command(args: argparse.Namespace) -> None:
+    config = {}
+    if args.config:
+        config_path = Path(args.config).expanduser().resolve()
+        try:
+            config = tomllib.loads(config_path.read_text())
+        except (OSError, tomllib.TOMLDecodeError) as exc:
+            fail(f"cannot read {config_path}: {exc}")
+        if "repo" in config:
+            config["repo"] = str((config_path.parent / str(config["repo"])).resolve())
+    model = args.model or config.get("model") or DEFAULTS["model"]
+    repo = Path(args.repo or config.get("repo") or ".").expanduser().resolve()
+    checks = doctor.run_checks(model=str(model), repo=repo, into=Path(args.into).expanduser().resolve(),
+                               codex_home=user_codex_home(), solo=args.solo)
+    print("\n".join(doctor.report(checks)))
+    raise SystemExit(1 if any(check.status == "fail" for check in checks) else EXIT_OK)
 
 
 def main() -> None:
@@ -1144,6 +1171,14 @@ def main() -> None:
     p_run = commands.add_parser("run", help="run the Codex session for a workspace")
     p_run.add_argument("workspace")
     p_run.set_defaults(func=run)
+
+    p_doctor = commands.add_parser("doctor", help="check that Codex, git and the workspace disk are ready")
+    p_doctor.add_argument("--repo", help="repo or folder you will run on (default: current)")
+    p_doctor.add_argument("--model", help=f"model to look for (default: {DEFAULTS['model']})")
+    p_doctor.add_argument("--into", default="~/.murmur/runs", help="where workspaces will go")
+    p_doctor.add_argument("--solo", action="store_true", help="skip the swarm-only feature check")
+    p_doctor.add_argument("--config", help="setup TOML to read `model` and `repo` from")
+    p_doctor.set_defaults(func=doctor_command)
 
     args = parser.parse_args()
     try:

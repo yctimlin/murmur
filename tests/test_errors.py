@@ -83,7 +83,7 @@ def test_unknown_config_key_end_to_end(tmp_path: Path):
 
 def test_unparseable_user_codex_config(tmp_path: Path):
     codex_home = tmp_path / "home" / ".codex"
-    codex_home.mkdir(parents=True)
+    codex_home.mkdir(parents=True, exist_ok=True)
     (codex_home / "config.toml").write_text("model_provider =\n")
     result = _setup(tmp_path, "--solo")
     _launcher_error(result, "cannot read Codex's config")

@@ -19,6 +19,9 @@ def isolated_env(tmp_path, monkeypatch):
     tmp = tmp_path / "tmp"
     home.mkdir()
     tmp.mkdir()
+    # A stand-in login, so `murmur run`'s preflight auth check passes. It holds no key.
+    (home / ".codex").mkdir()
+    (home / ".codex" / "auth.json").write_text("{}\n")
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     codex = bin_dir / "codex"

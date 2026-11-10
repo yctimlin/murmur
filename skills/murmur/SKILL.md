@@ -31,6 +31,7 @@ fetch the result into the user's repo as a branch.
 murmur --help                  # installed? if not: uv tool install --editable <murmur repo>
 codex --version                # needs 0.162 or later (built-in message board)
 codex login status             # see the note below for custom providers
+murmur doctor --repo <repo>    # version, model, swarm features, git, disk, login; a fix per failure
 ```
 
 `codex login status` only knows about OpenAI auth. With a custom `model_provider` that sets
