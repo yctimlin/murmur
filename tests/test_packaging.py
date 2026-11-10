@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-DIST = "murmur-swarm"
+DIST = "codex-swarm"
 
 
 def test_license_file_is_mit():

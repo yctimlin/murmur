@@ -1,5 +1,5 @@
 [project]
-name = "murmur-swarm"
+name = "codex-swarm"
 version = "0.1.1"
 description = "Run a leaderless swarm of Codex agents on one objective"
 readme = "README.md"

@@ -82,6 +82,8 @@ Requires Python 3.11+, git, and Codex CLI 0.162 or later, logged in.
 uv tool install --editable .   # or: pipx install .
 ```
 
+The Python package is named `codex-swarm`, because `murmur` and `murmur-swarm` are already taken on PyPI. The command it installs is still `murmur`.
+
 ## Usage
 
 ```text
