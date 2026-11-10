@@ -67,3 +67,51 @@ def test_empty_catalog_fails_before_writing(tmp_path: Path, monkeypatch, capsys,
     assert exc.value.code == EXIT_LAUNCHER
     assert "returned no models" in capsys.readouterr().err
     assert not dest.exists()
+
+
+def _stub_output(monkeypatch, returncode: int, stdout: str, stderr: str = "") -> None:
+    def fake_run(argv, **kwargs):
+        return subprocess.CompletedProcess(argv, returncode, stdout, stderr)
+
+    monkeypatch.setattr("murmur.cli.subprocess.run", fake_run)
+
+
+def _fails(tmp_path: Path, capsys, model="gpt-6-astra", effort="high", solo=False) -> str:
+    dest = tmp_path / "models.json"
+    with pytest.raises(SystemExit) as exc:
+        write_model_catalog(dest, model, effort, solo=solo)
+    assert exc.value.code == EXIT_LAUNCHER
+    assert not dest.exists()
+    return capsys.readouterr().err
+
+
+def test_failing_codex_debug_models_is_a_launcher_error(tmp_path: Path, monkeypatch, capsys):
+    _stub_output(monkeypatch, 5, "", "warning: x\nerror: not logged in\n")
+    assert "`codex debug models` failed (5): error: not logged in" in _fails(tmp_path, capsys)
+
+
+def test_non_json_catalog_is_a_launcher_error(tmp_path: Path, monkeypatch, capsys):
+    _stub_output(monkeypatch, 0, "Usage: codex debug ...\n")
+    assert "did not print JSON" in _fails(tmp_path, capsys)
+
+
+def test_swarm_model_missing_from_catalog_fails(tmp_path: Path, monkeypatch, capsys):
+    _stub_models(monkeypatch, [{"slug": "gpt-6-astra"}, {"slug": "gpt-6-sol"}])
+    err = _fails(tmp_path, capsys, model="nosuchmodel")
+    assert "'nosuchmodel' is not in Codex's model catalog" in err
+    assert "gpt-6-astra, gpt-6-sol" in err
+
+
+def test_solo_model_missing_from_catalog_warns(tmp_path: Path, monkeypatch, capsys):
+    _stub_models(monkeypatch, [{"slug": "gpt-6-astra", "multi_agent_version": "v2"}])
+    dest = tmp_path / "models.json"
+    write_model_catalog(dest, "nosuchmodel", "high", solo=True)
+    assert "'nosuchmodel' is not in Codex's model catalog" in capsys.readouterr().err
+    assert json.loads(dest.read_text())["models"][0]["multi_agent_version"] is None
+
+
+def test_effort_the_model_does_not_support_fails(tmp_path: Path, monkeypatch, capsys):
+    levels = [{"effort": "low"}, {"effort": "high"}]
+    _stub_models(monkeypatch, [{"slug": "gpt-6-astra", "supported_reasoning_levels": levels}])
+    err = _fails(tmp_path, capsys, effort="hgih")
+    assert "gpt-6-astra does not support effort 'hgih'; use one of: low, high" in err
