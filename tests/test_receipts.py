@@ -127,8 +127,12 @@ class Run:
 @pytest.mark.parametrize("script, kind, at_zero, at_one", [
     ("python3 -m unittest -q", "test", "passed", "failed"),
     ("pytest -q > out.txt 2>&1", "test", "passed", "failed"),
-    ("cd pkg && pytest -q", "test", "passed", "failed"),
-    ("(cd pkg && pytest)", "test", "passed", "failed"),
+    ("cd pkg; pytest -q", "test", "passed", "failed"),
+    ("pytest -q # | tail -3", "test", "passed", "failed"),
+    # An earlier command in the chain may be the one that failed, before the check ever ran.
+    ("cd pkg && pytest -q", "test", "passed", "unclear"),
+    ("(cd pkg && pytest)", "test", "passed", "unclear"),
+    ("set -e\ncd pkg\npytest -q", "test", "passed", "unclear"),
     # A later command in the chain may be the one that failed (a rejected push, say).
     ("pytest -q && git commit -m x && git push origin HEAD:main", "test", "passed", "unclear"),
     ("(cd pkg && pytest) && echo ok", "test", "passed", "unclear"),
@@ -141,6 +145,13 @@ class Run:
     ("pytest -q || true", "test", "unclear", "unclear"),
     ("git status || pytest -q", "test", "unclear", "failed"),
     ("if go test ./...; then echo ok; fi", "test", "unclear", "unclear"),
+    ("set -e\nif pytest -q\nthen echo ok\nfi", "test", "unclear", "unclear"),
+    ("! pytest -q", "test", "unclear", "unclear"),  # exit 0 here means the tests failed
+    ("pytest -q &", "test", "unclear", "unclear"),
+    ("pytest -q & wait", "test", "unclear", "unclear"),
+    # `set -e` does not stop for a failure in front of `&&`, so the next line hides it.
+    ("set -e\npytest -q && echo ok\ngit status", "test", "unclear", "unclear"),
+    ("set -e\nset +e\npytest -q\ngit status", "test", "unclear", "unclear"),
     ("PYTHONPATH=src .venv/bin/python -m pytest tests/", "test", "passed", "failed"),
     ("uv run pytest", "test", "passed", "failed"),
     ("timeout 60 npm run test", "test", "passed", "failed"),
@@ -167,6 +178,12 @@ def test_checks_are_recognised(script: str, kind: str, at_zero: str, at_one: str
     "python3 - <<PY\nprint('ok')\nPY\ngit status",
     "python3 wordstats.py --top 3 notes.txt",
     "git push origin HEAD:main",
+    "echo $(pytest -q)",
+    'echo "$(cd pkg && pytest -q)"',
+    "echo `cd pkg && pytest -q`",
+    "diff <(pytest -q) expected.txt",
+    "git status # ; pytest -q",
+    "# pytest -q",
     "",
 ])
 def test_text_that_only_mentions_a_check_is_not_one(script: str):
@@ -317,6 +334,8 @@ def test_session_reader_falls_back_to_plain_tool_calls(tmp_path: Path):
         call("c2", {"command": ["bash", "-lc", "npm test"]}),
         output("c2", "plain text with no status"),
         call("c3", {"cmd": "ruff check ."}),  # never answered
+        call(["not", "an", "id"], {"cmd": "npm run build"}),
+        output({"not": "an id"}, "ignored"),
         {"type": "response_item", "payload": {"type": "function_call", "name": "spawn_agent", "arguments": "{}"}},
     ]
     session = receipts.read_session(_write_rollout(tmp_path, "calls.jsonl", lines), tmp_path)
@@ -490,7 +509,7 @@ def test_checks_go_to_the_commit_they_came_before(tmp_path: Path):
 
 def test_checks_after_the_last_commit_or_on_another_checkout_do_not_grade(tmp_path: Path):
     run = Run(tmp_path)
-    run.command("a1", "git switch -q --detach origin/draft/a2 && python3 -m unittest -q", 1, "FAILED (failures=1)")
+    run.command("a1", "git switch -q --detach origin/draft/a2; python3 -m unittest -q", 1, "FAILED (failures=1)")
     sha = run.commit("a1", "Commit first\n\nVerified: python3 -m unittest -q")
     run.command("a1", "python3 -m unittest -q", 0, "OK")
     run.write()
@@ -752,6 +771,18 @@ def test_unusable_board_and_base_are_warnings(tmp_path: Path):
         document = run.collect()
         assert document["receipts"] == [] and document["run"]["head"] == sha
         assert document["warnings"][0].startswith("murmur.json names no base commit")
+
+
+def test_run_level_text_is_redacted(tmp_path: Path):
+    run = Run(tmp_path)
+    run.write()
+    (run.ws / "logs" / "run.json").write_text(json.dumps(
+        {"exit_code": 4, "diagnostic": f"no work delivered; unmerged draft branches in {run.origin}: draft/a1"}))
+    shutil.rmtree(run.origin)
+    document = run.collect()
+    assert document["run"]["diagnostic"] == (
+        "no work delivered; unmerged draft branches in <workspace>/work/origin.git: draft/a1")
+    assert str(tmp_path) not in receipts.to_json(document)
 
 
 def test_board_rows_that_are_not_posts_are_skipped(tmp_path: Path):

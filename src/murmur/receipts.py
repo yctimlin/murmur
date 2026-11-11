@@ -212,8 +212,25 @@ def _without_heredocs(script: str) -> str:
     return "\n".join(kept)
 
 
+def _group_end(script: str, start: int) -> int:
+    """The index after the `)` that closes the `(` at `start`."""
+    depth = 0
+    for index in range(start, len(script)):
+        if script[index] == "(":
+            depth += 1
+        elif script[index] == ")":
+            depth -= 1
+            if depth == 0:
+                return index + 1
+    return len(script)
+
+
 def _split(script: str) -> list[tuple[str, str]]:
-    """A shell script as (simple command, separator after it), split outside quotes."""
+    """A shell script as (simple command, separator after it), split outside quotes.
+
+    Comments are dropped. `$(...)`, `<(...)`, `>(...)` and backticks stay inside the command
+    that holds them: what runs in there does not decide the script's exit status.
+    """
     script = _without_heredocs(script)
     parts: list[list[str]] = []
     current: list[str] = []
@@ -230,6 +247,11 @@ def _split(script: str) -> list[tuple[str, str]]:
 
     while index < len(script):
         char = script[index]
+        if quote != "'" and script.startswith("$(", index) or not quote and script.startswith(("<(", ">("), index):
+            end = _group_end(script, index + 1)
+            current.append(script[index:end])
+            index = end
+            continue
         if quote:
             if char == "\\" and quote == '"':
                 current.append(script[index:index + 2])
@@ -238,12 +260,16 @@ def _split(script: str) -> list[tuple[str, str]]:
             if char == quote:
                 quote = None
             current.append(char)
-        elif char in "'\"":
+        elif char in "'\"`":
             quote = char
             current.append(char)
         elif char == "\\":
             current.append(script[index:index + 2])
             index += 2
+            continue
+        elif char == "#" and (index == 0 or script[index - 1] in " \t\n;&|()"):
+            end = script.find("\n", index)
+            index = len(script) if end < 0 else end
             continue
         elif char == "&" and (script[index - 1:index] == ">" or script[index + 1:index + 2] == ">"):
             current.append(char)  # a redirection such as 2>&1 or &>file
@@ -287,16 +313,35 @@ def _kind(command: str) -> str | None:
     return next((kind for kind, pattern in _CHECKS if pattern.match(command)), None)
 
 
+_CONDITION = re.compile(r"(?:if|elif|while|until|!)\s")
+_STATEMENT_END = (";", "\n")
+
+
+def _conditional(command: str) -> bool:
+    """Whether the command is a condition (`if pytest`, `! pytest`): its failure is not the script's."""
+    while match := _PREFIX.match(command):
+        if _CONDITION.match(match[0]):
+            return True
+        command = command[match.end():]
+    return False
+
+
 def checks_in(script: str, exit_code: int | None) -> list[tuple[str, str, str, str | None]]:
     """(kind, command, result, checkout) for each test, lint or build command in a shell script.
 
     The result is `passed` or `failed` only when the script's exit status is that check's
-    verdict. Exit 0 says so when everything after the check is joined with `&&`: a pipe
-    (`pytest | tail`), a later command (`pytest; git status`) or `|| true` would hide a
-    failure. A non-zero exit says so only when the check came last, because in
-    `pytest && git push` the push may be what failed. Otherwise the result is `unclear`, or
-    `unknown` when no exit status was recorded. `set -e` and `set -o pipefail` at the top of
-    the script are honoured.
+    verdict, and `unclear` otherwise (`unknown` when no exit status was recorded):
+
+    - Exit 0 says the check passed when everything after it is joined with `&&`. A pipe
+      (`pytest | tail`), a later command (`pytest; git status`), `|| true`, a condition
+      (`if pytest`, `! pytest`) or `&` would hide a failure.
+    - A non-zero exit says the check failed when the check came last and nothing before it
+      could have stopped the script instead: in `pytest && git push` the push may have failed,
+      and in `cd pkg && pytest` the `cd`.
+
+    `set -e` and `set -o pipefail` at the top of the script are honoured, unless the script
+    turns `-e` off again. Under `set -e` a later line still hides a failure of a check that is
+    followed by `&&`, because the shell does not stop for those.
 
     `checkout` is the `git checkout` or `git switch` that came before the check in the same
     script, if any: the check then ran on whatever that command moved to, such as a peer's draft.
@@ -306,12 +351,12 @@ def checks_in(script: str, exit_code: int | None) -> list[tuple[str, str, str, s
         return []
     first = parts[0][0]
     piped = {"|"} if re.match(r"set\s.*pipefail", first) else set()
-    chained = {"&&", *_NEUTRAL, *piped}
-    if re.match(r"set\s+-[A-Za-z]*e", first):
-        chained |= {";", "\n"}
+    errexit = bool(re.match(r"set\s+(?:-[A-Za-z]*e|.*-o\s+errexit)", first)) and not any(
+        re.match(r"set\s+(?:\+[A-Za-z]*e|.*\+o\s+errexit)", text) for text, _separator in parts)
+    chained = {"&&", *_NEUTRAL, *piped, *(_STATEMENT_END if errexit else ())}
     found = []
     checkout = None
-    for index, (command, _separator) in enumerate(parts):
+    for index, (command, own) in enumerate(parts):
         kind = _kind(command)
         if not kind:
             if _moves(command):
@@ -321,10 +366,18 @@ def checks_in(script: str, exit_code: int | None) -> list[tuple[str, str, str, s
         after = [separator for _text, separator in parts[index:-1]]
         if exit_code is None:
             result = "unknown"
+        elif own == "&" or _conditional(command):
+            result = "unclear"
         elif exit_code == 0:
-            result = "passed" if "||" not in before and all(sep in chained for sep in after) else "unclear"
+            own_list = after[:next((at for at, sep in enumerate(after) if sep in _STATEMENT_END), len(after))]
+            swallowed = "&&" in own_list and len(own_list) < len(after)
+            passed = "||" not in before and all(sep in chained for sep in after) and not swallowed
+            result = "passed" if passed else "unclear"
         else:
-            result = "failed" if all(sep in piped or sep in _NEUTRAL for sep in after) else "unclear"
+            last = all(sep in piped or sep in _NEUTRAL for sep in after)
+            stopped_earlier = before[-1:] == ["&&"] or errexit and any(
+                not re.match(r"set\s", text) for text, _separator in parts[:index])
+            result = "failed" if last and not stopped_earlier else "unclear"
         found.append((kind, command, result, checkout))
     return found
 
@@ -448,16 +501,18 @@ def read_session(rollout: Path, ws: Path, solo: bool = False) -> dict:
                     arguments = json.loads(payload.get("arguments") or "{}")
                 except (json.JSONDecodeError, TypeError):
                     arguments = {}
-                if isinstance(arguments, dict):
-                    calls[payload.get("call_id")] = {
+                call_id = payload.get("call_id")
+                if isinstance(arguments, dict) and isinstance(call_id, str):
+                    calls[call_id] = {
                         "kind": "call", "at": at, "line": number,
                         "script": _script(arguments.get("cmd") or arguments.get("command")),
                         "cwd": str(arguments.get("workdir") or arguments.get("cwd") or ""),
                         "exit_code": None, "output": "",
                     }
-                    events.append(calls[payload.get("call_id")])
+                    events.append(calls[call_id])
             elif kind == "response_item" and inner == "function_call_output":
-                call = calls.get(payload.get("call_id"))
+                call_id = payload.get("call_id")
+                call = calls.get(call_id) if isinstance(call_id, str) else None
                 if call:
                     call["exit_code"], call["output"] = _tool_output(payload.get("output"))
                     call["at"] = at or call["at"]
@@ -1014,11 +1069,11 @@ def collect(ws: Path) -> dict:
             "commits_off_main": sum(1 for receipt in receipts.values() if not receipt["on_main"]),
             "finished": bool(record),
             "exit_code": record.get("exit_code"),
-            "diagnostic": record.get("diagnostic"),
+            "diagnostic": redact(record["diagnostic"]) if isinstance(record.get("diagnostic"), str) else None,
         },
         "receipts": list(receipts.values()),
         "agents": agents,
-        "warnings": warnings,
+        "warnings": [redact(warning) for warning in warnings],
     }
 
 
