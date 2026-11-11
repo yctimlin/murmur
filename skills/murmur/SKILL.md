@@ -166,7 +166,8 @@ that touch paths outside the workspace, credential files, `~/.codex` or GitHub.
 |---|---|
 | `murmur.json` | Run settings, base commit, agents, ports |
 | `prompts/` | The exact prompt each agent received |
-| `logs/run.json` | Start, end, duration, `active_seconds`, `stalled_seconds`, exit code, Codex's exit code, capped or interrupted, `commits` (new on `main`), `delivered`, `drafts` (`draft/*` branches left in `origin.git`), `diagnostic` |
+| `hooks/spawn_hook.py` | Swarm only: the Codex hook that starts each peer without the launcher's conversation |
+| `logs/run.json` | Start, end, duration, `active_seconds`, `stalled_seconds`, exit code, Codex's exit code, capped or interrupted, `commits` (new on `main`), `delivered`, `drafts` (`draft/*` branches left in `origin.git`), `diagnostic`, `forked_peers` (peers that started with a copy of the launcher's conversation; should be 0) |
 | `logs/session.jsonl` | The root (or solo) session's event stream |
 | `codex-home/sessions/` | One rollout per agent: commands, edits, tokens |
 | `codex-home/agent_message_board_1.sqlite` | Board posts (`posts` table, plain text) |

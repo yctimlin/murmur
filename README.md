@@ -156,6 +156,10 @@ At the end, `murmur run` prints the tokens the run used, in total and per agent 
 peer): input, of which cached, and output. `logs/run.json` records the same numbers under
 `tokens`, summed from the Codex session logs in `codex-home/sessions/` (`null` when there are none).
 
+Peers are meant to start without the launcher's conversation (see the workarounds below). If the
+session logs show that Codex copied it into a peer anyway, `murmur run` says so on stderr and
+`logs/run.json` counts those peers in `forked_peers`.
+
 ### Plain-folder input
 
 `--repo` may be a folder that is not a git repository. murmur snapshots it into the run's
@@ -213,7 +217,8 @@ Inside the sandbox, pnpm falls back to a store inside the project.
 - Agent shells use Codex's core environment. `ZDOTDIR` is `<workspace>/zdot`, so zsh does not read
   your dotfiles. `HOME` stays your home directory.
 - Each run gets its own `CODEX_HOME` with only your model provider and auth: no plugins, memories,
-  personal instructions or past sessions.
+  personal instructions or past sessions. A swarm's also has one hook, murmur's own (see the
+  workarounds below); your own Codex hooks are not carried over.
 
 This prevents accidents, not a determined agent: the Codex sandbox can still read your disk. For
 strict isolation, run murmur as a separate OS user.
@@ -233,6 +238,14 @@ strict isolation, run murmur as a separate OS user.
   An explicit value is kept. Solo runs do not use the board, so their catalog is left alone.
 - **Multi-Agent V2 allows 4 threads per session, counting the root**, so a fourth peer fails to
   spawn. murmur raises the limit to peers + 1.
+- **`spawn_agent` copies the caller's whole conversation into the new agent** unless the call sets
+  `fork_turns` to `"none"`, and no Codex setting changes that default. Each peer would then carry
+  the launcher's instructions on every request and could take them for its own. The launcher's
+  prompt asks for `"none"`. A model can ignore a prompt, so the swarm's `CODEX_HOME` also registers
+  a `PreToolUse` hook (`<workspace>/hooks/spawn_hook.py`) that rewrites the launcher's
+  `spawn_agent` calls to `fork_turns: "none"`. Codex runs a hook only after its user has approved
+  it, so murmur records that approval for this one hook in the run's `config.toml`. A peer that
+  spawns helpers of its own keeps Codex's default.
 - Sessions start in the workspace's `work/` directory, which is not a repository. That needs
   `--skip-git-repo-check`, and it keeps the repo's own Codex hooks from loading. The shared
   prompt sends every agent to its clone's `AGENTS.md`.

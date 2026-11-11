@@ -39,6 +39,8 @@ def test_prompts_render_with_fixes(tmp_path: Path):
     assert "$MURMUR_AGENT" in peer
     root = render("root.md", n="2", spawns="-", wait_ms=str(ROOT_WAIT_MS))
     assert str(ROOT_WAIT_MS) in root
+    # Peers start without the launcher's context.
+    assert '`fork_turns` set to `"none"`' in root
     # An empty wait result must not leave the root waiting forever.
     assert "receiver_thread_ids=[]" in root and "list_agents" in root
     # The winning draft has to reach main before the swarm finishes.

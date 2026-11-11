@@ -14,19 +14,35 @@ Modes (MURMUR_FAKE_CODEX_MODE):
 Every exec writes Codex-style rollouts with token counts under $CODEX_HOME/sessions: one
 for a solo run, or one for the root plus one per peer (see TOKENS). Set
 MURMUR_FAKE_CODEX_ROLLOUTS=none to write none, or =partial to end each with a half-written
-line. `--version` prints MURMUR_FAKE_CODEX_VERSION (default 0.163.0); `features list` prints
+line.
+
+The root of a swarm calls `spawn_agent` once per peer, the way Codex 0.163 handles it:
+  - The stand-in model sets `fork_turns` to "none" only if the prompt on stdin asks for it.
+    MURMUR_FAKE_CODEX_FORK_TURNS=omit makes it leave the argument out whatever the prompt
+    says, and =all makes it send "all".
+  - Before the call runs, every approved `PreToolUse` hook in $CODEX_HOME/config.toml whose
+    matcher fits the tool name gets the call on stdin and may replace its arguments. A hook
+    without a matching `trusted_hash` in `hooks.state` is skipped.
+  - Unless the arguments that ran have `fork_turns` "none", the peer's rollout starts with a
+    copy of the root's conversation and names the root in `forked_from_id`.
+$CODEX_HOME/fake_spawns.jsonl records the arguments each call was sent with and ran with.
+
+`--version` prints MURMUR_FAKE_CODEX_VERSION (default 0.163.0); `features list` prints
 the swarm features unless MURMUR_FAKE_CODEX_NO_FEATURES is set.
 MURMUR_FAKE_CODEX_MODELS=fail makes `codex debug models` exit 5.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import re
 import signal
 import subprocess
 import sys
 import time
+import tomllib
 from pathlib import Path
 
 # (input, cached input, output) per session: the root, then peer number n gets n times PEER.
@@ -106,30 +122,111 @@ def _call(name: str, arguments: str) -> str:
     return _event("response_item", {"type": "function_call", "name": name, "arguments": arguments})
 
 
+def _user_message(text: str) -> str:
+    return _event("response_item", {"type": "message", "role": "user",
+                                    "content": [{"type": "input_text", "text": text}]})
+
+
 def _write_rollouts(args: list[str]) -> None:
     style = os.environ.get("MURMUR_FAKE_CODEX_ROLLOUTS", "full")
     if style == "none":
         return
     ws = _workspace(args)
     meta = json.loads((ws / "murmur.json").read_text())
-    sessions = Path(os.environ["CODEX_HOME"]) / "sessions" / "2026" / "11" / "10"
+    home = Path(os.environ["CODEX_HOME"])
+    sessions = home / "sessions" / "2026" / "11" / "10"
     sessions.mkdir(parents=True, exist_ok=True)
+    prompt = sys.stdin.read() if args[-1] == "-" else ""
     rollouts = []
     if meta["mode"] == "solo":
-        rollouts.append(("solo", [_call("exec_command", '{"cmd": "git status"}')], PEER_TOKENS))
+        head = [_event("session_meta", {"id": "solo"})]
+        rollouts.append(("solo", head, [_call("exec_command", '{"cmd": "git status"}')], PEER_TOKENS))
     else:
-        spawn = _call("spawn_agent", json.dumps({"task_name": "a1", "message": "prompts/a1.md"}))
-        rollouts.append(("root", [spawn], ROOT_TOKENS))
+        root_head = [_event("session_meta", {"id": "root", "forked_from_id": None, "source": "exec"}),
+                     _user_message(prompt)]
+        spawns, peers = [], []
         for number, agent in enumerate(meta["agents"], start=1):
+            sent = {"task_name": agent["id"], "message": f"prompts/{agent['id']}.md"}
+            if fork_turns := _model_fork_turns(prompt):
+                sent["fork_turns"] = fork_turns
+            ran = _pre_tool_use(home, "collaborationspawn_agent", sent)
+            with (home / "fake_spawns.jsonl").open("a") as record:
+                record.write(json.dumps({"sent": sent, "ran": ran}) + "\n")
+            spawns.append(_call("spawn_agent", json.dumps(sent)))
+            forked = ran.get("fork_turns", "all") != "none"
+            source = {"subagent": {"thread_spawn": {"parent_thread_id": "root", "depth": 1,
+                                                    "agent_path": f"/root/{agent['id']}"}}}
+            head = [_event("session_meta", {"id": agent["id"], "source": source,
+                                            "forked_from_id": "root" if forked else None})]
+            if forked:
+                head += root_head
             read = _call("exec_command", json.dumps({"cmd": f"cat {ws}/prompts/{agent['id']}.md"}))
-            rollouts.append((agent["id"], [read], tuple(n * number for n in PEER_TOKENS)))
-    for name, calls, tokens in rollouts:
-        lines = [_event("session_meta", {"id": name}), _token_count(tokens, 0.5), *calls,
-                 _token_count(tokens, 1.0)]
+            peers.append((agent["id"], head, [read], tuple(n * number for n in PEER_TOKENS)))
+        rollouts += [("root", root_head, spawns, ROOT_TOKENS), *peers]
+    for name, head, calls, tokens in rollouts:
+        lines = [*head, _token_count(tokens, 0.5), *calls, _token_count(tokens, 1.0)]
         text = "\n".join(lines) + "\n"
         if style == "partial":
             text += _token_count(tokens, 2.0)[:40]
         (sessions / f"rollout-2026-11-10T00-00-00-{name}.jsonl").write_text(text)
+
+
+def _model_fork_turns(prompt: str) -> str | None:
+    """The `fork_turns` the stand-in model sends: what the prompt asks for, unless overridden."""
+    override = os.environ.get("MURMUR_FAKE_CODEX_FORK_TURNS")
+    if override:
+        return None if override == "omit" else override
+    asked = re.search(r'`fork_turns` set to `"(\w+)"`', prompt)
+    return asked[1] if asked else None
+
+
+def _matches(matcher: str | None, tool_name: str) -> bool:
+    """Codex's hook matcher: empty or `*` is all, plain names are exact, the rest is a regex."""
+    if not matcher or matcher == "*":
+        return True
+    if all(ch.isascii() and (ch.isalnum() or ch in "_|") for ch in matcher):
+        return tool_name in matcher.split("|")
+    return re.search(matcher, tool_name) is not None
+
+
+def _trusted_hash(matcher: str | None, hook: dict) -> str:
+    """Codex's `hook_hash` for a PreToolUse command hook (hooks/src/engine/discovery.rs)."""
+    handler = {"type": "command", "command": hook["command"], "timeout": hook.get("timeout", 600),
+               "async": hook.get("async", False)}
+    if hook.get("statusMessage") is not None:
+        handler["statusMessage"] = hook["statusMessage"]
+    identity = {"event_name": "pre_tool_use", "hooks": [handler]}
+    if matcher is not None:
+        identity["matcher"] = matcher
+    canonical = json.dumps(identity, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return f"sha256:{hashlib.sha256(canonical.encode()).hexdigest()}"
+
+
+def _pre_tool_use(home: Path, tool_name: str, tool_input: dict) -> dict:
+    """The arguments a tool call runs with once the approved PreToolUse hooks have seen it."""
+    config_file = home / "config.toml"
+    hooks = tomllib.loads(config_file.read_text()).get("hooks", {})
+    states = hooks.get("state", {})
+    for group_index, group in enumerate(hooks.get("PreToolUse", [])):
+        if not _matches(group.get("matcher"), tool_name):
+            continue
+        for hook_index, hook in enumerate(group.get("hooks", [])):
+            state = states.get(f"{config_file}:pre_tool_use:{group_index}:{hook_index}", {})
+            approved = state.get("trusted_hash") == _trusted_hash(group.get("matcher"), hook)
+            if hook.get("type") != "command" or state.get("enabled") is False or not approved:
+                continue
+            event = {"session_id": "root", "turn_id": "turn-1", "transcript_path": None,
+                     "cwd": os.getcwd(), "hook_event_name": "PreToolUse", "model": "gpt-6-astra",
+                     "permission_mode": "bypassPermissions", "tool_name": tool_name,
+                     "tool_input": tool_input, "tool_use_id": f"call_{tool_input.get('task_name')}"}
+            done = subprocess.run(hook["command"], shell=True, input=json.dumps(event),
+                                  capture_output=True, text=True, timeout=hook.get("timeout", 600))
+            if done.returncode != 0 or not done.stdout.strip():
+                continue
+            answer = json.loads(done.stdout).get("hookSpecificOutput", {})
+            if answer.get("permissionDecision") == "allow" and "updatedInput" in answer:
+                tool_input = answer["updatedInput"]
+    return tool_input
 
 
 def _write_final(args: list[str], text: str | None) -> None:

@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import difflib
 import fcntl
+import hashlib
 import json
 import os
 import re
@@ -210,8 +211,65 @@ def write_model_catalog(path: Path, model: str, effort: str, solo: bool) -> None
     path.write_text(json.dumps(catalog, indent=2) + "\n")
 
 
-def write_codex_home(home: Path, trusted: Path, catalog: Path) -> None:
-    """A minimal CODEX_HOME that carries over only the user's model provider and auth."""
+# Hooks see `spawn_agent` with its tool namespace in front (`collaborationspawn_agent` by
+# default), so the matcher is a regex on the end of the name.
+SPAWN_HOOK_MATCHER = "spawn_agent$"
+SPAWN_HOOK_TIMEOUT_S = 30
+
+
+def hook_trust_hash(event: str, matcher: str, command: str, timeout_s: int) -> str:
+    """The hash Codex records when a user approves a command hook.
+
+    Codex skips a hook from config.toml until `hooks.state` holds this hash for it. It is the
+    SHA-256 of the hook's normalized settings as compact JSON with sorted keys (`hook_hash`
+    in Codex's `hooks/src/engine/discovery.rs`).
+    """
+    identity = {
+        "event_name": event,
+        "matcher": matcher,
+        "hooks": [{"type": "command", "command": command, "timeout": timeout_s, "async": False}],
+    }
+    text = json.dumps(identity, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return "sha256:" + hashlib.sha256(text.encode()).hexdigest()
+
+
+def write_spawn_hook(ws: Path) -> str:
+    """Copy the spawn hook into the workspace and return the command that runs it."""
+    script = ws / "hooks" / "spawn_hook.py"
+    script.parent.mkdir()
+    script.write_text(files("murmur").joinpath("spawn_hook.py").read_text())
+    return shlex.join([sys.executable or "python3", str(script)])
+
+
+def spawn_hook_lines(config: Path, command: str) -> list[str]:
+    """config.toml lines that make Codex run `command` before each `spawn_agent` call.
+
+    Codex has no setting for what a spawned agent inherits, so murmur enforces it with a
+    hook (see spawn_hook.py). murmur wrote the hook, so it also records the approval a user
+    gives in Codex's hook review; no other hook is approved.
+    """
+    key = f"{config}:pre_tool_use:0:0"  # <config file>:<event>:<matcher group>:<hook>
+    trusted = hook_trust_hash("pre_tool_use", SPAWN_HOOK_MATCHER, command, SPAWN_HOOK_TIMEOUT_S)
+    return [
+        "[[hooks.PreToolUse]]",
+        f"matcher = {toml_value(SPAWN_HOOK_MATCHER)}",
+        "",
+        "[[hooks.PreToolUse.hooks]]",
+        'type = "command"',
+        f"command = {toml_value(command)}",
+        f"timeout = {SPAWN_HOOK_TIMEOUT_S}",
+        "",
+        f"[hooks.state.{toml_value(key)}]",
+        f"trusted_hash = {toml_value(trusted)}",
+        "",
+    ]
+
+
+def write_codex_home(home: Path, trusted: Path, catalog: Path, spawn_hook: str | None = None) -> None:
+    """A minimal CODEX_HOME that carries over only the user's model provider and auth.
+
+    `spawn_hook` is the command of a swarm's spawn hook; a solo run has none.
+    """
     source = user_codex_home()
     config_file = source / "config.toml"
     try:
@@ -229,6 +287,8 @@ def write_codex_home(home: Path, trusted: Path, catalog: Path) -> None:
         lines.append("")
     lines += [f"[projects.{toml_value(str(trusted))}]", 'trust_level = "trusted"', ""]
     config = home / "config.toml"
+    if spawn_hook:
+        lines += spawn_hook_lines(config, spawn_hook)
     config.write_text("\n".join(lines))
     config.chmod(0o600)
     auth = source / "auth.json"
@@ -806,7 +866,8 @@ def setup(args: argparse.Namespace) -> None:
         (ws / "gitconfig").write_text(GITCONFIG)
         write_zshenv(ws)
         write_model_catalog(home / "models.json", options["model"], options["effort"], solo)
-        write_codex_home(home, work, home / "models.json")
+        write_codex_home(home, work, home / "models.json",
+                         spawn_hook=None if solo else write_spawn_hook(ws))
         isolated = git_env(ws)
         if folder:
             repo, base = snapshot_folder(folder, work / "input", isolated, options["max_file_mb"])
@@ -1071,6 +1132,7 @@ def run(args: argparse.Namespace) -> None:
             diagnostic += f"; unmerged draft branches in {origin}: {', '.join(drafts)}"
         usage = tokens.run_usage(ws, solo=meta["mode"] == "solo",
                                  order=[agent["id"] for agent in meta.get("agents", [])])
+        forked = tokens.forked_peers(ws)
         record = {
             "started_at": started_at,
             "ended_at": now(),
@@ -1087,6 +1149,7 @@ def run(args: argparse.Namespace) -> None:
             "drafts": drafts,
             "diagnostic": diagnostic,
             "tokens": usage,
+            "forked_peers": forked,
         }
         # Written whole and renamed into place, so `status` never reads half a record.
         partial = ws / "logs" / "run.json.partial"
@@ -1096,6 +1159,10 @@ def run(args: argparse.Namespace) -> None:
         suffix = f", {commits} new commit(s)" if commits is not None else ""
         print(f"{ws.name}: {meta['mode']} finished in {elapsed / 60:.1f} min ({label}){suffix}")
         print("\n".join(tokens.summary_lines(usage)))
+        if forked:
+            print(f"murmur: {forked} peer(s) started with a copy of the launcher's conversation "
+                  "(`spawn_agent` ran without `fork_turns` \"none\"); its instructions were "
+                  "extra input on each of their requests", file=sys.stderr)
         if exit_code != EXIT_OK:
             print(f"murmur: {diagnostic}", file=sys.stderr)
             print(f"murmur: log: {log_err}", file=sys.stderr)

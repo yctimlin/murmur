@@ -83,6 +83,31 @@ def run_usage(ws: Path, solo: bool = False, order: list[str] | None = None) -> d
     return {"total": total, "agents": agents}
 
 
+def forked_peers(ws: Path) -> int:
+    """How many peers began as a copy of the launcher's conversation.
+
+    A rollout opens with its `session_meta`. For a session that `spawn_agent` made, it holds
+    the spawn depth (1 for the launcher's peers) and, when the caller's conversation was
+    copied into the new session, the caller's id as `forked_from_id`.
+    """
+    count = 0
+    for rollout in (ws / "codex-home" / "sessions").rglob("*.jsonl"):
+        events = _events(rollout)
+        try:
+            first = next(events, {})
+        except OSError:
+            continue
+        finally:
+            events.close()
+        meta = first.get("payload") if first.get("type") == "session_meta" else None
+        spawn = meta.get("source") if isinstance(meta, dict) else None
+        for key in ("subagent", "thread_spawn"):
+            spawn = spawn.get(key) if isinstance(spawn, dict) else None
+        if isinstance(spawn, dict) and spawn.get("depth") == 1 and meta.get("forked_from_id"):
+            count += 1
+    return count
+
+
 def describe(usage: dict[str, int]) -> str:
     """One line for a usage dict. Codex counts cached input inside input_tokens."""
     return (f"{usage['input_tokens']:,} input ({usage['cached_input_tokens']:,} cached), "
