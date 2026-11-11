@@ -129,6 +129,15 @@ too when the user wants to see the alternatives. Use it as the PR description, a
 
 ## 5. Review it properly
 
+Start with the change receipts: `murmur run` writes `logs/receipts.md` (and `receipts.json`), and
+`murmur receipts <workspace> [--agent a2] [--json]` prints them, also while the run is going. For
+each commit, on `main` or left on a draft branch, they give who made it, why (commit message,
+what the agent said, board posts naming the commit), what changed, and which test, lint or build
+commands that agent ran before it, with the exit status from the session log. `OBSERVED` is what
+murmur saw; `CLAIMED only` is the agent's word (the `Verified:` line of its commit message);
+`NOT OBSERVED` means no such command was seen. Receipts tell you where to look first. They do not
+replace the review.
+
 Green tests written by the same agents are not acceptance. Review the diff line by line, and for
 UI work, open "How to see it" and look at it: desktop and phone widths, reduced motion, every
 state. Check the result against the plan in `PR.md`. Things the pilot swarm got wrong, which are
@@ -168,6 +177,7 @@ that touch paths outside the workspace, credential files, `~/.codex` or GitHub.
 | `prompts/` | The exact prompt each agent received |
 | `hooks/spawn_hook.py` | Swarm only: the Codex hook that starts each peer without the launcher's conversation |
 | `logs/run.json` | Start, end, duration, `active_seconds`, `stalled_seconds`, exit code, Codex's exit code, capped or interrupted, `commits` (new on `main`), `delivered`, `drafts` (`draft/*` branches left in `origin.git`), `diagnostic`, `forked_peers` (peers that started with a copy of the launcher's conversation; should be 0) |
+| `logs/receipts.md`, `logs/receipts.json` | Change receipts: per commit, who made it, why, what changed and which checks were observed (`murmur receipts <workspace> --write` writes them again) |
 | `logs/session.jsonl` | The root (or solo) session's event stream |
 | `codex-home/sessions/` | One rollout per agent: commands, edits, tokens |
 | `codex-home/agent_message_board_1.sqlite` | Board posts (`posts` table, plain text) |
