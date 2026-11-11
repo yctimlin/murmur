@@ -29,7 +29,7 @@ scale). See [What we have measured](#what-we-have-measured).
   or tightly coupled changes. A single agent scored higher on 5 of the 8 evaluated task runs, and
   the evaluation found no quality gain from the swarm.
 - **Compare on your own task:** `murmur setup --solo` builds the same isolated workspace for one
-  agent, so you can run both and look at the results side by side.
+  agent, so you can run both, and [`murmur replay`](#replay) shows the two runs side by side.
 
 ## How it works
 
@@ -93,6 +93,8 @@ murmur setup BRIEF [--repo DIR] [--base REF] [--peers N | --solo] [--setup CMD].
                    [--into DIR] [--id ID] [--config FILE] [--max-file-mb N]
 murmur run WORKSPACE
 murmur receipts WORKSPACE [--agent ID] [--json] [--write]
+murmur replay WORKSPACE [WORKSPACE_B] [--html FILE] [--play] [--speed N] [--all] [--json]
+                        [--score FILE] [--score-a N] [--score-b N]
 ```
 
 | Option | Default | Notes |
@@ -235,6 +237,97 @@ the result before you share it all the same. The limits to keep in mind:
   inferred.
 - A peer that only reviewed made no commit: its checks are listed under that peer, not on the
   commits it reviewed.
+
+### Replay
+
+```text
+murmur replay WORKSPACE [WORKSPACE_B] [--html FILE] [--play] [--speed N] [--all] [--json]
+                        [--score FILE] [--score-a N] [--score-b N]
+```
+
+`murmur replay` shows what each agent of a run did over time. With two workspaces, typically a
+swarm and a `--solo` run of the same brief, it puts them side by side on one clock:
+
+- **lanes**, one per agent: its turn, each command sorted into read, edit, test, git or other,
+  board and agent tools, board posts, pushes to a draft branch and commits landing on `main`;
+- **time to finish**, **tokens** (input, of which cached, and output, per agent and in total, the
+  numbers `murmur run` reports), commits and lines on `main`, draft branches left, exit code;
+- the **[change receipts](#change-receipts)** of every commit;
+- for two runs, **where each comes out ahead**, wins and losses alike, and a warning when they are
+  not a like-for-like pair: another brief (by its SHA-256, which `setup` records in
+  `murmur.json`), model, effort, base commit, time cap or Codex version.
+
+The default output is text. `--all` lists every tool call instead of the key events, `--play`
+prints the events in clock order (on a terminal, at `--speed` seconds of the run per second, 30 by
+default, without skipping quiet stretches), and `--json` prints the data. `--html FILE` also writes
+one self-contained page with no network access: swimlanes, a scrubber with play, pause and speed,
+token meters that follow the clock, a finish flag per run, the summary and the receipts.
+
+From a real pair on a toy repository (two peers against one agent, same brief, model and base):
+
+```text
+$ murmur replay runs/swarm2 runs/solo2
+murmur replay: swarm2 vs solo2
+[...]
+same task and settings: brief sha256 2c770a27b992, gpt-6-astra/medium, base 5876ffe, cap 15m
+
+  run                          A swarm2                            B solo2
+  mode                         swarm, 2 peers                      solo
+  model / effort               gpt-6-astra / medium                gpt-6-astra / medium
+  finished after (wall clock)  4:26                                1:45                                A took 2.5x as long
+  last change on main          3:52                                1:40
+  launcher clock               266.6 s = 266.6 active + 0 stalled  105.6 s = 105.6 active + 0 stalled
+  input tokens                 1,234,194                           108,013                             A used 11.4x as many
+    of them cached             1,117,184                           88,832
+    not cached                 117,010                             19,181
+  output tokens                11,870                              3,359                               A used 3.5x as many
+  commits on main              4                                   1
+  lines on main                4 files, +194 -8                    4 files, +186 -6
+  draft branches left          draft/a1, draft/a2                  none
+  exit                         0, delivered                        0, delivered
+  quality score                no quality score supplied           no quality score supplied
+
+where each run comes out ahead (only on what is measured above):
+  A swarm2: nothing
+  B solo2: finished sooner (1:45 against 4:26); used fewer input tokens (108,013 against 1,234,194);
+    used fewer output tokens (3,359 against 11,870)
+  not compared: quality: no quality score supplied for both runs
+
+[...]
+A swarm2 (swarm, 2 peers), finished after 4:26: exit 0, delivered
+  root |[cc...cc...cccccccccccccccccccccccccccccccccccccccccccccccccccc]
+  a1   | [r...rcc.c.pp..............p..Dx.t.p.c.p.g...Mp...t.p...]
+  a2   |  [r.rc.p...........t..c.....D.ptt.p..pc.M.......M..t..Mpt..p.]
+B solo2 (solo), finished after 1:45: exit 0, delivered
+  solo |[rg...........t......e..M]
+       0:00                                                         4:26
+[...]
+```
+
+On a task this small one agent was faster and far cheaper, which is what
+[When to use it](#when-to-use-it) says to expect. The whole output and the page are in
+[`docs/demo/`](docs/demo/).
+
+What a replay does and does not claim:
+
+- **No quality verdict.** It prints "no quality score supplied" unless you give one with
+  `--score-a`/`--score-b` or `--score scores.json` (`{"<run id>": 7.5}`). A supplied score is shown
+  with where it came from and is never counted as a win.
+- **One clock, named in the output.** Events sit at the wall-clock times the session logs
+  recorded, counted from each run's first log entry; nothing is stretched or aligned. The
+  launcher's `active_seconds` and `stalled_seconds` are listed as separate facts.
+- **One run against one run.** Runs of the same task vary; a pair shows what happened, not what
+  usually happens.
+- **Kinds are a reading aid.** A command is sorted by its name (`pytest && git push` counts as a
+  test). A test's exit status is graded by the receipts' rule, so `pytest | tail` is shown as
+  "not the check's own".
+- **Read-only and redacted.** Nothing in a workspace is run, checked out or written, and
+  `auth.json` is never opened. Command output is left out; text is shortened, strings that look
+  like credentials are masked and home and workspace paths are replaced. Read a page before you
+  share it all the same. Logs that carry no Codex version are labelled as example data.
+
+[`scripts/timeline_to_replay.py`](scripts/timeline_to_replay.py) turns the published round-4
+forensics timelines into the same view; see [`docs/demo/`](docs/demo/).
 
 ### Plain-folder input
 

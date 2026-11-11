@@ -4,11 +4,14 @@
   murmur run WORKSPACE
   murmur doctor [--repo DIR] [--model M] [--into DIR] [--solo] [--config FILE]
   murmur receipts WORKSPACE [--agent ID] [--json] [--write]
+  murmur replay WORKSPACE [WORKSPACE_B] [--html FILE] [--play] [--speed N] [--all] [--json]
+                [--score FILE] [--score-a N] [--score-b N]
 
 `setup` builds an isolated workspace for one run. Setup commands run once in the
 first clone; the other clones are copy-on-write copies of that tree. `run`
 launches Codex and stops its whole process group on the way out. `receipts` shows,
 for each commit of a run, who made it, why, and which checks were seen to run.
+`replay` shows what each agent did over time, for one run or for two side by side.
 """
 
 from __future__ import annotations
@@ -36,7 +39,7 @@ from pathlib import Path
 from string import Template
 from typing import NoReturn
 
-from murmur import doctor, receipts, tokens
+from murmur import doctor, receipts, replay, tokens
 from murmur.cow import CowCopyError, cow_copy
 from murmur.procutil import (
     install_interrupt_handlers,
@@ -918,6 +921,8 @@ def setup(args: argparse.Namespace) -> None:
             "mode": "solo" if solo else "swarm",
             "peers": len(ids),
             "brief": str(brief_file),
+            # What the agents were given, so two runs can be checked for having the same task.
+            "brief_sha256": hashlib.sha256(brief.encode()).hexdigest(),
             "repo": str(repo),
             "folder": str(folder) if folder else None,
             "base": base,
@@ -1236,6 +1241,47 @@ def receipts_command(args: argparse.Namespace) -> None:
         print(f"murmur: wrote {written} and {written.with_suffix('.md')}", file=sys.stderr)
 
 
+def replay_command(args: argparse.Namespace) -> None:
+    if len(args.runs) > 2:
+        fail("replay takes one run, or two to show side by side")
+    if args.speed is not None and not 0 < args.speed < float("inf"):
+        fail("--speed must be a number greater than 0")
+    try:
+        runs = [run for path in args.runs for run in replay.load(Path(path).expanduser().resolve())]
+        scores = replay.read_scores(Path(args.score).expanduser()) if args.score else {}
+        for flag, value, index in (("--score-a", args.score_a, 0), ("--score-b", args.score_b, 1)):
+            if value is None:
+                continue
+            if index >= len(runs):
+                fail(f"{flag} needs a second run")
+            # By position, not by id: two workspaces may share an id. A flag wins over the file.
+            runs[index] = {**runs[index], "score": replay.score(value, f"supplied with {flag}")}
+            scores.pop(runs[index]["id"], None)
+        document = replay.build(runs, scores)
+    except replay.ReplayError as exc:
+        fail(str(exc))
+    if args.speed is not None:
+        document["speed"] = args.speed
+    if args.html:
+        out = Path(args.html).expanduser().resolve()
+        partial = out.with_name(f".{out.name}.partial")
+        partial.write_text(replay.render_html(document), encoding="utf-8")
+        partial.replace(out)
+    try:
+        if args.json:
+            sys.stdout.write(replay.to_json(document))
+        elif args.play:
+            replay.play(document, sys.stdout, args.speed or replay.DEFAULT_SPEED, animate=sys.stdout.isatty())
+        elif args.html:
+            print("\n".join(replay.summary_lines(document)))
+        else:
+            sys.stdout.write(replay.render_text(document, every=args.all))
+    except KeyboardInterrupt:
+        raise SystemExit(EXIT_INTERRUPTED) from None
+    if args.html:
+        print(f"murmur: wrote {out}", file=sys.stderr)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="murmur", description=__doc__.split("\n\n")[0])
     commands = parser.add_subparsers(dest="command", required=True)
@@ -1287,6 +1333,26 @@ def main() -> None:
     p_receipts.add_argument("--write", action="store_true",
                             help="also (re)write logs/receipts.json and logs/receipts.md")
     p_receipts.set_defaults(func=receipts_command)
+
+    p_replay = commands.add_parser(
+        "replay", help="show what each agent of a run did over time, or two runs side by side",
+        description="Replay one run, or two runs of the same task (say a swarm and a --solo run) side by "
+                    "side on one clock: who did what and when, tokens, commits and change receipts. "
+                    "Nothing in a run is changed, and no quality is claimed unless you supply a score.")
+    p_replay.add_argument("runs", nargs="+", metavar="WORKSPACE",
+                          help="one workspace, or two to compare (a replay saved with --json also works)")
+    p_replay.add_argument("--html", metavar="FILE", help="also write the replay as one self-contained HTML page")
+    p_replay.add_argument("--play", action="store_true",
+                          help="print every event in clock order; on a terminal, at --speed")
+    p_replay.add_argument("--speed", type=float, metavar="N",
+                          help=f"seconds of the run per second of playback (default: {replay.DEFAULT_SPEED:g})")
+    p_replay.add_argument("--all", action="store_true", help="list every tool call, not only the key events")
+    p_replay.add_argument("--json", action="store_true", help="print the replay as JSON")
+    p_replay.add_argument("--score", metavar="FILE",
+                          help='JSON file of quality scores by run id, e.g. {"run1": 7.5}')
+    p_replay.add_argument("--score-a", type=float, metavar="N", help="quality score of the first run")
+    p_replay.add_argument("--score-b", type=float, metavar="N", help="quality score of the second run")
+    p_replay.set_defaults(func=replay_command)
 
     args = parser.parse_args()
     try:

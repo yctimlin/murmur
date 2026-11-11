@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<title>murmur replay</title>
+<style>
+:root {
+  --bg: #fbfbfa; --panel: #ffffff; --ink: #1c2024; --dim: #626b76; --line: #dcdfe3; --band: #eef1f4;
+  --a: #0b7285; --b: #a61e4d; --warn-bg: #fff4d6; --warn-ink: #6b4a00; --ok-bg: #e7f5ec; --ok-ink: #1d5a36;
+  --test: #2e9e5b; --edit: #2f7ed8; --git: #8a5cd0; --coord: #e08a1c; --run: #56616e; --read: #a9b3bd;
+  --main: #d4a106; --bad: #c92a2a;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14171a; --panel: #1c2024; --ink: #e6e8ea; --dim: #9aa4af; --line: #343a41; --band: #262b31;
+    --a: #4fc3d6; --b: #f277a1; --warn-bg: #3d3212; --warn-ink: #f4d58a; --ok-bg: #173323; --ok-ink: #9ad9b4;
+    --read: #5b6570; --run: #8d98a5;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 1180px; margin: 0 auto; padding: 18px 18px 48px; }
+h1 { font-size: 20px; margin: 0 0 4px; }
+h2 { font-size: 14px; margin: 26px 0 8px; text-transform: uppercase; letter-spacing: .05em; color: var(--dim); }
+p { margin: 4px 0; }
+.dim { color: var(--dim); }
+.mono, pre, code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.tag { display: inline-block; min-width: 20px; padding: 0 6px; border-radius: 4px; color: #fff; font-weight: 700;
+  text-align: center; }
+.tag.A { background: var(--a); } .tag.B { background: var(--b); }
+@media (prefers-color-scheme: dark) { .tag { color: #111; } }
+.box { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); padding: 10px 14px; margin: 10px 0; }
+.box.warn { background: var(--warn-bg); color: var(--warn-ink); border-color: transparent; }
+.box.ok { background: var(--ok-bg); color: var(--ok-ink); border-color: transparent; }
+.box.example { background: var(--bad); color: #fff; border-color: transparent; font-weight: 700; }
+.box ul { margin: 4px 0 0; padding-left: 20px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+.card { border: 1px solid var(--line); border-top: 4px solid var(--line); border-radius: 8px; background: var(--panel);
+  padding: 10px 14px; }
+.card.A { border-top-color: var(--a); } .card.B { border-top-color: var(--b); }
+.card h3 { margin: 0 0 8px; font-size: 15px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 14px; }
+.stat b { display: block; font-size: 18px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.stat span { color: var(--dim); font-size: 12px; }
+.stat.small b { font-size: 14px; font-weight: 600; }
+table { border-collapse: collapse; width: 100%; }
+td, th { text-align: left; padding: 3px 12px 3px 0; vertical-align: top; border-bottom: 1px solid var(--line); }
+th { color: var(--dim); font-weight: 600; }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 8px 0; }
+button, select { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 6px; padding: 4px 12px; cursor: pointer; }
+button#play { min-width: 76px; font-weight: 700; }
+input[type=range] { flex: 1 1 260px; min-width: 160px; accent-color: var(--a); }
+#now { font-variant-numeric: tabular-nums; min-width: 110px; }
+.run { margin: 12px 0 4px; }
+.runhead { margin-bottom: 3px; }
+.lane { display: flex; align-items: stretch; height: 30px; }
+.who { flex: 0 0 64px; font-size: 12px; line-height: 30px; color: var(--dim); overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; }
+.track { position: relative; flex: 1 1 auto; border-bottom: 1px solid var(--line); overflow: hidden; }
+.turn { position: absolute; top: 3px; bottom: 3px; background: var(--band); border-radius: 3px; }
+.ev { position: absolute; bottom: 4px; height: 11px; min-width: 3px; border-radius: 2px; cursor: pointer; }
+.ev.test { background: var(--test); } .ev.edit { background: var(--edit); } .ev.git { background: var(--git); }
+.ev.coord { background: var(--coord); opacity: .55; height: 4px; bottom: 4px; } .ev.run { background: var(--run); }
+.ev.read { background: var(--read); } .ev.failed { outline: 2px solid var(--bad); }
+.pt { position: absolute; top: 3px; width: 9px; height: 9px; margin-left: -4px; cursor: pointer; }
+.pt.post { border-radius: 50%; background: var(--coord); }
+.pt.main { background: var(--main); transform: rotate(45deg); outline: 1px solid var(--ink); z-index: 2; }
+.pt.draft { border: 2px solid var(--main); transform: rotate(45deg); }
+.pt.commit { border: 2px solid var(--git); }
+.pt.turn_start, .pt.turn_end { top: 2px; width: 3px; height: 26px; margin-left: -1px; background: var(--dim); }
+.pt.error { background: var(--bad); }
+.future { opacity: .12; }
+.cursor { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--ink); opacity: .55;
+  pointer-events: none; z-index: 3; }
+.finish { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px dashed var(--bad); pointer-events: none; }
+.flagrow { position: relative; height: 18px; margin-left: 64px; }
+.flag { position: absolute; top: 0; font-size: 12px; font-weight: 700; color: var(--bad); white-space: nowrap;
+  padding-left: 5px; border-left: 2px solid var(--bad); }
+.flag.left { transform: translateX(-100%); border-left: 0; border-right: 2px solid var(--bad); padding: 0 5px 0 0; }
+.axis { position: relative; height: 18px; margin-left: 64px; font-size: 11px; color: var(--dim); }
+.axis span { position: absolute; top: 2px; padding-left: 3px; border-left: 1px solid var(--line); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--dim); margin: 6px 0; }
+.legend i { display: inline-block; position: static !important; width: 10px; height: 10px !important;
+  margin: 0 5px 0 0 !important; vertical-align: -1px; }
+.legend i.turn_start, .legend i.turn_end { width: 3px; }
+#detail { min-height: 44px; font-size: 13px; }
+.meter { display: grid; grid-template-columns: 150px 1fr; gap: 4px 12px; align-items: center; margin: 6px 0; }
+.bar { position: relative; height: 16px; background: var(--band); border-radius: 4px; overflow: hidden; }
+.bar i { position: absolute; left: 0; top: 0; bottom: 0; }
+.bar i.in { opacity: .45; } .bar.A i { background: var(--a); } .bar.B i { background: var(--b); }
+.meter .n { font-variant-numeric: tabular-nums; }
+.agents { grid-column: 2; font-size: 12px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 18px; }
+#log { max-height: 440px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--panel);
+  font-size: 12.5px; }
+.row { display: grid; grid-template-columns: 58px 22px 46px 82px 1fr; gap: 6px; padding: 2px 8px;
+  border-bottom: 1px solid var(--line); }
+.row .tag { align-self: start; }
+.row .t { font-variant-numeric: tabular-nums; color: var(--dim); text-align: right; }
+.row .x { overflow-wrap: anywhere; }
+.row.hidden, .row.off { display: none; }
+details { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); margin: 6px 0; }
+details.future { opacity: .35; }
+summary { cursor: pointer; padding: 6px 10px; overflow-wrap: anywhere; }
+pre { margin: 0; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 12px; overflow-x: auto; }
+.badge { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: 11px; font-weight: 700;
+  border: 1px solid currentColor; }
+.badge.observed-pass { color: var(--test); } .badge.observed-fail { color: var(--bad); }
+.badge.observed-unclear, .badge.claimed { color: var(--coord); } .badge.none, .badge.unavailable { color: var(--dim); }
+footer { margin-top: 28px; font-size: 12.5px; color: var(--dim); }
+footer li { margin: 2px 0; overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<main>
+<h1 id="title">murmur replay</h1>
+<div id="example" class="box example" hidden></div>
+<div id="sources" class="dim"></div>
+<noscript><div class="box warn">This page draws the replay with JavaScript. The data is embedded in this file;
+nothing is fetched from the network.</div></noscript>
+<div id="compat"></div>
+
+<h2>Summary</h2>
+<div id="cards" class="cards"></div>
+<div id="ahead" class="box"></div>
+<details id="tablebox"><summary>All recorded facts, side by side</summary><div style="padding: 4px 12px 10px">
+<table id="table"></table><div id="facts"></div></div></details>
+
+<h2>Timeline</h2>
+<p id="clocknote" class="dim"></p>
+<div class="controls">
+  <button id="play" type="button">Play</button>
+  <label>speed <select id="speed"></select></label>
+  <input id="scrub" type="range" min="0" step="0.1" aria-label="time on the clock">
+  <span id="now" class="mono"></span>
+</div>
+<div id="lanes"></div>
+<div class="axis" id="axis"></div>
+<div class="legend" id="legend"></div>
+<div id="detail" class="box dim">Click a mark in a lane to see what it was.</div>
+
+<h2>Tokens at this point of the clock</h2>
+<p class="dim">Each bar is a run's input tokens so far, on one scale; the darker part was read from the cache.</p>
+<div id="meters"></div>
+
+<div class="cols">
+  <section>
+    <h2>Events</h2>
+    <label class="dim"><input id="every" type="checkbox"> every tool call and message (default: turns, posts, commits, checks)</label>
+    <div id="log"></div>
+  </section>
+  <section>
+    <h2>Change receipts</h2>
+    <p class="dim">Who made each change, why, and which checks were seen to run. OBSERVED means the command and its
+    exit status are in the agent's session log; CLAIMED means only an agent says so.</p>
+    <div id="receipts"></div>
+  </section>
+</div>
+
+<footer id="footer"></footer>
+</main>
+<script>
+const DATA = {"schema":1,"kind":"murmur-replay","generated_at":"2026-11-11T10:01:12Z","title":"swarm2 vs solo2","example":null,"clock_note":"wall-clock time since each run's first session-log entry, as the logs recorded it. Nothing is stretched, compressed or aligned, and time the machine was stalled is included; the launcher's active and stalled totals (logs/run.json) are listed separately.","runs":[{"example":null,"task":null,"peers":2,"model":"gpt-6-astra","effort":"medium","base":"5876ffe1d3277d6a98f5d7025cf74b4414171bf7","cap":"15m","brief":{"sha256":"2c770a27b992b1bbb1b6f3e52324ced3e49b8545d429360b7c8be91fbd2f8bc4","source":"the brief file, which still matches the prompt the agents got"},"codex_versions":["0.163.0"],"launcher":{"seconds":266.6,"active_seconds":266.6,"stalled_seconds":0.0},"tokens":{"total":{"input_tokens":1234194,"cached_input_tokens":1117184,"output_tokens":11870,"total_tokens":1246064},"agents":{"root":{"input_tokens":168582,"cached_input_tokens":115840,"output_tokens":296,"total_tokens":168878},"a1":{"input_tokens":518132,"cached_input_tokens":472832,"output_tokens":5075,"total_tokens":523207},"a2":{"input_tokens":547480,"cached_input_tokens":528512,"output_tokens":6499,"total_tokens":553979}},"source":"the last running total in each Codex session log, summed"},"drafts":["draft/a1","draft/a2"],"score":null,"facts":[],"token_series":{"root":[[5.2,18310,3968,79],[9.6,36720,22144,139],[28.8,55211,26112,174],[31.6,73772,37504,189],[237.3,92402,55808,239],[241.5,111187,74112,254],[259.0,130126,78080,276],[263.3,149230,96896,291],[266.2,168582,115840,296]],"a1":[[9.6,17128,3968,43],[27.8,35983,7936,177],[33.3,56830,24960,251],[43.5,78208,45696,456],[51.4,99820,67072,587],[56.4,121816,88576,695],[119.1,144541,110464,2910],[130.1,169643,135168,3191],[135.5,196130,160384,3296],[142.6,223368,186752,3420],[153.0,253125,213888,3640],[160.2,283463,243712,3747],[166.5,314400,273920,3830],[177.8,345537,304768,3990],[192.5,378549,335872,4528],[199.1,412488,369280,4635],[214.0,446650,403200,4801],[221.8,482054,437376,4971],[237.3,518132,472832,5075]],"a2":[[13.4,17128,16896,43],[21.4,35984,33920,157],[28.4,56837,52736,237],[37.0,78228,73472,388],[84.4,99933,94848,2565],[97.3,124366,118528,2783],[124.6,149210,142976,3578],[132.4,175314,168448,3743],[137.4,202714,194560,3836],[149.0,232208,221824,4079],[159.1,263360,251392,4272],[165.0,294993,282496,4345],[171.6,327755,313984,4504],[207.5,361145,346752,5506],[217.4,395844,380928,5613],[233.0,432401,415616,6104],[241.2,469802,452480,6299],[253.6,508526,489856,6411],[259.0,547480,528512,6499]]},"receipts":[{"sha":"59c70e1","agent":"a2","subject":"Add ranked words and ordered JSON with legacy CLI compatibility","on_main":true,"branches":["main","draft/a2"],"placed_by":"push","files":4,"insertions":154,"deletions":8,"status":"observed-unclear","status_label":"OBSERVED, result unclear","summary":"a test command ran in a2's session log, but its own exit status was not recorded or is hidden by a pipe or a later command","lines":["59c70e1  a2  Add ranked words and ordered JSON with legacy CLI compatibility","  who:      a2 \u003ca2@murmur.local\u003e, on main, pushed to main 08:06:47Z","  why:      said before: \"I’ll inspect the repository guidance and coordinate a distinct","              implementation draft with the peer agent before comparing and integrating the result.\"","            board #findings a2 08:06:08Z (names this commit): \"DRAFT a2 posted 59c70e1 on","              origin/draft/a2. How to see: git checkout draft/a2; python3 -m unittest -q; python3","              wordstats.py README.md --top 5 --json. Capture any clone via python3","              \u003cworkspace\u003e/work/peers/a2/.work/capture....\"","            board #findings a2 08:06:25Z (names this commit): \"RANK a2: 1) a2 59c70e1, 2) a1","              0acd9f5. Ran both drafts' 10-test suites and real CLI captures across populated/empty,","              default/top/json/combined/zero/negative. Outputs agree. a2 wins exact original","              no-flags usage response,...\"","            board #findings a1 08:06:29Z (names this commit): \"RANK a1: 1) a2 59c70e1, 2) a1","              0acd9f5. Ran both via shared real-CLI capture (12 populated/empty cases), both 10-test","              suites; reviewed sources. a2 preserves exact no-flag usage as required and bounded","              selection avoids ful...\"","            board #findings a2 08:06:47Z (names this commit): \"DONE winner integrated: 59c70e1 now","              origin/main (fast-forward, no force). Both peers ranked a2 first. a1 can pull and add","              claimed regression tests. a2 preparing first PR section shared plan plus","              comparison/decisions, and...\"","  change:   5876ffe -\u003e 59c70e1, 4 files, +154 -8: PR.md, README.md, test_wordstats.py, wordstats.py","  verified: OBSERVED, result unclear: a test command ran in a2's session log, but its own exit","              status was not recorded or is hidden by a pipe or a later command","            ?    exit 0  python3 -m unittest -q  (the whole command line's status, not this check's own)","                 test, before the commit, 08:05:20Z, in work/peers/a2 [...9fafc7705a04.jsonl:40]","                 | [...]","                 | Ran 10 tests in 0.006s","                 | OK","            ?    exit 0  python3 -m unittest -q  (the whole command line's status, not this check's own)","                 test, in the commit command, 08:06:00Z, in work/peers/a2 [...9fafc7705a04.jsonl:53]","                 | [...]","                 | Ran 10 tests in 0.008s","                 | OK","            claim (commit message): \"Verified: python3 -m unittest -q — 10 tests passed\"","            claim (board post by a2 at 08:06:08Z, quoted above)"],"t":170.6},{"sha":"c41f7f9","agent":"a1","subject":"Cover tokenization, tied cutoffs and CLI argument placement","on_main":true,"branches":["main"],"placed_by":"push","files":1,"insertions":17,"deletions":0,"status":"observed-pass","status_label":"OBSERVED, passed","summary":"the last test run with an exit status of its own in a1's session log exited 0","lines":["c41f7f9  a1  Cover tokenization, tied cutoffs and CLI argument placement","  who:      a1 \u003ca1@murmur.local\u003e, on main, pushed to main 08:07:08Z","  why:      said before: \"Both peers chose the compatibility-focused draft. Its output matches the","              new features while retaining the original no-flag usage errors. I’m adding a few","              regression checks around tokenization and argument placement, then reviewing the","              integrated result.\"","            board #findings a1 08:06:06Z (before the commit, linked by time): \"DRAFT a1 ready on","              draft/a1: conventional single argparse parser, 10 tests passing. How to see: git fetch","              origin; inspect/run origin/draft/a1 in own clone; python3 wordstats.py README.md","              [--top 5] [--json]. Main tradeoff:...\"","            board #tasks a1 08:06:29Z (before the commit, linked by time): \"CLAIM a1 post-selection","              test strengthening: test existing apostrophe/punctuation tokenization through","              top_words, oversized CLI limit, and flag placement before FILE (currently tests only","              after). Will wait until winner in...\"","            board #tasks a1 08:06:42Z (before the commit, linked by time): \"a1 agrees with a2","              proposed post-selection simplification from heapq to sorted(... )[:n]; small scope","              favors clarity, no scale requirement. a2 please own production change and PR","              plan/comparison; I own test strengthening...\"","            board #findings a1 08:07:15Z (names this commit): \"DONE a1 test improvements integrated","              c41f7f9 on origin/main: tokenizer apostrophe/punctuation regression, alphabetic tie","              cutoff, oversized CLI N, flags before filename containing spaces. python3 -m unittest","              -q: 13 pass....\"","  change:   59c70e1 -\u003e c41f7f9, 1 file, +17 -0: test_wordstats.py","  verified: OBSERVED, passed: the last test run with an exit status of its own in a1's session log","              exited 0","            ok   exit 0  python3 -m unittest -q","                 test, before the commit, 08:06:18Z, in work/peers/a1 [...4bad01408b03.jsonl:71]","                 run after `git switch --detach origin/draft/a2` in the same command line: another checkout (not counted)","                 | [...]","                 | Ran 10 tests in 0.005s","                 | OK","            ok   exit 0  python3 -m unittest -q","                 test, in the commit command, 08:07:08Z, in work/peers/a1 [...4bad01408b03.jsonl:106]","                 | [...]","                 | Ran 13 tests in 0.008s","                 | OK","            ok   exit 0  python3 -m unittest -q","                 test, after the commit (not counted), 08:07:30Z, in work/peers/a1 [...4bad01408b03.jsonl:117]","                 | [...]","                 | Ran 13 tests in 0.006s","                 | OK","            claim (commit message): \"Verified: python3 -m unittest -q; 13 tests passed\"","            claim (board post by a1 at 08:07:15Z, quoted above)"],"t":191.6},{"sha":"76cf4f0","agent":"a2","subject":"Document chosen plan and simplify ranked selection","on_main":true,"branches":["main"],"placed_by":"push","files":2,"insertions":52,"deletions":32,"status":"observed-unclear","status_label":"OBSERVED, result unclear","summary":"a test command ran in a2's session log, but its own exit status was not recorded or is hidden by a pipe or a later command","lines":["76cf4f0  a2  Document chosen plan and simplify ranked selection","  who:      a2 \u003ca2@murmur.local\u003e, on main, pushed to main 08:07:23Z","  why:      said before: \"Both drafts produce the requested output and pass their tests. The main","              difference is compatibility: my draft also preserves the original usage-error","              response. I’m comparing the remaining edge cases before integrating the selected","              draft.\"","            board #tasks a2 08:06:35Z (before the commit, linked by time): \"Proposed shared plan","              once winner selected: preserve a2 legacy no-flags routing; common row pipeline","              alphabetical without --top and ranked with it; ordered JSON from same rows. a2 owns","              main integration, PR plan/decisions/...\"","            board #findings a1 08:07:38Z (names this commit): \"REVIEW a1 latest main 76cf4f0: pulled","              final production/PR changes; 13 unit tests pass, shared real-process capture confirms","              all 12 populated/empty default/top/json/combined/zero/negative states, git diff","              --check clean. R...\"","            board #findings a2 08:07:49Z (names this commit): \"REVIEW a2 latest main 76cf4f0: pulled","              integrated a1 tests; all 13 tests pass, git diff --check clean, all 12 real-CLI","              capture states correct. Reviewed ordering, legacy errors,","              empty/zero/oversized/negative limits, tied c...\"","            board #findings a2 08:08:09Z (names this commit): \"DONE a2 final receipt: latest main","              a0554f0 pulled and reviewed; 13 tests pass, git diff --check clean, HEAD equals","              origin/main. This last commit only records validation, production remains","              peer-reviewed 76cf4f0. Requeste...\"","  change:   c41f7f9 -\u003e 76cf4f0, 2 files, +52 -32: PR.md, wordstats.py","  verified: OBSERVED, result unclear: a test command ran in a2's session log, but its own exit","              status was not recorded or is hidden by a pipe or a later command","            ?    exit 0  python3 -m unittest -q  (the whole command line's status, not this check's own)","                 test, before the commit, 08:06:13Z, in work/peers/a2 [...9fafc7705a04.jsonl:64]","                 run after `git checkout --detach origin/draft/a1` in the same command line: another checkout (not counted)","                 | [...]","                 | Ran 10 tests in 0.008s","                 | OK","            ?    exit 0  python3 -m unittest -q  (the whole command line's status, not this check's own)","                 test, in the commit command, 08:07:23Z, in work/peers/a2 [...9fafc7705a04.jsonl:97]","                 | [...]","                 | Ran 10 tests in 0.022s","                 | OK","            (tied to this commit by its author time, not by its SHA: inferred)","            claim (commit message): \"Verified: python3 -m unittest -q — 10 tests passed\"","            claim (board post by a1 at 08:07:38Z, quoted above)","            claim (board post by a2 at 08:07:49Z, quoted above)","            claim (board post by a2 at 08:08:09Z, quoted above)"],"t":206.6},{"sha":"a0554f0","agent":"a2","subject":"Record integrated validation results","on_main":true,"branches":["main"],"placed_by":"push","files":1,"insertions":4,"deletions":1,"status":"observed-unclear","status_label":"OBSERVED, result unclear","summary":"a test command ran in a2's session log, but its own exit status was not recorded or is hidden by a pipe or a later command","lines":["a0554f0  a2  Record integrated validation results","  who:      a2 \u003ca2@murmur.local\u003e, on main, pushed to main 08:07:49Z","  why:      board #findings a2 08:07:23Z (before the commit, linked by time): \"DONE a2 shared","              plan/comparison and simplified sort/slice integrated on origin/main. PR.md first","              section now describes agreed interface, owners, compatibility seam. a1 owns test","              additions; I will pull and review full fina...\"","            board #findings a2 08:08:09Z (names this commit): \"DONE a2 final receipt: latest main","              a0554f0 pulled and reviewed; 13 tests pass, git diff --check clean, HEAD equals","              origin/main. This last commit only records validation, production remains","              peer-reviewed 76cf4f0. Requeste...\"","  change:   76cf4f0 -\u003e a0554f0, 1 file, +4 -1: PR.md","  verified: OBSERVED, result unclear: a test command ran in a2's session log, but its own exit","              status was not recorded or is hidden by a pipe or a later command","            ?    exit 0  python3 -m unittest -q  (the whole command line's status, not this check's own)","                 test, before the commit, 08:07:33Z, in work/peers/a2 [...9fafc7705a04.jsonl:104]","                 | [...]","                 | Ran 13 tests in 0.006s","                 | OK","            ?    exit 0  python3 -m unittest -q  (the whole command line's status, not this check's own)","                 test, in the commit command, 08:07:49Z, in work/peers/a2 [...9fafc7705a04.jsonl:111]","                 | [...]","                 | Ran 13 tests in 0.006s","                 | OK","            ?    exit 0  python3 -m unittest -q  (the whole command line's status, not this check's own)","                 test, after the commit (not counted), 08:07:57Z, in work/peers/a2 [...9fafc7705a04.jsonl:120]","                 | [...]","                 | Ran 13 tests in 0.006s","                 | OK","            claim (commit message): \"Verified: python3 -m unittest -q — 13 tests passed\"","            claim (board post by a2 at 08:08:09Z, quoted above)"],"t":232.6},{"sha":"0acd9f5","agent":"a1","subject":"Add ranked words and JSON output draft","on_main":false,"branches":["draft/a1"],"placed_by":"push","files":4,"insertions":146,"deletions":11,"status":"observed-pass","status_label":"OBSERVED, passed","summary":"the last test run with an exit status of its own in a1's session log exited 0","lines":["0acd9f5  a1  Add ranked words and JSON output draft","  who:      a1 \u003ca1@murmur.local\u003e, on draft/a1, pushed to draft/a1 08:06:06Z","  why:      said before: \"The draft now passes tests for ranking, ties, JSON ordering, and empty or","              invalid limits. I’m comparing the simpler parser against the peer’s","              compatibility-focused draft before selecting the version to integrate.\"","            board #findings a1 08:04:52Z (before the commit, linked by time): \"FACT a1 baseline:","              AGENTS.md requires Python 3.11+, stdlib only, python3 -m unittest -q before every","              commit; existing CLI prints alphabetical rows and main returns 2 for wrong argument","              count. Existing tokenizer is ASCII l...\"","            board #tasks a1 08:05:55Z (before the commit, linked by time): \"a1 saw earlier a2 claim;","              revise my direction to simplest conventional argparse parser for all invocations,","              avoiding dual parse paths, with helpful validation and --help. No-flags successful","              output remains exact; invalid...\"","            board #findings a2 08:06:25Z (names this commit): \"RANK a2: 1) a2 59c70e1, 2) a1","              0acd9f5. Ran both drafts' 10-test suites and real CLI captures across populated/empty,","              default/top/json/combined/zero/negative. Outputs agree. a2 wins exact original","              no-flags usage response,...\"","            board #findings a1 08:06:29Z (names this commit): \"RANK a1: 1) a2 59c70e1, 2) a1","              0acd9f5. Ran both via shared real-CLI capture (12 populated/empty cases), both 10-test","              suites; reviewed sources. a2 preserves exact no-flag usage as required and bounded","              selection avoids ful...\"","  change:   5876ffe -\u003e 0acd9f5, 4 files, +146 -11: PR.md, README.md, test_wordstats.py, wordstats.py","  verified: OBSERVED, passed: the last test run with an exit status of its own in a1's session log","              exited 0","            ok   exit 0  python3 -m unittest -q","                 test, before the commit, 08:05:55Z, in work/peers/a1 [...4bad01408b03.jsonl:48]","                 | [...]","                 | Ran 10 tests in 0.006s","                 | OK","            claim (commit message): \"Verified: python3 -m unittest -q; 10 tests passed\""],"t":129.6}],"receipts_note":null,"warnings":[],"id":"swarm2","source":{"kind":"workspace","description":"a murmur workspace: Codex session logs, the message board, origin.git and logs/run.json","files":["murmur.json","logs/run.json","codex-home/sessions (3 rollouts)","codex-home/agent_message_board_1.sqlite","work/origin.git"]},"mode":"swarm","clock":{"kind":"wall","label":"wall clock","note":"wall-clock time since each run's first session-log entry, as the logs recorded it. Nothing is stretched, compressed or aligned, and time the machine was stalled is included; the launcher's active and stalled totals (logs/run.json) are listed separately.","start":"2026-11-11T08:03:56Z"},"duration_s":266.2,"outcome":{"finished":true,"exit_code":0,"delivered":true,"capped":false,"interrupted":false,"diagnostic":"exit 0"},"main":{"commits":4,"files":4,"insertions":194,"deletions":8,"last_change_s":232.6},"agents":[{"role":"root","calls":{"coord":8},"posts":0,"changes_on_main":0,"turns":[[0.0,266.2]],"id":"root"},{"role":"peer","calls":{"test":4,"edit":1,"git":4,"coord":12,"run":1,"read":5},"posts":9,"changes_on_main":1,"turns":[[5.1,237.3]],"id":"a1"},{"role":"peer","calls":{"test":7,"git":2,"coord":13,"read":4},"posts":11,"changes_on_main":3,"turns":[[9.7,259.0]],"id":"a2"}],"events":[{"end":null,"exit":null,"check":null,"sha":null,"t":0.0,"agent":"root","kind":"turn_start","text":""},{"end":null,"exit":null,"check":null,"sha":null,"t":4.0,"agent":"root","kind":"say","text":"I’ll launch both peers and wait for them to finish."},{"end":5.2,"exit":null,"check":null,"sha":null,"t":5.1,"agent":"root","kind":"coord","text":"spawn_agent a1"},{"end":null,"exit":null,"check":null,"sha":null,"t":5.1,"agent":"a1","kind":"turn_start","text":""},{"end":9.6,"exit":null,"check":null,"sha":null,"t":9.3,"agent":"root","kind":"coord","text":"spawn_agent a2"},{"end":9.4,"exit":0,"check":null,"sha":null,"t":9.4,"agent":"a1","kind":"read","text":"cat \u003cworkspace\u003e/prompts/a1.md"},{"end":null,"exit":null,"check":null,"sha":null,"t":9.7,"agent":"a2","kind":"turn_start","text":""},{"end":13.4,"exit":0,"check":null,"sha":null,"t":13.4,"agent":"a2","kind":"read","text":"cat \u003cworkspace\u003e/prompts/a2.md"},{"end":null,"exit":null,"check":null,"sha":null,"t":21.0,"agent":"a2","kind":"say","text":"I’ll inspect the repository guidance and coordinate a distinct implementation draft with the peer agent before comparing and integrating the result."},{"end":21.4,"exit":0,"check":null,"sha":null,"t":21.4,"agent":"a2","kind":"read","text":"pwd \u0026\u0026 ls -la \u0026\u0026 cat AGENTS.md"},{"end":null,"exit":null,"check":null,"sha":null,"t":26.1,"agent":"a1","kind":"say","text":"I’ll inspect the repository guidance, then build and test a small draft of the word statistics changes and coordinate the comparison with the other peer."},{"end":27.8,"exit":0,"check":null,"sha":null,"t":27.8,"agent":"a1","kind":"read","text":"pwd \u0026\u0026 ls -la \u0026\u0026 cat AGENTS.md"},{"end":28.4,"exit":null,"check":null,"sha":null,"t":28.3,"agent":"a2","kind":"coord","text":"get_channels"},{"end":28.4,"exit":0,"check":null,"sha":null,"t":28.4,"agent":"a2","kind":"read","text":"cat wordstats.py test_wordstats.py README.md \u0026\u0026 git status --short \u0026\u0026 git log --oneline -3"},{"end":28.8,"exit":null,"check":null,"sha":null,"t":28.7,"agent":"root","kind":"coord","text":"wait_agent"},{"end":31.6,"exit":null,"check":null,"sha":null,"t":31.5,"agent":"root","kind":"coord","text":"list_agents"},{"end":33.3,"exit":null,"check":null,"sha":null,"t":33.2,"agent":"a1","kind":"coord","text":"get_channels"},{"end":33.3,"exit":0,"check":null,"sha":null,"t":33.3,"agent":"a1","kind":"read","text":"cat wordstats.py test_wordstats.py README.md \u0026\u0026 git status --short \u0026\u0026 git log -3 --oneline"},{"end":37.0,"exit":null,"check":null,"sha":null,"t":36.9,"agent":"a2","kind":"coord","text":"post"},{"end":null,"exit":null,"check":null,"sha":null,"t":36.9,"agent":"a2","kind":"post","text":"#tasks CLAIM a2 draft direction: compatibility-first CLI preserving original no-flag argument/error behavior, with compact argparse handling only when new flags appear; top_words deterministic count/a [... 214 more chars]"},{"end":37.0,"exit":0,"check":null,"sha":null,"t":37.0,"agent":"a2","kind":"git","text":"git checkout -b draft/a2"},{"end":43.5,"exit":null,"check":null,"sha":null,"t":43.5,"agent":"a1","kind":"coord","text":"post"},{"end":237.3,"exit":null,"check":null,"sha":null,"t":45.8,"agent":"root","kind":"coord","text":"wait_agent"},{"end":51.4,"exit":null,"check":null,"sha":null,"t":51.3,"agent":"a1","kind":"coord","text":"post, get_channels"},{"end":null,"exit":null,"check":null,"sha":null,"t":51.3,"agent":"a1","kind":"post","text":"#tasks CLAIM a1 draft direction: compatibility-first small argparse CLI, preserving existing alphabetical no-flags rows, explicit nonnegative --top, reusable top_words. I will build draft/a1 independe [... 102 more chars]"},{"end":51.4,"exit":0,"check":null,"sha":null,"t":51.4,"agent":"a1","kind":"git","text":"git switch -c draft/a1"},{"end":56.4,"exit":null,"check":null,"sha":null,"t":56.3,"agent":"a1","kind":"coord","text":"list_threads, post"},{"end":null,"exit":null,"check":null,"sha":null,"t":56.3,"agent":"a1","kind":"post","text":"#findings FACT a1 baseline: AGENTS.md requires Python 3.11+, stdlib only, python3 -m unittest -q before every commit; existing CLI prints alphabetical rows and main returns 2 for wrong argument count. [... 94 more chars]"},{"end":84.4,"exit":0,"check":"unclear","sha":null,"t":84.1,"agent":"a2","kind":"test","text":"mkdir -p .work ⏎ cat \u003e .work/capture.py \u003c\u003c'PY' ⏎ cat \u003e wordstats.py \u003c\u003c'PY' ⏎ cat \u003e test_wordstats.py \u003c\u003c'PY' ⏎ cat \u003e README.md \u003c\u003c'MD' ⏎ python3 -m unittest -q ⏎ python3 .work/capture.py"},{"end":97.3,"exit":null,"check":null,"sha":null,"t":97.1,"agent":"a2","kind":"coord","text":"read_post, post, list_threads"},{"end":119.1,"exit":null,"check":null,"sha":null,"t":119.0,"agent":"a1","kind":"coord","text":"post"},{"end":null,"exit":null,"check":null,"sha":null,"t":119.0,"agent":"a1","kind":"post","text":"#tasks a1 saw earlier a2 claim; revise my direction to simplest conventional argparse parser for all invocations, avoiding dual parse paths, with helpful validation and --help. No-flags successful out [... 186 more chars]"},{"end":119.1,"exit":0,"check":"passed","sha":null,"t":119.1,"agent":"a1","kind":"test","text":"cat \u003e wordstats.py \u003c\u003c'EOF' ⏎ cat \u003e test_wordstats.py \u003c\u003c'EOF' ⏎ cat \u003e README.md \u003c\u003c'EOF' ⏎ cat \u003e PR.md \u003c\u003c'EOF' ⏎ python3 -m unittest -q"},{"end":null,"exit":null,"check":null,"sha":"59c70e1","t":123.6,"agent":"a2","kind":"draft","text":"draft/a2: 59c70e1 Add ranked words and ordered JSON with legacy CLI compatibility (+154 -8)"},{"end":124.6,"exit":null,"check":null,"sha":null,"t":124.4,"agent":"a2","kind":"coord","text":"post"},{"end":null,"exit":null,"check":null,"sha":null,"t":124.4,"agent":"a2","kind":"post","text":"#tasks a2 direction clarification: earliest claim above reserved compatibility-first including exact old usage errors. a1 description overlaps, so my substantive alternate will additionally use heapq. [... 261 more chars]"},{"end":null,"exit":null,"check":null,"sha":null,"t":124.4,"agent":"a2","kind":"post","text":"#findings FACT a2 credential-free capture harness ready: from any clone run python3 \u003cworkspace\u003e/work/peers/a2/.work/capture.py \"$PWD\". Temporary text/empty fixtures capture default/top/json/combined/z [... 81 more chars]"},{"end":null,"exit":null,"check":null,"sha":null,"t":124.5,"agent":"a1","kind":"say","text":"The draft now passes tests for ranking, ties, JSON ordering, and empty or invalid limits. I’m comparing the simpler parser against the peer’s compatibility-focused draft before selecting the version to integrate."},{"end":124.6,"exit":0,"check":"unclear","sha":null,"t":124.6,"agent":"a2","kind":"test","text":"python3 - \u003c\u003c'PY' ⏎ cat \u003e PR.md \u003c\u003c'MD' ⏎ python3 -m unittest -q ⏎ git add wordstats.py test_wordstats.py README.md PR.md ⏎ git commit -m 'Add ranked words and ordered JSON with legacy CLI compatibility [... 89 more chars]"},{"end":null,"exit":null,"check":null,"sha":"0acd9f5","t":129.6,"agent":"a1","kind":"draft","text":"draft/a1: 0acd9f5 Add ranked words and JSON output draft (+146 -11)"},{"end":130.1,"exit":null,"check":null,"sha":null,"t":130.0,"agent":"a1","kind":"coord","text":"post, list_threads"},{"end":130.1,"exit":0,"check":null,"sha":null,"t":130.1,"agent":"a1","kind":"git","text":"git add wordstats.py test_wordstats.py README.md PR.md \u0026\u0026 git commit -m 'Add ranked words and JSON output draft' -m 'Verified: python3 -m unittest -q; 10 tests passed' \u0026\u0026 git push origin HEAD:draft/a1"},{"end":null,"exit":null,"check":null,"sha":null,"t":130.1,"agent":"a1","kind":"post","text":"#findings DRAFT a1 ready on draft/a1: conventional single argparse parser, 10 tests passing. How to see: git fetch origin; inspect/run origin/draft/a1 in own clone; python3 wordstats.py README.md [--t [... 177 more chars]"},{"end":132.4,"exit":null,"check":null,"sha":null,"t":131.8,"agent":"a2","kind":"coord","text":"post, list_threads"},{"end":null,"exit":null,"check":null,"sha":null,"t":131.9,"agent":"a2","kind":"post","text":"#findings DRAFT a2 posted 59c70e1 on origin/draft/a2. How to see: git checkout draft/a2; python3 -m unittest -q; python3 wordstats.py README.md --top 5 --json. Capture any clone via python3 \u003cworkspace [... 193 more chars]"},{"end":135.4,"exit":0,"check":null,"sha":null,"t":135.3,"agent":"a1","kind":"run","text":"mkdir -p .work \u0026\u0026 python3 \u003cworkspace\u003e/work/peers/a2/.work/capture.py \"$PWD\" \u003e .work/a1-capture.txt \u0026\u0026 cat .work/a1-capture.txt \u0026\u0026 git ls-remote --heads origin"},{"end":137.4,"exit":0,"check":"unclear","sha":null,"t":137.1,"agent":"a2","kind":"test","text":"git fetch origin ⏎ git checkout --detach origin/draft/a1 ⏎ cat wordstats.py test_wordstats.py ⏎ python3 -m unittest -q ⏎ python3 .work/capture.py ⏎ git checkout draft/a2"},{"end":142.5,"exit":0,"check":"passed","sha":null,"t":142.4,"agent":"a1","kind":"test","text":"git fetch origin \u0026\u0026 git switch --detach origin/draft/a2 \u0026\u0026 cat wordstats.py test_wordstats.py PR.md \u0026\u0026 python3 -m unittest -q \u0026\u0026 python3 \u003cworkspace\u003e/work/peers/a2/.work/capture.py \"$PWD\" \u003e .work/a2-capture.txt \u0026\u0026 cat .work/a2-capture.txt"},{"end":null,"exit":null,"check":null,"sha":null,"t":147.1,"agent":"a2","kind":"say","text":"Both drafts produce the requested output and pass their tests. The main difference is compatibility: my draft also preserves the original usage-error response. I’m comparing the remaining edge cases before integrating the selected draft."},{"end":149.0,"exit":null,"check":null,"sha":null,"t":148.9,"agent":"a2","kind":"coord","text":"post, list_threads"},{"end":null,"exit":null,"check":null,"sha":null,"t":148.9,"agent":"a2","kind":"post","text":"#findings RANK a2: 1) a2 59c70e1, 2) a1 0acd9f5. Ran both drafts' 10-test suites and real CLI captures across populated/empty, default/top/json/combined/zero/negative. Outputs agree. a2 wins exact ori [... 264 more chars]"},{"end":153.0,"exit":null,"check":null,"sha":null,"t":152.9,"agent":"a1","kind":"coord","text":"post"},{"end":null,"exit":null,"check":null,"sha":null,"t":152.9,"agent":"a1","kind":"post","text":"#findings RANK a1: 1) a2 59c70e1, 2) a1 0acd9f5. Ran both via shared real-CLI capture (12 populated/empty cases), both 10-test suites; reviewed sources. a2 preserves exact no-flag usage as required an [... 313 more chars]"},{"end":null,"exit":null,"check":null,"sha":null,"t":152.9,"agent":"a1","kind":"post","text":"#tasks CLAIM a1 post-selection test strengthening: test existing apostrophe/punctuation tokenization through top_words, oversized CLI limit, and flag placement before FILE (currently tests only after) [... 86 more chars]"},{"end":159.1,"exit":null,"check":null,"sha":null,"t":159.0,"agent":"a2","kind":"coord","text":"post"},{"end":null,"exit":null,"check":null,"sha":null,"t":159.0,"agent":"a2","kind":"post","text":"#tasks Proposed shared plan once winner selected: preserve a2 legacy no-flags routing; common row pipeline alphabetical without --top and ranked with it; ordered JSON from same rows. a2 owns main inte [... 310 more chars]"},{"end":159.1,"exit":0,"check":null,"sha":null,"t":159.1,"agent":"a2","kind":"read","text":"git status --short"},{"end":160.2,"exit":null,"check":null,"sha":null,"t":160.2,"agent":"a1","kind":"coord","text":"read_post"},{"end":160.2,"exit":0,"check":null,"sha":null,"t":160.2,"agent":"a1","kind":"read","text":"cat README.md \u0026\u0026 git status --short"},{"end":165.0,"exit":null,"check":null,"sha":null,"t":164.9,"agent":"a2","kind":"coord","text":"list_threads, read_post"},{"end":166.5,"exit":null,"check":null,"sha":null,"t":166.5,"agent":"a1","kind":"coord","text":"post"},{"end":null,"exit":null,"check":null,"sha":null,"t":166.5,"agent":"a1","kind":"post","text":"#tasks a1 agrees with a2 proposed post-selection simplification from heapq to sorted(... )[:n]; small scope favors clarity, no scale requirement. a2 please own production change and PR plan/comparison [... 88 more chars]"},{"end":null,"exit":null,"check":null,"sha":"59c70e1","t":170.6,"agent":"a2","kind":"main","text":"59c70e1 Add ranked words and ordered JSON with legacy CLI compatibility (+154 -8)"},{"end":171.6,"exit":null,"check":null,"sha":null,"t":171.5,"agent":"a2","kind":"coord","text":"post"},{"end":171.6,"exit":0,"check":null,"sha":null,"t":171.6,"agent":"a2","kind":"git","text":"git checkout main ⏎ git pull --rebase origin main ⏎ git merge --ff-only draft/a2 ⏎ git push origin HEAD:main"},{"end":null,"exit":null,"check":null,"sha":null,"t":171.6,"agent":"a2","kind":"post","text":"#findings DONE winner integrated: 59c70e1 now origin/main (fast-forward, no force). Both peers ranked a2 first. a1 can pull and add claimed regression tests. a2 preparing first PR section shared plan [... 86 more chars]"},{"end":null,"exit":null,"check":null,"sha":null,"t":177.7,"agent":"a1","kind":"say","text":"Both peers chose the compatibility-focused draft. Its output matches the new features while retaining the original no-flag usage errors. I’m adding a few regression checks around tokenization and argu [... 53 more chars]"},{"end":177.8,"exit":null,"check":null,"sha":null,"t":177.7,"agent":"a1","kind":"coord","text":"list_threads"},{"end":177.8,"exit":0,"check":null,"sha":null,"t":177.8,"agent":"a1","kind":"git","text":"git fetch origin \u0026\u0026 git log -1 --oneline origin/main"},{"end":null,"exit":null,"check":null,"sha":"c41f7f9","t":191.6,"agent":"a1","kind":"main","text":"c41f7f9 Cover tokenization, tied cutoffs and CLI argument placement (+17 -0)"},{"end":192.3,"exit":0,"check":null,"sha":null,"t":192.3,"agent":"a1","kind":"git","text":"git switch main \u0026\u0026 git pull --rebase origin main"},{"end":192.3,"exit":null,"check":null,"sha":null,"t":192.3,"agent":"a1","kind":"edit","text":"apply_patch test_wordstats.py"},{"end":192.5,"exit":0,"check":"passed","sha":null,"t":192.5,"agent":"a1","kind":"test","text":"python3 -m unittest -q \u0026\u0026 git add test_wordstats.py \u0026\u0026 git commit -m 'Cover tokenization, tied cutoffs and CLI argument placement' -m 'Verified: python3 -m unittest -q; 13 tests passed' \u0026\u0026 git pull -- [... 47 more chars]"},{"end":199.1,"exit":null,"check":null,"sha":null,"t":199.0,"agent":"a1","kind":"coord","text":"post"},{"end":null,"exit":null,"check":null,"sha":null,"t":199.0,"agent":"a1","kind":"post","text":"#findings DONE a1 test improvements integrated c41f7f9 on origin/main: tokenizer apostrophe/punctuation regression, alphabetic tie cutoff, oversized CLI N, flags before filename containing spaces. pyt [... 171 more chars]"},{"end":null,"exit":null,"check":null,"sha":"76cf4f0","t":206.6,"agent":"a2","kind":"main","text":"76cf4f0 Document chosen plan and simplify ranked selection (+52 -32)"},{"end":207.5,"exit":null,"check":null,"sha":null,"t":207.3,"agent":"a2","kind":"coord","text":"post"},{"end":207.5,"exit":0,"check":"unclear","sha":null,"t":207.5,"agent":"a2","kind":"test","text":"python3 - \u003c\u003c'PY' ⏎ cat \u003e PR.md \u003c\u003c'MD' ⏎ python3 -m unittest -q ⏎ git add wordstats.py PR.md ⏎ git commit -m 'Document chosen plan and simplify ranked selection' -m 'Verified: python3 -m unittest -q — [... 76 more chars]"},{"end":null,"exit":null,"check":null,"sha":null,"t":207.5,"agent":"a2","kind":"post","text":"#findings DONE a2 shared plan/comparison and simplified sort/slice integrated on origin/main. PR.md first section now describes agreed interface, owners, compatibility seam. a1 owns test additions; I [... 59 more chars]"},{"end":214.0,"exit":0,"check":"passed","sha":null,"t":213.8,"agent":"a1","kind":"test","text":"git pull --rebase origin main \u0026\u0026 python3 -m unittest -q \u0026\u0026 python3 \u003cworkspace\u003e/work/peers/a2/.work/capture.py \"$PWD\" \u003e .work/main-capture.txt \u0026\u0026 git log -3 --oneline \u0026\u0026 cat PR.md"},{"end":217.4,"exit":0,"check":"unclear","sha":null,"t":217.2,"agent":"a2","kind":"test","text":"git pull --rebase origin main ⏎ python3 -m unittest -q ⏎ python3 .work/capture.py ⏎ cat test_wordstats.py ⏎ git diff --check ⏎ git log --oneline -4"},{"end":221.8,"exit":null,"check":null,"sha":null,"t":221.7,"agent":"a1","kind":"coord","text":"post"},{"end":221.8,"exit":0,"check":null,"sha":null,"t":221.8,"agent":"a1","kind":"read","text":"cat .work/main-capture.txt \u0026\u0026 git diff --check origin/main \u0026\u0026 git status --short"},{"end":null,"exit":null,"check":null,"sha":null,"t":221.8,"agent":"a1","kind":"post","text":"#findings REVIEW a1 latest main 76cf4f0: pulled final production/PR changes; 13 unit tests pass, shared real-process capture confirms all 12 populated/empty default/top/json/combined/zero/negative sta [... 178 more chars]"},{"end":null,"exit":null,"check":null,"sha":"a0554f0","t":232.6,"agent":"a2","kind":"main","text":"a0554f0 Record integrated validation results (+4 -1)"},{"end":233.0,"exit":null,"check":null,"sha":null,"t":232.8,"agent":"a2","kind":"coord","text":"post"},{"end":null,"exit":null,"check":null,"sha":null,"t":232.8,"agent":"a2","kind":"post","text":"#findings REVIEW a2 latest main 76cf4f0: pulled integrated a1 tests; all 13 tests pass, git diff --check clean, all 12 real-CLI capture states correct. Reviewed ordering, legacy errors, empty/zero/ove [... 205 more chars]"},{"end":233.0,"exit":0,"check":"unclear","sha":null,"t":233.0,"agent":"a2","kind":"test","text":"python3 - \u003c\u003c'PY' ⏎ python3 -m unittest -q ⏎ git add PR.md ⏎ git commit -m 'Record integrated validation results' -m 'Verified: python3 -m unittest -q — 13 tests passed' ⏎ git pull --rebase origin main ⏎ git push origin HEAD:main"},{"end":null,"exit":null,"check":null,"sha":null,"t":233.0,"agent":"a2","kind":"post","text":"#findings DONE final verification documentation pushed to origin/main. a1 please pull latest main for final whole-result review; a2 code and full 13-test/process-state review complete."},{"end":null,"exit":null,"check":null,"sha":null,"t":237.2,"agent":"a1","kind":"say","text":"Implemented and pushed to `origin/main` at `76cf4f0`.\n\n- Added `top_words`, `--top N`, and combinable `--json`.\n- Preserved existing unflagged behavior.\n- Updated README and PR documentation.\n- Verifi [... 115 more chars]"},{"end":null,"exit":null,"check":null,"sha":null,"t":237.3,"agent":"a1","kind":"turn_end","text":"Implemented and pushed to `origin/main` at `76cf4f0`.\n\n- Added `top_words`, `--top N`, and combinable `--json`.\n- Preserved existing unflagged behavior.\n- Updated README and PR documentation.\n- Verifi [... 115 more chars]"},{"end":null,"exit":null,"check":null,"sha":null,"t":241.0,"agent":"a2","kind":"say","text":"The selected implementation is on `origin/main`. The combined suite now has 13 passing tests, and real CLI checks cover default output, ranking, JSON, combined flags, empty input, zero limits, and inv [... 73 more chars]"},{"end":241.2,"exit":null,"check":null,"sha":null,"t":241.1,"agent":"a2","kind":"coord","text":"list_threads"},{"end":241.2,"exit":0,"check":"unclear","sha":null,"t":241.2,"agent":"a2","kind":"test","text":"git pull --rebase origin main ⏎ git diff --check ⏎ python3 -m unittest -q ⏎ git status --short ⏎ git rev-parse HEAD origin/main"},{"end":241.5,"exit":null,"check":null,"sha":null,"t":241.5,"agent":"root","kind":"coord","text":"list_agents"},{"end":259.0,"exit":null,"check":null,"sha":null,"t":243.9,"agent":"root","kind":"coord","text":"wait_agent"},{"end":253.6,"exit":null,"check":null,"sha":null,"t":253.4,"agent":"a2","kind":"coord","text":"post"},{"end":null,"exit":null,"check":null,"sha":null,"t":253.5,"agent":"a2","kind":"post","text":"#findings DONE a2 final receipt: latest main a0554f0 pulled and reviewed; 13 tests pass, git diff --check clean, HEAD equals origin/main. This last commit only records validation, production remains p [... 134 more chars]"},{"end":null,"exit":null,"check":null,"sha":null,"t":258.9,"agent":"a2","kind":"say","text":"Implemented and pushed to `origin/main` at `a0554f0`.\n\n- Added `top_words`, `--top N`, and combinable `--json`.\n- Preserved existing unflagged output and usage errors.\n- Updated README and PR notes, i [... 172 more chars]"},{"end":null,"exit":null,"check":null,"sha":null,"t":259.0,"agent":"a2","kind":"turn_end","text":"Implemented and pushed to `origin/main` at `a0554f0`.\n\n- Added `top_words`, `--top N`, and combinable `--json`.\n- Preserved existing unflagged output and usage errors.\n- Updated README and PR notes, i [... 172 more chars]"},{"end":263.3,"exit":null,"check":null,"sha":null,"t":263.2,"agent":"root","kind":"coord","text":"list_agents"},{"end":null,"exit":null,"check":null,"sha":null,"t":266.2,"agent":"root","kind":"say","text":"done"},{"end":null,"exit":null,"check":null,"sha":null,"t":266.2,"agent":"root","kind":"turn_end","text":"done"}],"label":"A"},{"example":null,"task":null,"peers":1,"model":"gpt-6-astra","effort":"medium","base":"5876ffe1d3277d6a98f5d7025cf74b4414171bf7","cap":"15m","brief":{"sha256":"2c770a27b992b1bbb1b6f3e52324ced3e49b8545d429360b7c8be91fbd2f8bc4","source":"the brief file, which still matches the prompt the agents got"},"codex_versions":["0.163.0"],"launcher":{"seconds":105.6,"active_seconds":105.6,"stalled_seconds":0.0},"tokens":{"total":{"input_tokens":108013,"cached_input_tokens":88832,"output_tokens":3359,"total_tokens":111372},"agents":{"solo":{"input_tokens":108013,"cached_input_tokens":88832,"output_tokens":3359,"total_tokens":111372}},"source":"the last running total in each Codex session log, summed"},"drafts":[],"score":null,"facts":[],"token_series":{"solo":[[4.7,15979,14208,87],[10.7,32161,30080,154],[61.7,48892,46208,2304],[91.3,67846,50176,2975],[101.1,87628,68864,3288],[105.3,108013,88832,3359]]},"receipts":[{"sha":"001b968","agent":"solo","subject":"Add top-word limits and JSON output","on_main":true,"branches":["main"],"placed_by":"push","files":4,"insertions":186,"deletions":6,"status":"observed-pass","status_label":"OBSERVED, passed","summary":"the last test run with an exit status of its own in solo's session log exited 0; a later test run has no exit status of its own","lines":["001b968  solo  Add top-word limits and JSON output","  who:      solo \u003csolo@murmur.local\u003e, on main, pushed to main 08:05:38Z","  why:      said before: \"All 15 tests pass, including default output, tie ordering, combined flags,","              empty results, and invalid limits. The README and `PR.md` are updated. I’ll commit the","              changes and push to `origin/main`.\"","  change:   5876ffe -\u003e 001b968, 4 files, +186 -6: PR.md, README.md, test_wordstats.py, wordstats.py","  verified: OBSERVED, passed: the last test run with an exit status of its own in solo's session log","              exited 0; a later test run has no exit status of its own","            ok   exit 0  python3 -m unittest -q","                 test, before the commit, 08:04:58Z, in work/repo [...63546566f60a.jsonl:29]","                 | ----------------------------------------------------------------------","                 | Ran 15 tests in 0.308s","                 | OK","            ?    exit 0  python3 -m unittest -q  (the whole command line's status, not this check's own)","                 test, before the commit, 08:05:37Z, in work/repo [...63546566f60a.jsonl:46]","                 | [...]","                 | Ran 15 tests in 0.281s","                 | OK","            claim (commit message): \"Verified: python3 -m unittest -q passed (15 tests); git diff","              --check passed\""],"t":100.9}],"receipts_note":null,"warnings":[],"id":"solo2","source":{"kind":"workspace","description":"a murmur workspace: Codex session logs, the message board, origin.git and logs/run.json","files":["murmur.json","logs/run.json","codex-home/sessions (1 rollout)","work/origin.git"]},"mode":"solo","clock":{"kind":"wall","label":"wall clock","note":"wall-clock time since each run's first session-log entry, as the logs recorded it. Nothing is stretched, compressed or aligned, and time the machine was stalled is included; the launcher's active and stalled totals (logs/run.json) are listed separately.","start":"2026-11-11T08:03:57Z"},"duration_s":105.3,"outcome":{"finished":true,"exit_code":0,"delivered":true,"capped":false,"interrupted":false,"diagnostic":"exit 0"},"main":{"commits":1,"files":4,"insertions":186,"deletions":6,"last_change_s":100.9},"agents":[{"role":"solo","calls":{"test":2,"edit":2,"git":3,"run":1,"read":2},"posts":0,"changes_on_main":1,"turns":[[0.0,105.3]],"id":"solo"}],"events":[{"end":null,"exit":null,"check":null,"sha":null,"t":0.0,"agent":"solo","kind":"turn_start","text":""},{"end":null,"exit":null,"check":null,"sha":null,"t":3.3,"agent":"solo","kind":"say","text":"I’ll read the repository instructions, add the features and tests, then verify and push the finished changes to `origin/main`."},{"end":4.6,"exit":0,"check":null,"sha":null,"t":4.6,"agent":"solo","kind":"read","text":"pwd; if [ -f AGENTS.md ]; then cat AGENTS.md; fi"},{"end":10.7,"exit":0,"check":null,"sha":null,"t":10.7,"agent":"solo","kind":"git","text":"git status --short; rg --files -g '! .git'; cat wordstats.py test_wordstats.py README.md; git remote -v"},{"end":null,"exit":null,"check":null,"sha":null,"t":28.8,"agent":"solo","kind":"say","text":"The current output is alphabetical. I’ll keep that order without `--top`; with `--top`, I’ll sort by descending count and then alphabetically. I’ll make zero return no rows and reject negative limits, and record those choices in `PR.md`."},{"end":61.3,"exit":null,"check":null,"sha":null,"t":61.2,"agent":"solo","kind":"edit","text":"apply_patch wordstats.py, README.md, test_wordstats.py"},{"end":61.7,"exit":0,"check":"passed","sha":null,"t":61.4,"agent":"solo","kind":"test","text":"python3 -m unittest -q"},{"end":91.3,"exit":0,"check":null,"sha":null,"t":91.3,"agent":"solo","kind":"run","text":"git diff --check; git diff --stat; git status --short; python3 wordstats.py README.md --top 3 --json"},{"end":91.3,"exit":null,"check":null,"sha":null,"t":91.3,"agent":"solo","kind":"edit","text":"apply_patch PR.md"},{"end":null,"exit":null,"check":null,"sha":null,"t":99.5,"agent":"solo","kind":"say","text":"All 15 tests pass, including default output, tie ordering, combined flags, empty results, and invalid limits. The README and `PR.md` are updated. I’ll commit the changes and push to `origin/main`."},{"end":100.9,"exit":0,"check":"unclear","sha":null,"t":100.7,"agent":"solo","kind":"test","text":"python3 -m unittest -q; git diff --check"},{"end":null,"exit":null,"check":null,"sha":"001b968","t":100.9,"agent":"solo","kind":"main","text":"001b968 Add top-word limits and JSON output (+186 -6)"},{"end":100.9,"exit":0,"check":null,"sha":null,"t":100.9,"agent":"solo","kind":"git","text":"rm -r __pycache__ ⏎ git add wordstats.py test_wordstats.py README.md PR.md ⏎ git commit -m \"Add top-word limits and JSON output\" -m \"Verified: python3 -m unittest -q passed (15 tests); git diff --check passed\""},{"end":101.0,"exit":0,"check":null,"sha":null,"t":101.0,"agent":"solo","kind":"git","text":"git push origin HEAD:main"},{"end":101.1,"exit":0,"check":null,"sha":null,"t":101.1,"agent":"solo","kind":"read","text":"git status --short; git rev-parse HEAD origin/main"},{"end":null,"exit":null,"check":null,"sha":null,"t":105.3,"agent":"solo","kind":"say","text":"Implemented `top_words`, `--top N`, and combinable `--json`, preserving default output. Updated README and recorded decisions, verification, and examples in `PR.md`.\n\nAll 15 tests and `git diff --chec [... 76 more chars]"},{"end":null,"exit":null,"check":null,"sha":null,"t":105.3,"agent":"solo","kind":"turn_end","text":"Implemented `top_words`, `--top N`, and combinable `--json`, preserving default output. Updated README and recorded decisions, verification, and examples in `PR.md`.\n\nAll 15 tests and `git diff --chec [... 76 more chars]"}],"label":"B"}],"compatibility":[],"comparison":[{"key":"run","label":"run","values":["A swarm2","B solo2"],"note":""},{"key":"mode","label":"mode","values":["swarm, 2 peers","solo"],"note":""},{"key":"model","label":"model / effort","values":["gpt-6-astra / medium","gpt-6-astra / medium"],"note":""},{"key":"time","label":"finished after (wall clock)","values":["4:26","1:45"],"note":"A took 2.5x as long"},{"key":"last_main","label":"last change on main","values":["3:52","1:40"],"note":""},{"key":"launcher","label":"launcher clock","values":["266.6 s = 266.6 active + 0 stalled","105.6 s = 105.6 active + 0 stalled"],"note":""},{"key":"input","label":"input tokens","values":["1,234,194","108,013"],"note":"A used 11.4x as many"},{"key":"cached","label":"  of them cached","values":["1,117,184","88,832"],"note":""},{"key":"uncached","label":"  not cached","values":["117,010","19,181"],"note":""},{"key":"output","label":"output tokens","values":["11,870","3,359"],"note":"A used 3.5x as many"},{"key":"commits","label":"commits on main","values":["4","1"],"note":""},{"key":"lines","label":"lines on main","values":["4 files, +194 -8","4 files, +186 -6"],"note":""},{"key":"drafts","label":"draft branches left","values":["draft/a1, draft/a2","none"],"note":""},{"key":"exit","label":"exit","values":["0, delivered","0, delivered"],"note":""},{"key":"score","label":"quality score","values":["no quality score supplied","no quality score supplied"],"note":""}],"ahead":{"A":[],"B":["finished sooner (1:45 against 4:26)","used fewer input tokens (108,013 against 1,234,194)","used fewer output tokens (3,359 against 11,870)"],"not_compared":["quality: no quality score supplied for both runs"]},"notes":["This compares one run with one run. Runs of the same task vary, so it shows what happened here, not what usually happens."]};
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  // Everything from the data goes in as text nodes, never as markup.
+  function el(tag, cls, text) {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+  function add(parent, ...nodes) { nodes.forEach((node) => parent.appendChild(node)); return parent; }
+  function clock(seconds) {
+    if (seconds === null || seconds === undefined) return "?";
+    const whole = Math.floor(seconds), h = Math.floor(whole / 3600), m = Math.floor((whole % 3600) / 60);
+    const s = String(whole % 60).padStart(2, "0");
+    return h ? h + ":" + String(m).padStart(2, "0") + ":" + s : m + ":" + s;
+  }
+  const num = (value) => value === null || value === undefined ? "n/a" : Number(value).toLocaleString("en-US");
+  const TOOLS = ["test", "edit", "git", "coord", "run", "read"];
+  const POINTS = ["post", "main", "draft", "commit", "turn_start", "turn_end", "error"];
+  const KEY = new Set(["turn_start", "turn_end", "post", "main", "draft", "commit", "test", "error"]);
+  const NAMES = { test: "test / lint / build", edit: "edit", git: "git", coord: "board and agent tools",
+    run: "other command", read: "read", post: "board post", main: "landed on main", draft: "pushed to a draft branch",
+    commit: "commit (push time unknown)", turn_start: "turn start", turn_end: "turn end", say: "said", error: "error" };
+  const runs = DATA.runs;
+  const longest = Math.max(1, ...runs.map((run) => run.duration_s));
+  const span = longest * 1.04;
+  const pct = (seconds) => (100 * Math.min(seconds, span) / span) + "%";
+  const shape = (run) => run.mode === "solo" ? "solo" : run.mode + ", " + run.peers + " peers";
+  const tag = (run) => el("span", "tag " + run.label, run.label);
+  const rowOf = (key) => DATA.comparison.find((row) => row.key === key);
+  const timed = [];   // {t, node, cls}: gets `cls` while the clock is before t
+  function exitNote(event) {   // a check's verdict, or an exit status that is not 0
+    if (event.exit === null || event.exit === undefined) return "";
+    if (event.check === "unclear") return " (exit " + event.exit + ", not the check's own)";
+    if (event.check) return " (check " + (event.check === "passed" ? "passed" : "FAILED") + ", exit " + event.exit + ")";
+    return event.exit ? " (exit " + event.exit + ")" : "";
+  }
+
+  // --- head ---
+  document.title = "murmur replay: " + DATA.title;
+  $("title").textContent = "murmur replay: " + DATA.title;
+  if (DATA.example) { $("example").hidden = false; $("example").textContent = "EXAMPLE DATA: " + DATA.example; }
+  runs.forEach((run) => add($("sources"), add(el("p"), tag(run), el("span", "", " " + run.id + ": " + run.source.description))));
+  if (runs.length === 2) {
+    const box = el("div", "box " + (DATA.compatibility.length ? "warn" : "ok"));
+    if (DATA.compatibility.length) {
+      add(box, el("b", "", "Not a like-for-like pair. Read the comparison with this in mind:"));
+      const list = el("ul");
+      DATA.compatibility.forEach((line) => add(list, el("li", "", line)));
+      add(box, list);
+    } else {
+      const first = runs[0];
+      box.textContent = "Same task and settings: brief sha256 " + String(first.brief.sha256).slice(0, 12) + ", " +
+        first.model + "/" + first.effort + ", base " + String(first.base).slice(0, 7) + ", cap " + first.cap + ".";
+    }
+    add($("compat"), box);
+  }
+
+  // --- summary ---
+  runs.forEach((run, index) => {
+    const card = el("div", "card " + run.label);
+    add(card, add(el("h3"), tag(run), el("span", "", " " + run.id + " "), el("span", "dim", "(" + shape(run) + ")")));
+    const stats = el("div", "stats");
+    ["time", "input", "output", "commits", "exit", "score"].forEach((key) => {
+      const row = rowOf(key);
+      if (!row) return;
+      const value = row.values[index];
+      const stat = el("div", "stat" + (value.length > 12 ? " small" : ""));
+      add(stats, add(stat, el("b", "", value), el("span", "", row.label.trim())));
+    });
+    add($("cards"), add(card, stats));
+  });
+  if (DATA.ahead) {
+    add($("ahead"), el("b", "", "Where each run comes out ahead, on what is measured here only"));
+    const list = el("ul");
+    runs.forEach((run) => add(list, add(el("li"), tag(run),
+      el("span", "", " " + (DATA.ahead[run.label].join("; ") || "nothing")))));
+    DATA.ahead.not_compared.forEach((reason) => add(list, el("li", "dim", "not compared: " + reason)));
+    add($("ahead"), list);
+  } else {
+    $("ahead").hidden = true;
+  }
+  runs.forEach((run) => {
+    if (run.score) add($("ahead"), el("p", "dim", "Score of " + run.label + ": " + run.score.value + ", " +
+      run.score.source + ". murmur did not assess quality."));
+  });
+  const head = el("tr");
+  add(head, el("th", "", ""), ...runs.map((run) => add(el("th"), tag(run))), el("th", "", runs.length === 2 ? "difference" : ""));
+  add($("table"), head);
+  DATA.comparison.forEach((row) => {
+    if (row.key === "run") return;
+    const line = el("tr");
+    add(line, el("td", "dim", row.label), ...row.values.map((value) => el("td", "num", value)), el("td", "dim", row.note));
+    add($("table"), line);
+  });
+  runs.forEach((run) => run.facts.forEach((fact) => add($("facts"), add(el("p"), tag(run),
+    el("span", "", " " + fact.label + ": " + fact.value + " "), el("span", "dim", "[" + fact.source + "]")))));
+  $("tablebox").open = true;
+
+  // --- lanes ---
+  $("clocknote").textContent = "Clock: " + DATA.clock_note;
+  const cursors = [];
+  function showDetail(run, event) {
+    const box = $("detail");
+    box.textContent = "";
+    box.className = "box";
+    const until = event.end !== null && event.end !== undefined && event.end > event.t ? " to " + clock(event.end) : "";
+    add(box, add(el("p"), tag(run), el("b", "", " " + event.agent + " · " + (NAMES[event.kind] || event.kind)),
+      el("span", "dim", " at " + clock(event.t) + until + exitNote(event))),
+      el("p", "mono", event.text || "(no text)"));
+    const receipt = event.sha && document.getElementById("rc-" + run.label + "-" + event.sha);
+    if (receipt) {
+      const link = el("button", "", "show the change receipt of " + event.sha);
+      link.type = "button";
+      link.addEventListener("click", () => { receipt.open = true; receipt.scrollIntoView({ block: "center" }); });
+      add(box, link);
+    }
+  }
+  runs.forEach((run) => {
+    const block = el("div", "run");
+    add(block, add(el("div", "runhead"), tag(run), el("b", "", " " + run.id), el("span", "dim", " · " + shape(run) +
+      (run.model && run.effort ? " · " + run.model + "/" + run.effort : ""))));
+    const flagrow = el("div", "flagrow");
+    const flag = el("div", "flag" + (run.duration_s / span > 0.6 ? " left" : ""),
+      "finish " + clock(run.duration_s) + " · exit " + rowOf("exit").values[runs.indexOf(run)]);
+    flag.style.left = pct(run.duration_s);
+    timed.push({ t: run.duration_s, node: flag, cls: "future" });
+    add(block, add(flagrow, flag));
+    run.agents.forEach((agent) => {
+      const lane = el("div", "lane"), track = el("div", "track");
+      const who = el("div", "who", agent.id);
+      who.title = agent.id + " (" + agent.role + ")";
+      agent.turns.forEach(([start, end]) => {
+        const turn = el("div", "turn");
+        turn.style.left = pct(start);
+        turn.style.width = (100 * Math.max(0, end - start) / span) + "%";
+        add(track, turn);
+      });
+      run.events.forEach((event) => {
+        if (event.agent !== agent.id) return;
+        const bar = TOOLS.includes(event.kind), point = POINTS.includes(event.kind);
+        if (!bar && !point) return;
+        const mark = el("div", (bar ? "ev " : "pt ") + event.kind + (bar && event.exit ? " failed" : ""));
+        mark.style.left = pct(event.t);
+        if (bar && event.end !== null && event.end > event.t) mark.style.width = (100 * (event.end - event.t) / span) + "%";
+        mark.title = clock(event.t) + " " + event.agent + " " + (NAMES[event.kind] || event.kind) + ": " + event.text +
+          exitNote(event);
+        mark.addEventListener("click", () => showDetail(run, event));
+        timed.push({ t: event.t, node: mark, cls: "future" });
+        add(track, mark);
+      });
+      const finish = el("div", "finish");
+      finish.style.left = pct(run.duration_s);
+      const cursor = el("div", "cursor");
+      cursors.push(cursor);
+      add($("lanes"), add(block, add(lane, who, add(track, finish, cursor))));
+    });
+    if (!run.agents.length) add($("lanes"), add(block, el("p", "dim", "no agent activity was logged")));
+  });
+  const step = [1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600].find((size) => span / size <= 9) || 7200;
+  for (let at = 0; at <= span * 0.97; at += step) {
+    const tick = el("span", "", clock(at));
+    tick.style.left = pct(at);
+    add($("axis"), tick);
+  }
+  [...TOOLS.map((kind) => ["ev " + kind, kind]), ...POINTS.map((kind) => ["pt " + kind, kind])].forEach(([cls, kind]) => {
+    add($("legend"), add(el("span"), el("i", cls), el("span", "", NAMES[kind])));
+  });
+  add($("legend"), el("span", "", "pale band: the agent's turn · red outline: exit status not 0 · dashed line: the end of the run's log"));
+
+  // --- token meters ---
+  const most = Math.max(1, ...runs.map((run) => run.tokens ? run.tokens.total.input_tokens || 0 : 0));
+  function upTo(points, seconds) {   // the last point at or before `seconds`
+    let low = 0, high = points.length;
+    while (low < high) { const mid = (low + high) >> 1; if (points[mid][0] <= seconds) low = mid + 1; else high = mid; }
+    return low ? points[low - 1] : null;
+  }
+  const meters = runs.map((run) => {
+    const row = el("div", "meter"), bar = el("div", "bar " + run.label);
+    const input = el("i", "in"), cached = el("i", "cached"), text = el("div", "n"), agents = el("div", "agents");
+    add($("meters"), add(row, add(el("div"), tag(run), el("span", "", " " + run.id)),
+      add(el("div"), add(bar, input, cached), text), agents));
+    const series = run.token_series && Object.keys(run.token_series).length ? run.token_series : null;
+    return { run, input, cached, text, agents, series };
+  });
+  function drawMeters(seconds) {
+    meters.forEach(({ run, input, cached, text, agents, series }) => {
+      if (!run.tokens) { text.textContent = "no token counts in the source"; return; }
+      let total = [run.tokens.total.input_tokens, run.tokens.total.cached_input_tokens, run.tokens.total.output_tokens];
+      const parts = [];
+      if (series) {
+        total = [0, 0, 0];
+        Object.entries(series).forEach(([name, points]) => {
+          const point = upTo(points, seconds) || [0, 0, 0, 0];
+          for (let i = 0; i < 3; i++) total[i] += point[i + 1];
+          parts.push(name + " " + num(point[1]) + " in / " + num(point[3]) + " out");
+        });
+      }
+      input.style.width = (100 * (total[0] || 0) / most) + "%";
+      cached.style.width = (100 * (total[1] || 0) / most) + "%";
+      text.textContent = num(total[0]) + " input" + (total[1] === null || total[1] === undefined ? "" :
+        " (" + num(total[1]) + " cached)") + " · " + num(total[2]) + " output" +
+        (series ? "" : " — the final totals: this source has no counts over time");
+      agents.textContent = parts.join("   ·   ");
+    });
+  }
+
+  // --- events and receipts ---
+  const merged = [];
+  runs.forEach((run, index) => run.events.forEach((event) => merged.push({ run, index, event })));
+  merged.sort((one, two) => one.event.t - two.event.t || one.index - two.index);
+  merged.forEach(({ run, event }) => {
+    const row = el("div", "row" + (KEY.has(event.kind) ? "" : " minor off"));
+    add(row, el("span", "t", clock(event.t)), tag(run), el("span", "", event.agent),
+      el("span", "dim", NAMES[event.kind] ? event.kind.replace("_", " ") : event.kind),
+      el("span", "x", event.text + exitNote(event)));
+    timed.push({ t: event.t, node: row, cls: "hidden" });
+    add($("log"), row);
+  });
+  $("every").addEventListener("change", (change) => {
+    document.querySelectorAll("#log .minor").forEach((row) => row.classList.toggle("off", !change.target.checked));
+  });
+  runs.forEach((run) => {
+    add($("receipts"), add(el("p"), tag(run), el("b", "", " " + run.id)));
+    if (!run.receipts.length) add($("receipts"), el("p", "dim", run.receipts_note || "none"));
+    run.receipts.forEach((entry) => {
+      const box = el("details"), head = el("summary");
+      box.id = "rc-" + run.label + "-" + entry.sha;
+      const where = entry.on_main ? "main" : (entry.branches.join(", ") || "no branch");
+      add(head, el("span", "mono", clock(entry.t) + "  " + entry.sha + "  "), el("b", "", (entry.agent || "unknown") + " "),
+        el("span", "", entry.subject + " "), el("span", "dim", "[" + where + ", +" + entry.insertions + " −" +
+          entry.deletions + "] "), el("span", "badge " + entry.status, entry.status_label));
+      add($("receipts"), add(box, head, el("pre", "", entry.lines.join("\n"))));
+      if (entry.t !== null && entry.t !== undefined) timed.push({ t: entry.t, node: box, cls: "future" });
+    });
+  });
+
+  // --- footer ---
+  const foot = $("footer"), list = el("ul");
+  runs.forEach((run) => {
+    add(list, el("li", "", run.label + " " + run.id + " was read from: " + run.source.files.join(", ")));
+    run.warnings.forEach((warning) => add(list, el("li", "", run.label + " " + run.id + ": " + warning)));
+  });
+  DATA.notes.forEach((note) => add(list, el("li", "", note)));
+  add(list, el("li", "", "Tool calls are sorted into kinds by the name of the command; that is a reading aid, not a " +
+    "measurement. Log text is shortened, and strings that look like credentials and home paths are masked."));
+  add(foot, list, el("p", "", "Made by `murmur replay` at " + DATA.generated_at + ". This file holds its own data and " +
+    "loads nothing from the network."));
+
+  // --- the clock ---
+  timed.sort((one, two) => one.t - two.t);
+  const scrub = $("scrub"), play = $("play"), speed = $("speed");
+  scrub.max = String(longest);
+  const speeds = [1, 2, 5, 10, 30, 60, 120, 300, 600];
+  const wanted = Number(DATA.speed) > 0 ? Number(DATA.speed) : speeds.find((value) => longest / value <= 45) || 600;
+  if (!speeds.includes(wanted)) speeds.push(wanted);
+  speeds.sort((one, two) => one - two).forEach((value) => {
+    const option = el("option", "", value + "× (1 s shows " + clock(value) + ")");
+    option.value = String(value);
+    add(speed, option);
+  });
+  speed.value = String(wanted);
+  let now = longest, shown = 0, playing = false, last = 0;
+  function draw(seconds) {
+    now = Math.max(0, Math.min(longest, seconds));
+    while (shown < timed.length && timed[shown].t <= now) { timed[shown].node.classList.remove(timed[shown].cls); shown++; }
+    while (shown > 0 && timed[shown - 1].t > now) { shown--; timed[shown].node.classList.add(timed[shown].cls); }
+    cursors.forEach((cursor) => { cursor.style.left = pct(now); });
+    scrub.value = String(now);
+    $("now").textContent = clock(now) + " / " + clock(longest);
+    drawMeters(now);
+    if (playing) $("log").scrollTop = $("log").scrollHeight;
+  }
+  function stop() { playing = false; play.textContent = "Play"; }
+  function frame(stamp) {
+    if (!playing) return;
+    draw(now + (stamp - last) / 1000 * Number(speed.value));
+    last = stamp;
+    if (now >= longest) stop(); else requestAnimationFrame(frame);
+  }
+  play.addEventListener("click", () => {
+    if (playing) { stop(); return; }
+    if (now >= longest) draw(0);
+    playing = true;
+    play.textContent = "Pause";
+    last = performance.now();
+    requestAnimationFrame(frame);
+  });
+  scrub.addEventListener("input", () => { stop(); draw(Number(scrub.value)); });
+  document.addEventListener("keydown", (key) => {
+    if (key.key === " " && !["INPUT", "SELECT", "BUTTON", "SUMMARY"].includes(document.activeElement.tagName)) {
+      key.preventDefault();
+      play.click();
+    }
+  });
+  timed.forEach((item) => item.node.classList.add(item.cls));
+  draw(longest);
+  window.murmurReplay = { draw, state: () => ({ now, shown, total: timed.length, playing }) };
+})();
+</script>
+</body>
+</html>
