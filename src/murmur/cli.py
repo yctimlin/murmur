@@ -3,10 +3,12 @@
   murmur setup BRIEF [--repo DIR] [--peers N | --solo] [--setup CMD]... [options]
   murmur run WORKSPACE
   murmur doctor [--repo DIR] [--model M] [--into DIR] [--solo] [--config FILE]
+  murmur receipts WORKSPACE [--agent ID] [--json] [--write]
 
 `setup` builds an isolated workspace for one run. Setup commands run once in the
 first clone; the other clones are copy-on-write copies of that tree. `run`
-launches Codex and stops its whole process group on the way out.
+launches Codex and stops its whole process group on the way out. `receipts` shows,
+for each commit of a run, who made it, why, and which checks were seen to run.
 """
 
 from __future__ import annotations
@@ -34,7 +36,7 @@ from pathlib import Path
 from string import Template
 from typing import NoReturn
 
-from murmur import doctor, tokens
+from murmur import doctor, receipts, tokens
 from murmur.cow import CowCopyError, cow_copy
 from murmur.procutil import (
     install_interrupt_handlers,
@@ -1070,6 +1072,19 @@ def _drop_run_lock(lock: Path) -> None:
         pass
 
 
+def _write_receipts(ws: Path) -> None:
+    """Write the change receipts of a finished run. They are a by-product: a failure here,
+    or a signal while they are written, must not change how the run ends."""
+    try:
+        path = receipts.write(ws)
+    except (Exception, KeyboardInterrupt) as exc:
+        detail = "interrupted" if isinstance(exc, KeyboardInterrupt) else str(exc) or type(exc).__name__
+        print(f"murmur: could not write the change receipts: {detail}", file=sys.stderr)
+        print(f"murmur: to try again: {_shell('murmur', 'receipts', ws, '--write')}", file=sys.stderr)
+    else:
+        print(f"receipts: {path.with_suffix('.md')}")
+
+
 def run(args: argparse.Namespace) -> None:
     previous = install_interrupt_handlers()
     proc: subprocess.Popen | None = None
@@ -1168,6 +1183,7 @@ def run(args: argparse.Namespace) -> None:
             print(f"murmur: log: {log_err}", file=sys.stderr)
         if delivered is False and drafts:
             print(_draft_hint(ws, meta, origin, drafts), file=sys.stderr)
+        _write_receipts(ws)
         # With nothing new on main there is nothing to review and no point copying the folder.
         if delivered is not False and origin.exists():
             if meta.get("folder"):
@@ -1202,6 +1218,22 @@ def doctor_command(args: argparse.Namespace) -> None:
                                codex_home=user_codex_home(), solo=args.solo)
     print("\n".join(doctor.report(checks)))
     raise SystemExit(1 if any(check.status == "fail" for check in checks) else EXIT_OK)
+
+
+def receipts_command(args: argparse.Namespace) -> None:
+    ws = Path(args.workspace).expanduser().resolve()
+    try:
+        document = receipts.collect(ws)
+        written = receipts.write(ws, document) if args.write else None
+    except receipts.ReceiptsError as exc:
+        fail(str(exc))
+    if args.agent is not None and args.agent not in [agent["id"] for agent in document["agents"]]:
+        known = ", ".join(agent["id"] for agent in document["agents"])
+        fail(f"no agent {args.agent!r} in {ws.name} (agents: {known})")
+    shown = receipts.for_agent(document, args.agent)
+    sys.stdout.write(receipts.to_json(shown) if args.json else receipts.render_text(shown))
+    if written:
+        print(f"murmur: wrote {written} and {written.with_suffix('.md')}", file=sys.stderr)
 
 
 def main() -> None:
@@ -1246,6 +1278,15 @@ def main() -> None:
     p_doctor.add_argument("--solo", action="store_true", help="skip the swarm-only feature check")
     p_doctor.add_argument("--config", help="setup TOML to read `model` and `repo` from")
     p_doctor.set_defaults(func=doctor_command)
+
+    p_receipts = commands.add_parser(
+        "receipts", help="show who made each change of a run, why, and how it was verified")
+    p_receipts.add_argument("workspace")
+    p_receipts.add_argument("--agent", metavar="ID", help="only this agent's changes (for example a2)")
+    p_receipts.add_argument("--json", action="store_true", help="print the receipts as JSON")
+    p_receipts.add_argument("--write", action="store_true",
+                            help="also (re)write logs/receipts.json and logs/receipts.md")
+    p_receipts.set_defaults(func=receipts_command)
 
     args = parser.parse_args()
     try:

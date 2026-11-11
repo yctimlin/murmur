@@ -7,6 +7,8 @@ Modes (MURMUR_FAKE_CODEX_MODE):
   fail-with-commit push one commit, then exit as fail
   commit           push one commit to main, then exit 0
   draft-only       push one commit to draft/a1 (not main), then exit 0
+  receipts         every agent commits a file and pushes it to main, logged the way Codex
+                   0.163 logs a command (see _work); a swarm also gets a message board
   hang             sleep until SIGTERM or SIGINT; with MURMUR_FAKE_CODEX_SIGNAL_FILE, write
                    "ready" there once the handlers are installed and the signal name on exit
   resistant        exit 0 after forking a SIGTERM-ignoring child
@@ -39,10 +41,12 @@ import json
 import os
 import re
 import signal
+import sqlite3
 import subprocess
 import sys
 import time
 import tomllib
+from datetime import datetime, timezone
 from pathlib import Path
 
 # (input, cached input, output) per session: the root, then peer number n gets n times PEER.
@@ -72,7 +76,7 @@ def main() -> int:
         print(f"fake codex: unexpected args {args}", file=sys.stderr)
         return 2
     mode = os.environ.get("MURMUR_FAKE_CODEX_MODE", "ok")
-    _write_rollouts(args)
+    _write_rollouts(args, _work(args) if mode == "receipts" else {})
     _write_final(args, None if mode == "hang" else "done\n")
     if mode == "hang":
         return _hang()
@@ -106,8 +110,10 @@ def _catalog() -> dict:
     }
 
 
-def _event(kind: str, payload: dict) -> str:
-    return json.dumps({"timestamp": "2026-11-10T00:00:00.000Z", "type": kind, "payload": payload})
+def _event(kind: str, payload: dict, at: float | None = None) -> str:
+    stamp = "2026-11-10T00:00:00.000Z" if at is None else (
+        datetime.fromtimestamp(at, timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z"))
+    return json.dumps({"timestamp": stamp, "type": kind, "payload": payload})
 
 
 def _token_count(tokens: tuple[int, int, int], fraction: float) -> str:
@@ -127,7 +133,70 @@ def _user_message(text: str) -> str:
                                     "content": [{"type": "input_text", "text": text}]})
 
 
-def _write_rollouts(args: list[str]) -> None:
+def _command(script: str, cwd: Path, exit_code: int, output: str) -> str:
+    """A finished shell command, as Codex 0.163 records it in a rollout."""
+    item = {"type": "CommandExecution", "command": ["/bin/bash", "-lc", script], "cwd": f"file://{cwd}",
+            "status": "completed" if exit_code == 0 else "failed", "aggregated_output": output,
+            "exit_code": exit_code}
+    return _event("event_msg", {"type": "item_completed", "item": item}, at=time.time())
+
+
+def _say(text: str) -> str:
+    message = {"type": "message", "role": "assistant", "phase": "commentary",
+               "content": [{"type": "output_text", "text": text}]}
+    return _event("response_item", message, at=time.time())
+
+
+def _work(args: list[str]) -> dict[str, list[str]]:
+    """Each agent adds `<id>.txt` on main; returns the rollout lines that record it, by agent.
+
+    The first agent runs the tests before it commits. The second only says it verified its
+    change, in the `Verified:` line of its commit message, and any others say `not run`. In
+    a swarm the first agent also posts a claim and a `DONE` that names its commit.
+    """
+    ws = _workspace(args)
+    meta = json.loads((ws / "murmur.json").read_text())
+    lines: dict[str, list[str]] = {}
+    posts = []
+    for number, agent in enumerate(meta["agents"]):
+        name, clone = agent["id"], Path(agent["clone"])
+        verified = ("python3 -m unittest -q (2 tests)", "read the diff", "not run")[min(number, 2)]
+        own = lines[name] = [_say(f"I will add {name}.txt.")]
+        posts.append((name, f"{name} claims {name}.txt", time.time()))
+        if number == 0:
+            own.append(_command("python3 -m unittest -q", clone, 0, "Ran 2 tests in 0.001s\n\nOK\n"))
+        _git(["git", "pull", "-q", "--rebase", "origin", "main"], clone)
+        (clone / f"{name}.txt").write_text(f"{name}\n")
+        _git(["git", "add", f"{name}.txt"], clone)
+        message = f"Add {name}.txt\n\nOne file per agent.\n\nVerified: {verified}"
+        script = f"git add {name}.txt && git commit -m 'Add {name}.txt' && git push origin HEAD:main"
+        output = _git(["git", "commit", "-m", message], clone) + _git(["git", "push", "origin", "HEAD:main"], clone)
+        own.append(_command(script, clone, 0, output))
+        if number == 0:
+            sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=clone, capture_output=True,
+                                 text=True, check=True).stdout.strip()
+            posts.append((name, f"DONE {name}.txt is on origin/main at {sha}; tests pass", time.time()))
+    if meta["mode"] != "solo":
+        _write_board(Path(os.environ["CODEX_HOME"]), posts)
+    return lines
+
+
+def _write_board(home: Path, posts: list[tuple[str, str, float]]) -> None:
+    """Codex's message board: the columns of its `posts` table that murmur reads."""
+    db = sqlite3.connect(home / "agent_message_board_1.sqlite")
+    db.execute("CREATE TABLE posts (seq INTEGER PRIMARY KEY AUTOINCREMENT, board TEXT NOT NULL, "
+               "id TEXT NOT NULL, channel TEXT NOT NULL, root TEXT NOT NULL, author TEXT NOT NULL, "
+               "timestamp INTEGER NOT NULL, body_search TEXT NOT NULL, payload TEXT NOT NULL)")
+    for number, (agent, text, at) in enumerate(posts):
+        db.execute("INSERT INTO posts (board, id, channel, root, author, timestamp, body_search, payload) "
+                   "VALUES ('board', ?, 'tasks', ?, ?, ?, ?, ?)",
+                   (f"post-{number}", f"post-{number}", f"/root/{agent}", int(at * 1e6),
+                    text.lower(), json.dumps({"metadata": {"author": f"/root/{agent}"}, "text": text})))
+    db.commit()
+    db.close()
+
+
+def _write_rollouts(args: list[str], work: dict[str, list[str]]) -> None:
     style = os.environ.get("MURMUR_FAKE_CODEX_ROLLOUTS", "full")
     if style == "none":
         return
@@ -140,7 +209,8 @@ def _write_rollouts(args: list[str]) -> None:
     rollouts = []
     if meta["mode"] == "solo":
         head = [_event("session_meta", {"id": "solo"})]
-        rollouts.append(("solo", head, [_call("exec_command", '{"cmd": "git status"}')], PEER_TOKENS))
+        calls = [_call("exec_command", '{"cmd": "git status"}'), *work.get("solo", [])]
+        rollouts.append(("solo", head, calls, PEER_TOKENS))
     else:
         root_head = [_event("session_meta", {"id": "root", "forked_from_id": None, "source": "exec"}),
                      _user_message(prompt)]
@@ -161,7 +231,8 @@ def _write_rollouts(args: list[str]) -> None:
             if forked:
                 head += root_head
             read = _call("exec_command", json.dumps({"cmd": f"cat {ws}/prompts/{agent['id']}.md"}))
-            peers.append((agent["id"], head, [read], tuple(n * number for n in PEER_TOKENS)))
+            calls = [read, *work.get(agent["id"], [])]
+            peers.append((agent["id"], head, calls, tuple(n * number for n in PEER_TOKENS)))
         rollouts += [("root", root_head, spawns, ROOT_TOKENS), *peers]
     for name, head, calls, tokens in rollouts:
         lines = [*head, _token_count(tokens, 0.5), *calls, _token_count(tokens, 1.0)]
@@ -293,11 +364,12 @@ def _commit_and_push(args: list[str], branch: str = "main") -> None:
     _git(["git", "push", "origin", f"HEAD:refs/heads/{branch}"], clone)
 
 
-def _git(args: list[str], cwd: Path) -> None:
+def _git(args: list[str], cwd: Path) -> str:
     result = subprocess.run(args, cwd=cwd, capture_output=True, text=True)
     if result.returncode != 0:
         sys.stderr.write(result.stderr or result.stdout)
         raise SystemExit(result.returncode or 1)
+    return result.stdout + result.stderr
 
 
 if __name__ == "__main__":
