@@ -3,7 +3,8 @@ points to.
 
 Nobody will answer questions. Where the brief is ambiguous, decide, and record the decision and why
 in `PR.md` at the repo root. `PR.md` should cover what changed, the decisions you made, how you
-verified the work, and "How to see it". Put scratch notes in `.work/`. Push your work to
+verified the work, and "How to see it". Put scratch notes in `.work/`. End every commit message
+with the line `Verified: <the check you ran and its result>`, or `Verified: not run`. Push your work to
 `origin/main` (never force-push, never open pull requests, and push nowhere else except a
 `draft/<your id>` branch when your instructions ask for one); the result is `origin/main` when the
 work ends. Finish when the work is something you would ship. Hard cap: $cap.

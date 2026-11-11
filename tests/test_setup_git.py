@@ -35,6 +35,7 @@ def test_prompts_render_with_fixes(tmp_path: Path):
 
     closing = render("closing.md", cap="1h")
     assert "draft/<your id>" in closing and "port 0" in closing
+    assert "`Verified: <the check you ran and its result>`" in closing and "`Verified: not run`" in closing
     peer = render("peer.md", id="a1", n="2", peer_ids="a1, a2", clone="/c", env="", draft="10")
     assert "$MURMUR_AGENT" in peer
     root = render("root.md", n="2", spawns="-", wait_ms=str(ROOT_WAIT_MS))
