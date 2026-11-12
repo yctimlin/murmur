@@ -92,6 +92,7 @@ murmur setup BRIEF [--repo DIR] [--base REF] [--peers N | --solo] [--setup CMD].
                    [--model M] [--effort E] [--cap 3h] [--port-base N]
                    [--into DIR] [--id ID] [--config FILE] [--max-file-mb N]
 murmur run WORKSPACE
+murmur receipts WORKSPACE [--agent ID] [--json] [--write]
 ```
 
 | Option | Default | Notes |
@@ -111,7 +112,8 @@ murmur run WORKSPACE
 | `--id` | random | Workspace id |
 | `--config` | none | TOML with any of the above, plus `setup_per_agent` and `agent_env` templates (`$agent`, `$index`, `$port_base`, `$run`). Flags override it. |
 
-`murmur run` prints how long the run took, how many commits it made, and the `git fetch` command.
+`murmur run` prints how long the run took, how many commits it made, where the
+[change receipts](#change-receipts) are, and the `git fetch` command.
 A non-zero exit also prints a short diagnostic and the log path (`logs/session.err`). `PR.md` at
 the root of the result is the agents' summary.
 `logs/run.json` records `active_seconds` and `stalled_seconds`; only running time counts against the cap.
@@ -159,6 +161,80 @@ peer): input, of which cached, and output. `logs/run.json` records the same numb
 Peers are meant to start without the launcher's conversation (see the workarounds below). If the
 session logs show that Codex copied it into a peer anyway, `murmur run` says so on stderr and
 `logs/run.json` counts those peers in `forked_peers`.
+
+### Change receipts
+
+```text
+murmur receipts WORKSPACE [--agent ID] [--json] [--write]
+```
+
+At the end, `murmur run` writes `logs/receipts.md` and `logs/receipts.json`: one receipt for every
+commit the run made, on `main` or only on a `draft/*` branch. `murmur receipts` prints the same for
+any workspace, finished or still running: `--agent a2` keeps one agent's commits, `--json` prints
+the data, and `--write` writes the two files again. A receipt says:
+
+- **who** authored the commit, and which agent applied it when that was another one;
+- **why**: the commit message, what the agent said it was doing just before, and the board posts
+  that name the commit (the author's other posts on the way to it are marked "linked by time");
+- **change**: parent and new SHA, files, lines added and removed;
+- **verified**: the test, lint and build commands in the author's session log between its previous
+  commit and this one, each with the exit status Codex recorded and the end of its output. What an
+  agent ran after its last commit is listed there too, but not graded.
+
+A receipt keeps what murmur saw apart from what an agent said:
+
+| Grade | Meaning |
+|-------|---------|
+| `OBSERVED, passed` / `OBSERVED, FAILED` | The last test (or lint, or build) run that has an exit status of its own exited 0 / non-zero |
+| `OBSERVED, result unclear` | A check ran, but the exit status is not its own: `pytest \| tail`, `pytest; git status`, or a `pytest && git push` that failed |
+| `CLAIMED only` | An agent says it was verified (the `Verified:` line the prompt asks for in every commit message, or a board post that names the commit), but no check was seen |
+| `NOT OBSERVED` | Neither |
+
+For example, from a real solo run on a toy repository. The first test run was a command of its
+own. The second was `python3 -m unittest -q; git diff --check`, whose exit status is that of
+`git diff`:
+
+```text
+change receipts for solo2 (solo, gpt-6-astra/medium)
+base 5876ffe -> main 001b968: 1 commit(s) on main, 0 only on other branches
+
+001b968  solo  Add top-word limits and JSON output
+  who:      solo <solo@murmur.local>, on main, pushed to main 08:05:38Z
+  why:      said before: "All 15 tests pass, including default output, tie ordering, combined flags,
+              empty results, and invalid limits. The README and `PR.md` are updated. I’ll commit the
+              changes and push to `origin/main`."
+  change:   5876ffe -> 001b968, 4 files, +186 -6: PR.md, README.md, test_wordstats.py, wordstats.py
+  verified: OBSERVED, passed: the last test run with an exit status of its own in solo's session log
+              exited 0; a later test run has no exit status of its own
+            ok   exit 0  python3 -m unittest -q
+                 test, before the commit, 08:04:58Z, in work/repo [...63546566f60a.jsonl:29]
+                 | ----------------------------------------------------------------------
+                 | Ran 15 tests in 0.308s
+                 | OK
+            ?    exit 0  python3 -m unittest -q  (the whole command line's status, not this check's own)
+                 test, before the commit, 08:05:37Z, in work/repo [...63546566f60a.jsonl:46]
+                 | [...]
+                 | Ran 15 tests in 0.281s
+                 | OK
+            claim (commit message): "Verified: python3 -m unittest -q passed (15 tests); git diff
+              --check passed"
+```
+
+Receipts are read from the run's git history, session logs and message board. Nothing is run
+again, and nothing in the workspace changes apart from the two files in `logs/`. Strings that look
+like credentials are masked, home and workspace paths are shortened, and long output is cut; read
+the result before you share it all the same. The limits to keep in mind:
+
+- Only recognisable test, lint and build commands count. Running the program by hand or looking at
+  a screenshot is not a check here, so `NOT OBSERVED` does not mean nobody looked.
+- A check is placed by where it sits in its agent's log, not by the tree it ran on. One that
+  follows a `git checkout` or `git switch` in the same command line (a peer trying another
+  peer's draft) is listed but not graded; a checkout in an earlier command is not noticed. A
+  commit is tied to the log by the `[branch sha]` line `git commit` printed; when only its
+  author time places it (after a rebase, or `git commit -q`), the receipt says the link is
+  inferred.
+- A peer that only reviewed made no commit: its checks are listed under that peer, not on the
+  commits it reviewed.
 
 ### Plain-folder input
 
