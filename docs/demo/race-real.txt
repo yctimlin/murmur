@@ -1,0 +1,117 @@
+murmur replay: swarm2 vs solo2
+A swarm2: a murmur workspace: Codex session logs, the message board, origin.git and logs/run.json
+B solo2: a murmur workspace: Codex session logs, the message board, origin.git and logs/run.json
+clock: wall-clock time since each run's first session-log entry, as the logs recorded it. Nothing is
+    stretched, compressed or aligned, and time the machine was stalled is included; the launcher's
+    active and stalled totals (logs/run.json) are listed separately.
+
+same task and settings: brief sha256 2c770a27b992, gpt-6-astra/medium, base 5876ffe, cap 15m
+
+  run                          A swarm2                            B solo2
+  mode                         swarm, 2 peers                      solo
+  model / effort               gpt-6-astra / medium                gpt-6-astra / medium
+  finished after (wall clock)  4:26                                1:45                                A took 2.5x as long
+  last change on main          3:52                                1:40
+  launcher clock               266.6 s = 266.6 active + 0 stalled  105.6 s = 105.6 active + 0 stalled
+  input tokens                 1,234,194                           108,013                             A used 11.4x as many
+    of them cached             1,117,184                           88,832
+    not cached                 117,010                             19,181
+  output tokens                11,870                              3,359                               A used 3.5x as many
+  commits on main              4                                   1
+  lines on main                4 files, +194 -8                    4 files, +186 -6
+  draft branches left          draft/a1, draft/a2                  none
+  exit                         0, delivered                        0, delivered
+  quality score                no quality score supplied           no quality score supplied
+
+where each run comes out ahead (only on what is measured above):
+  A swarm2: nothing
+  B solo2: finished sooner (1:45 against 4:26); used fewer input tokens (108,013 against 1,234,194);
+    used fewer output tokens (3,359 against 11,870)
+  not compared: quality: no quality score supplied for both runs
+
+lanes (one column is 4.2 s on the clock above)
+  r read  e edit  t test/lint/build  g git  c board and agents  x other command  . in a turn, between tool calls
+  p board post  D pushed to a draft branch  M landed on main  C commit (push time unknown)  [ ] turn start and end
+A swarm2 (swarm, 2 peers), finished after 4:26: exit 0, delivered
+  root |[cc...cc...cccccccccccccccccccccccccccccccccccccccccccccccccccc]
+  a1   | [r...rcc.c.pp..............p..Dx.t.p.c.p.g...Mp...t.p...]
+  a2   |  [r.rc.p...........t..c.....D.ptt.p..pc.M.......M..t..Mpt..p.]
+B solo2 (solo), finished after 1:45: exit 0, delivered
+  solo |[rg...........t......e..M]
+       0:00                                                         4:26
+
+agents
+  A root  8 tool calls (8 coord); 168,582 input (115,840 cached), 296 output
+  A a1    27 tool calls (4 test, 1 edit, 4 git, 12 coord, 1 run, 5 read); 9 posts; 1 commit on main;
+          518,132 input (472,832 cached), 5,075 output
+  A a2    26 tool calls (7 test, 2 git, 13 coord, 4 read); 11 posts; 3 commits on main; 547,480
+          input (528,512 cached), 6,499 output
+  B solo  10 tool calls (2 test, 2 edit, 3 git, 1 run, 2 read); 1 commit on main; 108,013 input
+          (88,832 cached), 3,359 output
+
+key events (turns, posts, commits, checks; --all lists every tool call)
+    0:00  A root turn start
+    0:00  B solo turn start
+    0:05  A a1   turn start
+    0:09  A a2   turn start
+    0:36  A a2   post       #tasks CLAIM a2 draft direction: compatibility-first CLI preserving original no-flag argument/er...
+    0:51  A a1   post       #tasks CLAIM a1 draft direction: compatibility-first small argparse CLI, preserving existing alp...
+    0:56  A a1   post       #findings FACT a1 baseline: AGENTS.md requires Python 3.11+, stdlib only, python3 -m unittest -q...
+    1:01  B solo test       python3 -m unittest -q (check passed, exit 0)
+    1:24  A a2   test       mkdir -p .work ⏎ cat > .work/capture.py <<'PY' ⏎ cat > wordstats.py <<'PY' ⏎ cat > test_wordstat... (exit 0, not the check's own)
+    1:40  B solo test       python3 -m unittest -q; git diff --check (exit 0, not the check's own)
+    1:40  B solo on main    001b968 Add top-word limits and JSON output (+186 -6)
+    1:45  B solo turn end   Implemented `top_words`, `--top N`, and combinable `--json`, preserving default output. Updated...
+    1:59  A a1   post       #tasks a1 saw earlier a2 claim; revise my direction to simplest conventional argparse parser for...
+    1:59  A a1   test       cat > wordstats.py <<'EOF' ⏎ cat > test_wordstats.py <<'EOF' ⏎ cat > README.md <<'EOF' ⏎ cat > P... (check passed, exit 0)
+    2:03  A a2   draft      draft/a2: 59c70e1 Add ranked words and ordered JSON with legacy CLI compatibility (+154 -8)
+    2:04  A a2   post       #tasks a2 direction clarification: earliest claim above reserved compatibility-first including e...
+    2:04  A a2   post       #findings FACT a2 credential-free capture harness ready: from any clone run python3 <workspace>/...
+    2:04  A a2   test       python3 - <<'PY' ⏎ cat > PR.md <<'MD' ⏎ python3 -m unittest -q ⏎ git add wordstats.py test_words... (exit 0, not the check's own)
+    2:09  A a1   draft      draft/a1: 0acd9f5 Add ranked words and JSON output draft (+146 -11)
+    2:10  A a1   post       #findings DRAFT a1 ready on draft/a1: conventional single argparse parser, 10 tests passing. How...
+    2:11  A a2   post       #findings DRAFT a2 posted 59c70e1 on origin/draft/a2. How to see: git checkout draft/a2; python3...
+    2:17  A a2   test       git fetch origin ⏎ git checkout --detach origin/draft/a1 ⏎ cat wordstats.py test_wordstats.py ⏎... (exit 0, not the check's own)
+    2:22  A a1   test       git fetch origin && git switch --detach origin/draft/a2 && cat wordstats.py test_wordstats.py PR... (check passed, exit 0)
+    2:28  A a2   post       #findings RANK a2: 1) a2 59c70e1, 2) a1 0acd9f5. Ran both drafts' 10-test suites and real CLI ca...
+    2:32  A a1   post       #findings RANK a1: 1) a2 59c70e1, 2) a1 0acd9f5. Ran both via shared real-CLI capture (12 popula...
+    2:32  A a1   post       #tasks CLAIM a1 post-selection test strengthening: test existing apostrophe/punctuation tokeniza...
+    2:39  A a2   post       #tasks Proposed shared plan once winner selected: preserve a2 legacy no-flags routing; common ro...
+    2:46  A a1   post       #tasks a1 agrees with a2 proposed post-selection simplification from heapq to sorted(... )[:n];...
+    2:50  A a2   on main    59c70e1 Add ranked words and ordered JSON with legacy CLI compatibility (+154 -8)
+    2:51  A a2   post       #findings DONE winner integrated: 59c70e1 now origin/main (fast-forward, no force). Both peers r...
+    3:11  A a1   on main    c41f7f9 Cover tokenization, tied cutoffs and CLI argument placement (+17 -0)
+    3:12  A a1   test       python3 -m unittest -q && git add test_wordstats.py && git commit -m 'Cover tokenization, tied c... (check passed, exit 0)
+    3:19  A a1   post       #findings DONE a1 test improvements integrated c41f7f9 on origin/main: tokenizer apostrophe/punc...
+    3:26  A a2   on main    76cf4f0 Document chosen plan and simplify ranked selection (+52 -32)
+    3:27  A a2   test       python3 - <<'PY' ⏎ cat > PR.md <<'MD' ⏎ python3 -m unittest -q ⏎ git add wordstats.py PR.md ⏎ gi... (exit 0, not the check's own)
+    3:27  A a2   post       #findings DONE a2 shared plan/comparison and simplified sort/slice integrated on origin/main. PR...
+    3:33  A a1   test       git pull --rebase origin main && python3 -m unittest -q && python3 <workspace>/work/peers/a2/.wo... (check passed, exit 0)
+    3:37  A a2   test       git pull --rebase origin main ⏎ python3 -m unittest -q ⏎ python3 .work/capture.py ⏎ cat test_wor... (exit 0, not the check's own)
+    3:41  A a1   post       #findings REVIEW a1 latest main 76cf4f0: pulled final production/PR changes; 13 unit tests pass,...
+    3:52  A a2   on main    a0554f0 Record integrated validation results (+4 -1)
+    3:52  A a2   post       #findings REVIEW a2 latest main 76cf4f0: pulled integrated a1 tests; all 13 tests pass, git diff...
+    3:53  A a2   test       python3 - <<'PY' ⏎ python3 -m unittest -q ⏎ git add PR.md ⏎ git commit -m 'Record integrated val... (exit 0, not the check's own)
+    3:53  A a2   post       #findings DONE final verification documentation pushed to origin/main. a1 please pull latest mai...
+    3:57  A a1   turn end   Implemented and pushed to `origin/main` at `76cf4f0`. - Added `top_words`, `--top N`, and combin...
+    4:01  A a2   test       git pull --rebase origin main ⏎ git diff --check ⏎ python3 -m unittest -q ⏎ git status --short ⏎... (exit 0, not the check's own)
+    4:13  A a2   post       #findings DONE a2 final receipt: latest main a0554f0 pulled and reviewed; 13 tests pass, git dif...
+    4:19  A a2   turn end   Implemented and pushed to `origin/main` at `a0554f0`. - Added `top_words`, `--top N`, and combin...
+    4:26  A root turn end   done
+
+change receipts (`murmur receipts WORKSPACE` prints each in full)
+    2:50  A 59c70e1  a2  Add ranked words and ordered JSON with legacy CLI compatibil...  [main, 4 file(s) +154 -8]
+          verified: OBSERVED, result unclear: a test command ran in a2's session log, but its own exit status was not recorded or is hidden by a pipe or a l...
+    3:11  A c41f7f9  a1  Cover tokenization, tied cutoffs and CLI argument placement  [main, 1 file(s) +17 -0]
+          verified: OBSERVED, passed: the last test run with an exit status of its own in a1's session log exited 0
+    3:26  A 76cf4f0  a2  Document chosen plan and simplify ranked selection  [main, 2 file(s) +52 -32]
+          verified: OBSERVED, result unclear: a test command ran in a2's session log, but its own exit status was not recorded or is hidden by a pipe or a l...
+    3:52  A a0554f0  a2  Record integrated validation results  [main, 1 file(s) +4 -1]
+          verified: OBSERVED, result unclear: a test command ran in a2's session log, but its own exit status was not recorded or is hidden by a pipe or a l...
+    2:09  A 0acd9f5  a1  Add ranked words and JSON output draft  [draft/a1, 4 file(s) +146 -11]
+          verified: OBSERVED, passed: the last test run with an exit status of its own in a1's session log exited 0
+    1:40  B 001b968  solo  Add top-word limits and JSON output  [main, 4 file(s) +186 -6]
+          verified: OBSERVED, passed: the last test run with an exit status of its own in solo's session log exited 0; a later test run has no exit...
+
+note: This compares one run with one run. Runs of the same task vary, so it shows what happened
+  here, not what usually happens.

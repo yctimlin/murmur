@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<title>murmur replay</title>
+<style>
+:root {
+  --bg: #fbfbfa; --panel: #ffffff; --ink: #1c2024; --dim: #626b76; --line: #dcdfe3; --band: #eef1f4;
+  --a: #0b7285; --b: #a61e4d; --warn-bg: #fff4d6; --warn-ink: #6b4a00; --ok-bg: #e7f5ec; --ok-ink: #1d5a36;
+  --test: #2e9e5b; --edit: #2f7ed8; --git: #8a5cd0; --coord: #e08a1c; --run: #56616e; --read: #a9b3bd;
+  --main: #d4a106; --bad: #c92a2a;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14171a; --panel: #1c2024; --ink: #e6e8ea; --dim: #9aa4af; --line: #343a41; --band: #262b31;
+    --a: #4fc3d6; --b: #f277a1; --warn-bg: #3d3212; --warn-ink: #f4d58a; --ok-bg: #173323; --ok-ink: #9ad9b4;
+    --read: #5b6570; --run: #8d98a5;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 1180px; margin: 0 auto; padding: 18px 18px 48px; }
+h1 { font-size: 20px; margin: 0 0 4px; }
+h2 { font-size: 14px; margin: 26px 0 8px; text-transform: uppercase; letter-spacing: .05em; color: var(--dim); }
+p { margin: 4px 0; }
+.dim { color: var(--dim); }
+.mono, pre, code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.tag { display: inline-block; min-width: 20px; padding: 0 6px; border-radius: 4px; color: #fff; font-weight: 700;
+  text-align: center; }
+.tag.A { background: var(--a); } .tag.B { background: var(--b); }
+@media (prefers-color-scheme: dark) { .tag { color: #111; } }
+.box { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); padding: 10px 14px; margin: 10px 0; }
+.box.warn { background: var(--warn-bg); color: var(--warn-ink); border-color: transparent; }
+.box.ok { background: var(--ok-bg); color: var(--ok-ink); border-color: transparent; }
+.box.example { background: var(--bad); color: #fff; border-color: transparent; font-weight: 700; }
+.box ul { margin: 4px 0 0; padding-left: 20px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+.card { border: 1px solid var(--line); border-top: 4px solid var(--line); border-radius: 8px; background: var(--panel);
+  padding: 10px 14px; }
+.card.A { border-top-color: var(--a); } .card.B { border-top-color: var(--b); }
+.card h3 { margin: 0 0 8px; font-size: 15px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 14px; }
+.stat b { display: block; font-size: 18px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.stat span { color: var(--dim); font-size: 12px; }
+.stat.small b { font-size: 14px; font-weight: 600; }
+table { border-collapse: collapse; width: 100%; }
+td, th { text-align: left; padding: 3px 12px 3px 0; vertical-align: top; border-bottom: 1px solid var(--line); }
+th { color: var(--dim); font-weight: 600; }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 8px 0; }
+button, select { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 6px; padding: 4px 12px; cursor: pointer; }
+button#play { min-width: 76px; font-weight: 700; }
+input[type=range] { flex: 1 1 260px; min-width: 160px; accent-color: var(--a); }
+#now { font-variant-numeric: tabular-nums; min-width: 110px; }
+.run { margin: 12px 0 4px; }
+.runhead { margin-bottom: 3px; }
+.lane { display: flex; align-items: stretch; height: 30px; }
+.who { flex: 0 0 64px; font-size: 12px; line-height: 30px; color: var(--dim); overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; }
+.track { position: relative; flex: 1 1 auto; border-bottom: 1px solid var(--line); overflow: hidden; }
+.turn { position: absolute; top: 3px; bottom: 3px; background: var(--band); border-radius: 3px; }
+.ev { position: absolute; bottom: 4px; height: 11px; min-width: 3px; border-radius: 2px; cursor: pointer; }
+.ev.test { background: var(--test); } .ev.edit { background: var(--edit); } .ev.git { background: var(--git); }
+.ev.coord { background: var(--coord); opacity: .55; height: 4px; bottom: 4px; } .ev.run { background: var(--run); }
+.ev.read { background: var(--read); } .ev.failed { outline: 2px solid var(--bad); }
+.pt { position: absolute; top: 3px; width: 9px; height: 9px; margin-left: -4px; cursor: pointer; }
+.pt.post { border-radius: 50%; background: var(--coord); }
+.pt.main { background: var(--main); transform: rotate(45deg); outline: 1px solid var(--ink); z-index: 2; }
+.pt.draft { border: 2px solid var(--main); transform: rotate(45deg); }
+.pt.commit { border: 2px solid var(--git); }
+.pt.turn_start, .pt.turn_end { top: 2px; width: 3px; height: 26px; margin-left: -1px; background: var(--dim); }
+.pt.error { background: var(--bad); }
+.future { opacity: .12; }
+.cursor { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--ink); opacity: .55;
+  pointer-events: none; z-index: 3; }
+.finish { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px dashed var(--bad); pointer-events: none; }
+.flagrow { position: relative; height: 18px; margin-left: 64px; }
+.flag { position: absolute; top: 0; font-size: 12px; font-weight: 700; color: var(--bad); white-space: nowrap;
+  padding-left: 5px; border-left: 2px solid var(--bad); }
+.flag.left { transform: translateX(-100%); border-left: 0; border-right: 2px solid var(--bad); padding: 0 5px 0 0; }
+.axis { position: relative; height: 18px; margin-left: 64px; font-size: 11px; color: var(--dim); }
+.axis span { position: absolute; top: 2px; padding-left: 3px; border-left: 1px solid var(--line); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--dim); margin: 6px 0; }
+.legend i { display: inline-block; position: static !important; width: 10px; height: 10px !important;
+  margin: 0 5px 0 0 !important; vertical-align: -1px; }
+.legend i.turn_start, .legend i.turn_end { width: 3px; }
+#detail { min-height: 44px; font-size: 13px; }
+.meter { display: grid; grid-template-columns: 150px 1fr; gap: 4px 12px; align-items: center; margin: 6px 0; }
+.bar { position: relative; height: 16px; background: var(--band); border-radius: 4px; overflow: hidden; }
+.bar i { position: absolute; left: 0; top: 0; bottom: 0; }
+.bar i.in { opacity: .45; } .bar.A i { background: var(--a); } .bar.B i { background: var(--b); }
+.meter .n { font-variant-numeric: tabular-nums; }
+.agents { grid-column: 2; font-size: 12px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 18px; }
+#log { max-height: 440px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--panel);
+  font-size: 12.5px; }
+.row { display: grid; grid-template-columns: 58px 22px 46px 82px 1fr; gap: 6px; padding: 2px 8px;
+  border-bottom: 1px solid var(--line); }
+.row .tag { align-self: start; }
+.row .t { font-variant-numeric: tabular-nums; color: var(--dim); text-align: right; }
+.row .x { overflow-wrap: anywhere; }
+.row.hidden, .row.off { display: none; }
+details { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); margin: 6px 0; }
+details.future { opacity: .35; }
+summary { cursor: pointer; padding: 6px 10px; overflow-wrap: anywhere; }
+pre { margin: 0; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 12px; overflow-x: auto; }
+.badge { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: 11px; font-weight: 700;
+  border: 1px solid currentColor; }
+.badge.observed-pass { color: var(--test); } .badge.observed-fail { color: var(--bad); }
+.badge.observed-unclear, .badge.claimed { color: var(--coord); } .badge.none, .badge.unavailable { color: var(--dim); }
+footer { margin-top: 28px; font-size: 12.5px; color: var(--dim); }
+footer li { margin: 2px 0; overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<main>
+<h1 id="title">murmur replay</h1>
+<div id="example" class="box example" hidden></div>
+<div id="sources" class="dim"></div>
+<noscript><div class="box warn">This page draws the replay with JavaScript. The data is embedded in this file;
+nothing is fetched from the network.</div></noscript>
+<div id="compat"></div>
+
+<h2>Summary</h2>
+<div id="cards" class="cards"></div>
+<div id="ahead" class="box"></div>
+<details id="tablebox"><summary>All recorded facts, side by side</summary><div style="padding: 4px 12px 10px">
+<table id="table"></table><div id="facts"></div></div></details>
+
+<h2>Timeline</h2>
+<p id="clocknote" class="dim"></p>
+<div class="controls">
+  <button id="play" type="button">Play</button>
+  <label>speed <select id="speed"></select></label>
+  <input id="scrub" type="range" min="0" step="0.1" aria-label="time on the clock">
+  <span id="now" class="mono"></span>
+</div>
+<div id="lanes"></div>
+<div class="axis" id="axis"></div>
+<div class="legend" id="legend"></div>
+<div id="detail" class="box dim">Click a mark in a lane to see what it was.</div>
+
+<h2>Tokens at this point of the clock</h2>
+<p class="dim">Each bar is a run's input tokens so far, on one scale; the darker part was read from the cache.</p>
+<div id="meters"></div>
+
+<div class="cols">
+  <section>
+    <h2>Events</h2>
+    <label class="dim"><input id="every" type="checkbox"> every tool call and message (default: turns, posts, commits, checks)</label>
+    <div id="log"></div>
+  </section>
+  <section>
+    <h2>Change receipts</h2>
+    <p class="dim">Who made each change, why, and which checks were seen to run. OBSERVED means the command and its
+    exit status are in the agent's session log; CLAIMED means only an agent says so.</p>
+    <div id="receipts"></div>
+  </section>
+</div>
+
+<footer id="footer"></footer>
+</main>
+<script>
+const DATA = /*MURMUR_REPLAY_DATA*/null;
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  // Everything from the data goes in as text nodes, never as markup.
+  function el(tag, cls, text) {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+  function add(parent, ...nodes) { nodes.forEach((node) => parent.appendChild(node)); return parent; }
+  function clock(seconds) {
+    if (seconds === null || seconds === undefined) return "?";
+    const whole = Math.floor(seconds), h = Math.floor(whole / 3600), m = Math.floor((whole % 3600) / 60);
+    const s = String(whole % 60).padStart(2, "0");
+    return h ? h + ":" + String(m).padStart(2, "0") + ":" + s : m + ":" + s;
+  }
+  const num = (value) => value === null || value === undefined ? "n/a" : Number(value).toLocaleString("en-US");
+  const TOOLS = ["test", "edit", "git", "coord", "run", "read"];
+  const POINTS = ["post", "main", "draft", "commit", "turn_start", "turn_end", "error"];
+  const KEY = new Set(["turn_start", "turn_end", "post", "main", "draft", "commit", "test", "error"]);
+  const NAMES = { test: "test / lint / build", edit: "edit", git: "git", coord: "board and agent tools",
+    run: "other command", read: "read", post: "board post", main: "landed on main", draft: "pushed to a draft branch",
+    commit: "commit (push time unknown)", turn_start: "turn start", turn_end: "turn end", say: "said", error: "error" };
+  const runs = DATA.runs;
+  const longest = Math.max(1, ...runs.map((run) => run.duration_s));
+  const span = longest * 1.04;
+  const pct = (seconds) => (100 * Math.min(seconds, span) / span) + "%";
+  const shape = (run) => run.mode === "solo" ? "solo" : run.mode + ", " + run.peers + " peers";
+  const tag = (run) => el("span", "tag " + run.label, run.label);
+  const rowOf = (key) => DATA.comparison.find((row) => row.key === key);
+  const timed = [];   // {t, node, cls}: gets `cls` while the clock is before t
+  function exitNote(event) {   // a check's verdict, or an exit status that is not 0
+    if (event.exit === null || event.exit === undefined) return "";
+    if (event.check === "unclear") return " (exit " + event.exit + ", not the check's own)";
+    if (event.check) return " (check " + (event.check === "passed" ? "passed" : "FAILED") + ", exit " + event.exit + ")";
+    return event.exit ? " (exit " + event.exit + ")" : "";
+  }
+
+  // --- head ---
+  document.title = "murmur replay: " + DATA.title;
+  $("title").textContent = "murmur replay: " + DATA.title;
+  if (DATA.example) { $("example").hidden = false; $("example").textContent = "EXAMPLE DATA: " + DATA.example; }
+  runs.forEach((run) => add($("sources"), add(el("p"), tag(run), el("span", "", " " + run.id + ": " + run.source.description))));
+  if (runs.length === 2) {
+    const box = el("div", "box " + (DATA.compatibility.length ? "warn" : "ok"));
+    if (DATA.compatibility.length) {
+      add(box, el("b", "", "Not a like-for-like pair. Read the comparison with this in mind:"));
+      const list = el("ul");
+      DATA.compatibility.forEach((line) => add(list, el("li", "", line)));
+      add(box, list);
+    } else {
+      const first = runs[0];
+      box.textContent = "Same task and settings: brief sha256 " + String(first.brief.sha256).slice(0, 12) + ", " +
+        first.model + "/" + first.effort + ", base " + String(first.base).slice(0, 7) + ", cap " + first.cap + ".";
+    }
+    add($("compat"), box);
+  }
+
+  // --- summary ---
+  runs.forEach((run, index) => {
+    const card = el("div", "card " + run.label);
+    add(card, add(el("h3"), tag(run), el("span", "", " " + run.id + " "), el("span", "dim", "(" + shape(run) + ")")));
+    const stats = el("div", "stats");
+    ["time", "input", "output", "commits", "exit", "score"].forEach((key) => {
+      const row = rowOf(key);
+      if (!row) return;
+      const value = row.values[index];
+      const stat = el("div", "stat" + (value.length > 12 ? " small" : ""));
+      add(stats, add(stat, el("b", "", value), el("span", "", row.label.trim())));
+    });
+    add($("cards"), add(card, stats));
+  });
+  if (DATA.ahead) {
+    add($("ahead"), el("b", "", "Where each run comes out ahead, on what is measured here only"));
+    const list = el("ul");
+    runs.forEach((run) => add(list, add(el("li"), tag(run),
+      el("span", "", " " + (DATA.ahead[run.label].join("; ") || "nothing")))));
+    DATA.ahead.not_compared.forEach((reason) => add(list, el("li", "dim", "not compared: " + reason)));
+    add($("ahead"), list);
+  } else {
+    $("ahead").hidden = true;
+  }
+  runs.forEach((run) => {
+    if (run.score) add($("ahead"), el("p", "dim", "Score of " + run.label + ": " + run.score.value + ", " +
+      run.score.source + ". murmur did not assess quality."));
+  });
+  const head = el("tr");
+  add(head, el("th", "", ""), ...runs.map((run) => add(el("th"), tag(run))), el("th", "", runs.length === 2 ? "difference" : ""));
+  add($("table"), head);
+  DATA.comparison.forEach((row) => {
+    if (row.key === "run") return;
+    const line = el("tr");
+    add(line, el("td", "dim", row.label), ...row.values.map((value) => el("td", "num", value)), el("td", "dim", row.note));
+    add($("table"), line);
+  });
+  runs.forEach((run) => run.facts.forEach((fact) => add($("facts"), add(el("p"), tag(run),
+    el("span", "", " " + fact.label + ": " + fact.value + " "), el("span", "dim", "[" + fact.source + "]")))));
+  $("tablebox").open = true;
+
+  // --- lanes ---
+  $("clocknote").textContent = "Clock: " + DATA.clock_note;
+  const cursors = [];
+  function showDetail(run, event) {
+    const box = $("detail");
+    box.textContent = "";
+    box.className = "box";
+    const until = event.end !== null && event.end !== undefined && event.end > event.t ? " to " + clock(event.end) : "";
+    add(box, add(el("p"), tag(run), el("b", "", " " + event.agent + " · " + (NAMES[event.kind] || event.kind)),
+      el("span", "dim", " at " + clock(event.t) + until + exitNote(event))),
+      el("p", "mono", event.text || "(no text)"));
+    const receipt = event.sha && document.getElementById("rc-" + run.label + "-" + event.sha);
+    if (receipt) {
+      const link = el("button", "", "show the change receipt of " + event.sha);
+      link.type = "button";
+      link.addEventListener("click", () => { receipt.open = true; receipt.scrollIntoView({ block: "center" }); });
+      add(box, link);
+    }
+  }
+  runs.forEach((run) => {
+    const block = el("div", "run");
+    add(block, add(el("div", "runhead"), tag(run), el("b", "", " " + run.id), el("span", "dim", " · " + shape(run) +
+      (run.model && run.effort ? " · " + run.model + "/" + run.effort : ""))));
+    const flagrow = el("div", "flagrow");
+    const flag = el("div", "flag" + (run.duration_s / span > 0.6 ? " left" : ""),
+      "finish " + clock(run.duration_s) + " · exit " + rowOf("exit").values[runs.indexOf(run)]);
+    flag.style.left = pct(run.duration_s);
+    timed.push({ t: run.duration_s, node: flag, cls: "future" });
+    add(block, add(flagrow, flag));
+    run.agents.forEach((agent) => {
+      const lane = el("div", "lane"), track = el("div", "track");
+      const who = el("div", "who", agent.id);
+      who.title = agent.id + " (" + agent.role + ")";
+      agent.turns.forEach(([start, end]) => {
+        const turn = el("div", "turn");
+        turn.style.left = pct(start);
+        turn.style.width = (100 * Math.max(0, end - start) / span) + "%";
+        add(track, turn);
+      });
+      run.events.forEach((event) => {
+        if (event.agent !== agent.id) return;
+        const bar = TOOLS.includes(event.kind), point = POINTS.includes(event.kind);
+        if (!bar && !point) return;
+        const mark = el("div", (bar ? "ev " : "pt ") + event.kind + (bar && event.exit ? " failed" : ""));
+        mark.style.left = pct(event.t);
+        if (bar && event.end !== null && event.end > event.t) mark.style.width = (100 * (event.end - event.t) / span) + "%";
+        mark.title = clock(event.t) + " " + event.agent + " " + (NAMES[event.kind] || event.kind) + ": " + event.text +
+          exitNote(event);
+        mark.addEventListener("click", () => showDetail(run, event));
+        timed.push({ t: event.t, node: mark, cls: "future" });
+        add(track, mark);
+      });
+      const finish = el("div", "finish");
+      finish.style.left = pct(run.duration_s);
+      const cursor = el("div", "cursor");
+      cursors.push(cursor);
+      add($("lanes"), add(block, add(lane, who, add(track, finish, cursor))));
+    });
+    if (!run.agents.length) add($("lanes"), add(block, el("p", "dim", "no agent activity was logged")));
+  });
+  const step = [1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600].find((size) => span / size <= 9) || 7200;
+  for (let at = 0; at <= span * 0.97; at += step) {
+    const tick = el("span", "", clock(at));
+    tick.style.left = pct(at);
+    add($("axis"), tick);
+  }
+  [...TOOLS.map((kind) => ["ev " + kind, kind]), ...POINTS.map((kind) => ["pt " + kind, kind])].forEach(([cls, kind]) => {
+    add($("legend"), add(el("span"), el("i", cls), el("span", "", NAMES[kind])));
+  });
+  add($("legend"), el("span", "", "pale band: the agent's turn · red outline: exit status not 0 · dashed line: the end of the run's log"));
+
+  // --- token meters ---
+  const most = Math.max(1, ...runs.map((run) => run.tokens ? run.tokens.total.input_tokens || 0 : 0));
+  function upTo(points, seconds) {   // the last point at or before `seconds`
+    let low = 0, high = points.length;
+    while (low < high) { const mid = (low + high) >> 1; if (points[mid][0] <= seconds) low = mid + 1; else high = mid; }
+    return low ? points[low - 1] : null;
+  }
+  const meters = runs.map((run) => {
+    const row = el("div", "meter"), bar = el("div", "bar " + run.label);
+    const input = el("i", "in"), cached = el("i", "cached"), text = el("div", "n"), agents = el("div", "agents");
+    add($("meters"), add(row, add(el("div"), tag(run), el("span", "", " " + run.id)),
+      add(el("div"), add(bar, input, cached), text), agents));
+    const series = run.token_series && Object.keys(run.token_series).length ? run.token_series : null;
+    return { run, input, cached, text, agents, series };
+  });
+  function drawMeters(seconds) {
+    meters.forEach(({ run, input, cached, text, agents, series }) => {
+      if (!run.tokens) { text.textContent = "no token counts in the source"; return; }
+      let total = [run.tokens.total.input_tokens, run.tokens.total.cached_input_tokens, run.tokens.total.output_tokens];
+      const parts = [];
+      if (series) {
+        total = [0, 0, 0];
+        Object.entries(series).forEach(([name, points]) => {
+          const point = upTo(points, seconds) || [0, 0, 0, 0];
+          for (let i = 0; i < 3; i++) total[i] += point[i + 1];
+          parts.push(name + " " + num(point[1]) + " in / " + num(point[3]) + " out");
+        });
+      }
+      input.style.width = (100 * (total[0] || 0) / most) + "%";
+      cached.style.width = (100 * (total[1] || 0) / most) + "%";
+      text.textContent = num(total[0]) + " input" + (total[1] === null || total[1] === undefined ? "" :
+        " (" + num(total[1]) + " cached)") + " · " + num(total[2]) + " output" +
+        (series ? "" : " — the final totals: this source has no counts over time");
+      agents.textContent = parts.join("   ·   ");
+    });
+  }
+
+  // --- events and receipts ---
+  const merged = [];
+  runs.forEach((run, index) => run.events.forEach((event) => merged.push({ run, index, event })));
+  merged.sort((one, two) => one.event.t - two.event.t || one.index - two.index);
+  merged.forEach(({ run, event }) => {
+    const row = el("div", "row" + (KEY.has(event.kind) ? "" : " minor off"));
+    add(row, el("span", "t", clock(event.t)), tag(run), el("span", "", event.agent),
+      el("span", "dim", NAMES[event.kind] ? event.kind.replace("_", " ") : event.kind),
+      el("span", "x", event.text + exitNote(event)));
+    timed.push({ t: event.t, node: row, cls: "hidden" });
+    add($("log"), row);
+  });
+  $("every").addEventListener("change", (change) => {
+    document.querySelectorAll("#log .minor").forEach((row) => row.classList.toggle("off", !change.target.checked));
+  });
+  runs.forEach((run) => {
+    add($("receipts"), add(el("p"), tag(run), el("b", "", " " + run.id)));
+    if (!run.receipts.length) add($("receipts"), el("p", "dim", run.receipts_note || "none"));
+    run.receipts.forEach((entry) => {
+      const box = el("details"), head = el("summary");
+      box.id = "rc-" + run.label + "-" + entry.sha;
+      const where = entry.on_main ? "main" : (entry.branches.join(", ") || "no branch");
+      add(head, el("span", "mono", clock(entry.t) + "  " + entry.sha + "  "), el("b", "", (entry.agent || "unknown") + " "),
+        el("span", "", entry.subject + " "), el("span", "dim", "[" + where + ", +" + entry.insertions + " −" +
+          entry.deletions + "] "), el("span", "badge " + entry.status, entry.status_label));
+      add($("receipts"), add(box, head, el("pre", "", entry.lines.join("\n"))));
+      if (entry.t !== null && entry.t !== undefined) timed.push({ t: entry.t, node: box, cls: "future" });
+    });
+  });
+
+  // --- footer ---
+  const foot = $("footer"), list = el("ul");
+  runs.forEach((run) => {
+    add(list, el("li", "", run.label + " " + run.id + " was read from: " + run.source.files.join(", ")));
+    run.warnings.forEach((warning) => add(list, el("li", "", run.label + " " + run.id + ": " + warning)));
+  });
+  DATA.notes.forEach((note) => add(list, el("li", "", note)));
+  add(list, el("li", "", "Tool calls are sorted into kinds by the name of the command; that is a reading aid, not a " +
+    "measurement. Log text is shortened, and strings that look like credentials and home paths are masked."));
+  add(foot, list, el("p", "", "Made by `murmur replay` at " + DATA.generated_at + ". This file holds its own data and " +
+    "loads nothing from the network."));
+
+  // --- the clock ---
+  timed.sort((one, two) => one.t - two.t);
+  const scrub = $("scrub"), play = $("play"), speed = $("speed");
+  scrub.max = String(longest);
+  const speeds = [1, 2, 5, 10, 30, 60, 120, 300, 600];
+  const wanted = Number(DATA.speed) > 0 ? Number(DATA.speed) : speeds.find((value) => longest / value <= 45) || 600;
+  if (!speeds.includes(wanted)) speeds.push(wanted);
+  speeds.sort((one, two) => one - two).forEach((value) => {
+    const option = el("option", "", value + "× (1 s shows " + clock(value) + ")");
+    option.value = String(value);
+    add(speed, option);
+  });
+  speed.value = String(wanted);
+  let now = longest, shown = 0, playing = false, last = 0;
+  function draw(seconds) {
+    now = Math.max(0, Math.min(longest, seconds));
+    while (shown < timed.length && timed[shown].t <= now) { timed[shown].node.classList.remove(timed[shown].cls); shown++; }
+    while (shown > 0 && timed[shown - 1].t > now) { shown--; timed[shown].node.classList.add(timed[shown].cls); }
+    cursors.forEach((cursor) => { cursor.style.left = pct(now); });
+    scrub.value = String(now);
+    $("now").textContent = clock(now) + " / " + clock(longest);
+    drawMeters(now);
+    if (playing) $("log").scrollTop = $("log").scrollHeight;
+  }
+  function stop() { playing = false; play.textContent = "Play"; }
+  function frame(stamp) {
+    if (!playing) return;
+    draw(now + (stamp - last) / 1000 * Number(speed.value));
+    last = stamp;
+    if (now >= longest) stop(); else requestAnimationFrame(frame);
+  }
+  play.addEventListener("click", () => {
+    if (playing) { stop(); return; }
+    if (now >= longest) draw(0);
+    playing = true;
+    play.textContent = "Pause";
+    last = performance.now();
+    requestAnimationFrame(frame);
+  });
+  scrub.addEventListener("input", () => { stop(); draw(Number(scrub.value)); });
+  document.addEventListener("keydown", (key) => {
+    if (key.key === " " && !["INPUT", "SELECT", "BUTTON", "SUMMARY"].includes(document.activeElement.tagName)) {
+      key.preventDefault();
+      play.click();
+    }
+  });
+  timed.forEach((item) => item.node.classList.add(item.cls));
+  draw(longest);
+  window.murmurReplay = { draw, state: () => ({ now, shown, total: timed.length, playing }) };
+})();
+</script>
+</body>
+</html>

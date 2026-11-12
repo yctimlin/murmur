@@ -23,7 +23,9 @@ fetch the result into the user's repo as a branch.
   and better on mobile; the swarm's was safer but plainer.
 - **Poor fit:** small or tightly coupled changes, or a tight token budget. Use one agent, for
   example the `codex` skill.
-- `murmur setup --solo` runs one agent with the same isolation, as a baseline.
+- `murmur setup --solo` runs one agent with the same isolation, as a baseline. `murmur replay
+  <swarm workspace> <solo workspace>` then shows the two runs side by side: time, tokens, commits
+  and who did what, with a warning if they did not get the same brief, model or base.
 
 ## Prerequisites
 
@@ -137,6 +139,12 @@ commands that agent ran before it, with the exit status from the session log. `O
 murmur saw; `CLAIMED only` is the agent's word (the `Verified:` line of its commit message);
 `NOT OBSERVED` means no such command was seen. Receipts tell you where to look first. They do not
 replace the review.
+
+To see how the run went, `murmur replay <workspace>` prints a lane per agent (reads, edits, tests,
+git, board posts, commits landing on `main`), the tokens each used and the receipts;
+`--html replay.html` writes the same as one self-contained page with a scrubber. It reports time,
+tokens and commits. It makes no claim about quality: a score appears only if you pass one
+(`--score-a`, `--score-b`, `--score FILE`).
 
 Green tests written by the same agents are not acceptance. Review the diff line by line, and for
 UI work, open "How to see it" and look at it: desktop and phone widths, reduced motion, every
